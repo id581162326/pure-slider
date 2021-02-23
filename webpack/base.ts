@@ -36,7 +36,7 @@ const getTypeDependingPlugins: (type: BuildType) => webpack.WebpackPluginInstanc
   }
 };
 
-const getTypeDependingConfigProps: (type: BuildType) => object = type => {
+const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = type => {
   switch (type) {
     case "dev":
       return {
