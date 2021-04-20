@@ -1,2 +1,2 @@
 # range-slider
-Metalamp educational program. The 4th task.
+Metalamp's educational program. The 4th task.
