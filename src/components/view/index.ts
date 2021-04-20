@@ -17,7 +17,7 @@ import {
   multiply,
   always,
   add,
-  __
+  __, merge
 } from 'ramda';
 /* locals */
 import View from './namespace';
@@ -302,16 +302,26 @@ const renderConnects = curry(((props, base) => reduceIndexed(connectReducer(prop
 type Render = (props: View.Props, nodes: View.Nodes) => void;
 
 const render = curry(((props, nodes) => {
-  nodes.base = appendBase(props, containerProp(props));
-  nodes.connects = renderConnects(props, nodes.base);
-  nodes.handlers = renderHandlers(props, nodes.base);
-  nodes.tooltips = renderTooltips(props, nodes.handlers);
+  const newNodes: View.Nodes =  {
+    connects: [],
+    handlers: [],
+    tooltips: [],
+    base: null
+  };
+  
+  newNodes.base = appendBase(props, containerProp(props));
+  newNodes.connects = renderConnects(props, newNodes.base);
+  newNodes.handlers = renderHandlers(props, newNodes.base);
+  newNodes.tooltips = renderTooltips(props, newNodes.handlers);
+  /* update nodes list */
+  nodes = merge(nodes, newNodes);
 }) as Render);
 
 type MoveSlider = (props: View.Props, nodes: View.Nodes, currents: number[]) => void;
 
 const moveSlider = curry(((props, nodes, currents) => {
-  props.currents = currents;
+  /* update props with new currents */
+  props = merge(props, {currents});
   
   forEachIndexed((handler: HTMLDivElement, index: number) => moveHandler(props, nth(index, currents), handler), prop('handlers', nodes));
   forEachIndexed((tooltip: HTMLDivElement, index: number) => addInnerText(nth(index, currents).toString(), tooltip), prop('tooltips', nodes));
