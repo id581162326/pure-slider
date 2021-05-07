@@ -7,15 +7,25 @@ namespace View {
     tooltip?: string,
     scale?: string
   }
-  
-  export type NodeKeys = 'tooltip' | 'handler' | 'origin' | 'connect' | 'base' | 'scale';
+
+  export type Connect = HTMLDivElement;
+
+  export type Handler = HTMLDivElement;
+
+  export type Tooltip = HTMLSpanElement;
+
+  export type Base = HTMLDivElement;
+
+  export type NodeTypes = Connect | Handler | Tooltip | Base;
   
   export interface Nodes {
-    connects: HTMLDivElement[],
-    handlers: HTMLDivElement[],
-    tooltips: HTMLDivElement[]
-    base: HTMLDivElement
+    connects: Connect[],
+    handlers: Handler[],
+    tooltips: Tooltip[]
+    base: Base
   }
+
+  export type NodeKeys = 'tooltip' | 'handler' | 'origin' | 'connect' | 'base' | 'scale';
   
   export interface Props {
     container: HTMLDivElement,
@@ -24,11 +34,11 @@ namespace View {
     currents: number[],
     intervals: boolean[],
     orientation: 'vertical' | 'horizontal',
-    scale: {
+    scaleOptions: {
       enabled: boolean,
       measure: number
     },
-    tooltip: {
+    tooltipOptions: {
       enabled: boolean,
       alwaysShown: boolean,
       prefix: string,
@@ -42,8 +52,8 @@ namespace View {
     nodes: Nodes,
     render: () => void,
     destroy: () => void,
-    setProps: (props: Props) => void,
-    moveSlider: (currents: Props['currents']) => void
+    setProps: (newProps: Props) => void,
+    updateSlider: (newCurrents: Props['currents']) => void
   }
 }
 

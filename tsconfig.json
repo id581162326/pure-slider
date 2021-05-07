@@ -9,6 +9,9 @@
     "esModuleInterop": true,
     "moduleResolution": "Node"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*",
+    "@types/*"
+  ],
   "exclude": ["node_modules"]
 }

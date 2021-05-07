@@ -1,186 +1,179 @@
-/* ramda */
-import {
-  compose,
-  curry,
-  ifElse,
-  cond,
-  map,
-  equals,
-  T,
-  prop,
-  concat,
-  subtract,
-  dec,
-  last,
-  nth,
-  divide,
-  multiply,
-  always,
-  add,
-  __, merge
-} from 'ramda';
+/* libs */
+import {__, add, compose, concat, cond, curry, dec, divide, equals, ifElse, last, map, multiply, nth, prop, subtract, T, toString} from 'ramda';
 /* locals */
 import View from './namespace';
 import './styles.css';
-/* global helpers */
-import {forEachIndexed, isDefined, mapIndexed, reduceIndexed, subtractAdjacent} from '../../globals/helpers';
+/* helpers */
+import {isDefined, mapIndexed, percentage, reduceIndexed, subtractAdjacent} from '../../globals/helpers';
 
 /* prop helpers */
 
-const containerProp = prop('container');
-const currentsProp = prop('currents');
-const minProp = prop('min');
-const maxProp = prop('max');
-const tooltipProp = prop('tooltip');
-const intervalsProp = prop('intervals');
-const orientationProp = prop('orientation');
-const classesProp = prop('classes');
+const container = prop('container');
+const currents = prop('currents');
+const min = prop('min');
+const max = prop('max');
+const tooltipOptions = prop('tooltipOptions');
+const intervals = prop('intervals');
+const orientation = prop('orientation');
+const classes = prop('classes');
+const handlers = prop('handlers');
+const connects = prop('connects');
+const tooltips = prop('tooltips');
+const length = prop('length');
+const offsetWidth = prop('offsetWidth');
+const offsetHeight = prop('offsetHeight');
+const alwaysShown = prop('alwaysShown');
 
 /* dom helpers */
 
 type AddClassList = (classList: string[], node: HTMLElement) => HTMLElement;
 
-const addClassList = curry((function (classList, node) {
+export const addClassList = curry((function (classList, node) {
   node.classList.add(...classList);
-  
+
   return (node);
 }) as AddClassList);
 
 type RemoveClassList = (classList: string[], node: HTMLElement) => HTMLElement;
 
-const removeClassList = curry((function (classList: string[], node: HTMLElement): HTMLElement {
+export const removeClassList = curry((function (classList: string[], node: HTMLElement): HTMLElement {
   node.classList.remove(...classList);
-  
+
   return (node);
 }) as RemoveClassList);
 
 type AddInnerText = (string: string, node: HTMLElement) => HTMLElement;
 
-const addInnerText = curry((function (string, node) {
+export const addInnerText = curry((function (string, node) {
   node.innerText = string;
-  
+
   return (node);
 }) as AddInnerText);
 
 type AddInlineStyle = (string: string, node: HTMLElement) => HTMLElement;
 
-const addInlineStyle = curry((function (style, node) {
+export const addInlineStyle = curry((function (style, node) {
   node.style.cssText = style;
-  
+
   return (node);
 }) as AddInlineStyle);
 
-type Template = (tagName: keyof HTMLElementTagNameMap) => () => HTMLElement;
-
-const template: Template = ((tagName) => () => document.createElement(tagName));
-
-const div = template('div');
-
-type AddDefaultClasses = (props: View.Props, key: View.NodeKeys, node: HTMLElement) => HTMLElement;
-
-const addDefaultClasses = curry(((props, key, node) => addClassList([
-  `pure-slider__${key}`,
-  `pure-slider__${key}_orientation_${orientationProp(props)}`], node)) as AddDefaultClasses);
-
-type AddCustomClasses = (props: View.Props, key: View.NodeKeys, custom: string, node: HTMLElement) => HTMLElement;
-
-const addCustomClasses = curry(((props, key, custom, node) => compose<HTMLElement, HTMLElement, HTMLElement>(
-  addClassList([custom, `${custom}_orientation_${orientationProp(props)}`]),
-  addDefaultClasses(props, key)
-)(node)) as AddCustomClasses);
-
-type Node = (key: View.NodeKeys, props: View.Props) => HTMLDivElement;
-
-const node = curry(((key, props) => ifElse(
-  isDefined,
-  addCustomClasses(props, key, __, div()),
-  always(addDefaultClasses(props, key, div()))
-)(prop(key, classesProp(props)))) as Node);
-
-const handler = node('handler');
-const connect = node('connect');
-const base = node('base');
-const tooltip = node('tooltip');
-
 type AppendTo = (parent: HTMLElement, node: HTMLElement) => HTMLElement;
 
-const appendTo = curry((function (parent, node) {
+export const appendTo = curry((function (parent, node) {
   parent.append(node);
-  
+
   return (node);
 }) as AppendTo);
 
-type AppendNode = (props: View.Props, parent: HTMLDivElement) => HTMLDivElement;
+type Template = (tagName: keyof HTMLElementTagNameMap, classList: string[]) => HTMLDivElement;
 
-const appendTooltip = curry(((props, parent) => appendTo(parent, tooltip(props)) as HTMLDivElement) as AppendNode);
-const appendHandler = curry(((props, parent) => appendTo(parent, handler(props)) as HTMLDivElement) as AppendNode);
-const appendConnect = curry(((props, parent) => appendTo(parent, connect(props)) as HTMLDivElement) as AppendNode);
-const appendBase = curry(((props, parent) => appendTo(parent, base(props)) as HTMLDivElement) as AppendNode);
+export const template = ((tagName, classList) => {
+  const node = document.createElement(tagName);
+
+  addClassList(classList, node);
+
+  return (node);
+}) as Template;
+
+/* nodes helpers */
+
+type GetClassList = (key: View.NodeKeys, props: View.Props) => string[];
+
+const getClassList = curry(((key, props) => ifElse(
+  isDefined,
+  () => [
+    `pure-slider__${key}`,
+    `pure-slider__${key}_orientation_${orientation(props)}`,
+    `${classes(props)[key]}`,
+    `${classes(props)[key]}_orientation_${orientation(props)}`
+  ],
+  () =>[
+    `pure-slider__${key}`,
+    `pure-slider__${key}_orientation_${orientation(props)}`
+  ]
+)(prop(key, classes(props)))) as GetClassList);
+
+type Node = (key: View.NodeKeys, props: View.Props) => HTMLDivElement | HTMLSpanElement;
+
+const node = curry(((key, props) => cond([
+  [equals('tooltip'), () => template('span', getClassList(key, props))],
+  [T, () => template('div', getClassList(key, props))]
+])(key)) as Node);
+
+const handler = node('handler');
+
+const connect = node('connect');
+
+const base = node('base');
+
+const tooltip = node('tooltip');
 
 /* dimension helpers */
 
 type Range = (props: View.Props) => number;
 
-const range: Range = (props) => subtract(maxProp(props), minProp(props));
+const range = ((props) => subtract(max(props), min(props))) as Range;
 
-type ElementSize = (props: View.Props, container: HTMLElement) => number;
+type NodeSize = (props: View.Props, node: HTMLElement) => number;
 
-const elementSize = curry(((props, element) => cond([
-  [equals('horizontal'), () => prop('offsetWidth', element)],
-  [equals('vertical'), () => prop('offsetHeight', element)],
-])(orientationProp(props))) as ElementSize);
+const nodeSize = curry(((props, node) => cond([
+  [equals('horizontal'), () => offsetWidth(node)],
+  [equals('vertical'), () => offsetHeight(node)]
+])(orientation(props))) as NodeSize);
 
-type Correct = (props: View.Props, num: number) => number;
+type ContainerSize = (props: View.Props) => number;
 
-const correct = curry(((props, num) => subtract(num, minProp(props))) as Correct);
+const containerSize = ((props) => nodeSize(props, container(props))) as ContainerSize;
 
-type numToPx = (props: View.Props, num: number) => number;
+type NumToPx = (containerSize: number, range: number, num: number) => number;
 
-const numToPx = curry(((props, num) => compose<View.Props['container'], number, number, number>(
-  divide(__, range(props)),
-  multiply(num),
-  elementSize(props)
-)(containerProp(props))) as numToPx)
-
-type pxToPercentage = (props: View.Props, px: number) => number;
-
-const pxToPercentage = curry(((props, px) => compose<View.Props['container'], number, number, number>(
-  multiply(100),
-  divide(px),
-  elementSize(props)
-)(containerProp(props))) as pxToPercentage);
+const numToPx = curry(((containerSize, range, num) => compose<number, number, number>(
+  divide(__, range),
+  multiply(num)
+)(containerSize)) as NumToPx)
 
 /* tooltip render logic */
 
-type TooltipVisibility = (props: View.Props, tooltip: HTMLDivElement) => HTMLDivElement;
+type TooltipVisibility = (props: boolean, tooltip: HTMLDivElement) => HTMLDivElement;
 
-const tooltipVisibility = curry(((props, tooltip) => ifElse(
+const tooltipVisibility = curry(((shown, tooltip) => ifElse(
   equals(true),
   () => addClassList([`pure-slider__tooltip_shown`], tooltip),
   () => tooltip
-)(prop('alwaysShown', tooltipProp(props)))) as TooltipVisibility);
+)(shown)) as TooltipVisibility);
 
-type RenderTooltip = (props: View.Props, handler: HTMLDivElement, index: number) => HTMLDivElement;
+type RenderTooltips = (props: View.Props, handlers: View.Nodes['handlers']) => HTMLDivElement[];
 
-const renderTooltip = curry(((props, handler, index) => compose<HTMLDivElement, HTMLDivElement, HTMLDivElement, HTMLDivElement>(
-  tooltipVisibility(props),
-  addInnerText(nth(index, currentsProp(props)).toString()),
-  appendTooltip(props),
-)(handler)) as RenderTooltip);
+const renderTooltips = curry(((props, handlers) => mapIndexed((handler: View.Handler, index: number) => compose<View.Handler, View.Tooltip, View.Tooltip, View.Tooltip>(
+  tooltipVisibility(alwaysShown(tooltipOptions(props))),
+  addInnerText(compose(toString, nth(index))(currents(props))),
+  appendTo(handler)
+)(tooltip(props)), handlers)) as RenderTooltips);
 
-type RenderTooltips = (props: View.Props, handlers: HTMLDivElement[]) => HTMLDivElement[];
+/* tooltips update logic */
 
-const renderTooltips = curry(((props, handlers) => mapIndexed(renderTooltip(props), handlers)) as RenderTooltips);
+type UpdateTooltips = (props: View.Props, tooltips: View.Nodes['tooltips']) => HTMLDivElement[];
+
+const updateTooltips = ((props, tooltips) => mapIndexed((tooltip: View.Tooltip, index: number) => compose(
+  addInnerText(__, tooltip),
+  toString,
+  nth(index)
+)(currents(props)), tooltips)) as UpdateTooltips;
 
 /* handler render logic */
+
+type HandlerSize = (props: View.Props, handler: View.Handler) => number;
+
+const handlerSize = ((props, handler) => nodeSize(props, handler)) as HandlerSize;
 
 type HandlerPos = (props: View.Props, current: number, handler: HTMLDivElement) => number;
 
 const handlerPos = curry(((props, current, handler) => compose<number, number, number, number, number>(
-  pxToPercentage(props),
-  subtract(__, divide(elementSize(props, handler) as number, 2)),
-  numToPx(props),
-  correct(props)
+  percentage(containerSize(props)),
+  subtract(__, divide(handlerSize(props, handler), 2)),
+  numToPx(containerSize(props), range(props)),
+  subtract(__, min(props))
 )(current)) as HandlerPos);
 
 type MoveHandler = (props: View.Props, current: number, handler: HTMLDivElement) => HTMLDivElement;
@@ -188,19 +181,28 @@ type MoveHandler = (props: View.Props, current: number, handler: HTMLDivElement)
 const moveHandler = curry(((props, current, handler) => cond([
   [equals('horizontal'), () => addInlineStyle(`left: ${handlerPos(props, current, handler)}%;`, handler)],
   [equals('vertical'), () => addInlineStyle(`bottom: ${handlerPos(props, current, handler)}%;`, handler)]
-])(orientationProp(props))) as MoveHandler);
+])(orientation(props))) as MoveHandler);
+
 
 type RenderHandler = (props: View.Props, current: number, base: HTMLDivElement) => HTMLDivElement;
 
 const renderHandler = curry(((props, current, base) => compose<HTMLDivElement, HTMLDivElement, HTMLDivElement>(
   moveHandler(props, current),
-  appendHandler(props)
+  appendTo(__, handler(props))
 )(base)) as RenderHandler);
 
 type RenderHandlers = (props: View.Props, base: HTMLDivElement) => HTMLDivElement[];
 
-const renderHandlers = curry(((props, base) => map(renderHandler(props, __, base), currentsProp(props))
-) as RenderHandlers);
+const renderHandlers = curry(((props, base) => map(renderHandler(props, __, base), currents(props))) as RenderHandlers);
+
+/* connects update logic */
+
+type UpdateHandlers = (props: View.Props, handlers: View.Nodes['handlers']) => View.Nodes['handlers'];
+
+const updateHandlers = curry(((props, handlers) => mapIndexed((handler: HTMLDivElement, index: number) => compose(
+  moveHandler(props, __, handler),
+  nth(index)
+)(currents(props)), handlers)) as UpdateHandlers);
 
 /* connect render logic */
 
@@ -210,61 +212,56 @@ const firstConnectPos: FirstConnectPos = () => 0;
 
 type LastConnectPos = (props: View.Props) => number;
 
-const lastConnectPos: LastConnectPos = (props) => compose<number[], number, number, number, number>(
-  pxToPercentage(props),
-  numToPx(props),
-  correct(props),
+const lastConnectPos: LastConnectPos = (props) => compose<number[], number, number, number>(
+  percentage(range(props)),
+  subtract(__, min(props)),
   last
-)(currentsProp(props));
+)(currents(props));
 
 type InnerConnectPos = (props: View.Props, index: number) => number;
 
-const innerConnectPos = curry(((props, index) => compose<number[], number, number, number, number>(
-  pxToPercentage(props),
-  numToPx(props),
-  correct(props),
+const innerConnectPos = curry(((props, index) => compose<number[], number, number, number>(
+  percentage(range(props)),
+  subtract(__, min(props)),
   nth(dec(index))
-)(currentsProp(props))) as InnerConnectPos);
+)(currents(props))) as InnerConnectPos);
 
 type ConnectPos = (props: View.Props, index: number) => number;
 
 const connectPos = curry(((props, index) => cond([
   [equals(0), firstConnectPos],
-  [compose(equals, prop('length'))(currentsProp(props)), always(lastConnectPos(props))],
+  [compose(equals, length)(currents(props)), () => lastConnectPos(props)],
   [T, innerConnectPos(props)]
 ])(index)) as ConnectPos);
 
 type FirstConnectSize = (props: View.Props) => number;
 
-const firstConnectSize: FirstConnectSize = (props) => compose<number[], number, number, number>(
-  pxToPercentage(props),
-  numToPx(props),
+const firstConnectSize: FirstConnectSize = (props) => compose<number[], number, number>(
+  percentage(range(props)),
   nth(0)
-)(currentsProp(props));
+)(currents(props));
 
 type LastConnectSize = (props: View.Props) => number;
 
-const lastConnectSize: LastConnectSize = (props) => compose<number[], number, number, number, number>(
-  pxToPercentage(props),
-  numToPx(props),
-  subtract(maxProp(props)),
+const lastConnectSize: LastConnectSize = (props) => compose<number[], number, number, number>(
+  percentage(range(props)),
+  subtract(max(props)),
   last
-)(currentsProp(props));
+)(currents(props));
 
 type InnerConnectSize = (props: View.Props, index: number) => number;
 
-const innerConnectSize = curry(((props, index) => compose<number[], number, number, number>(
-  pxToPercentage(props),
-  numToPx(props),
+const innerConnectSize = curry(((props, index) => compose<number[], number, number>(
+  percentage(range(props)),
   subtractAdjacent(index)
-)(currentsProp(props))) as InnerConnectSize);
+)(currents(props))) as InnerConnectSize);
 
 type ConnectSize = (props: View.Props, index: number) => number;
 
 const connectSize = curry(((props, index) => cond([
-  [equals(0), always(firstConnectSize(props))],
-  [equals(dec(prop('length', intervalsProp(props)))), always(lastConnectSize(props))],
-  [T, always(innerConnectSize(props, index))]
+  [equals(0), () => firstConnectSize(props)],
+  [equals(compose<View.Props, boolean[], number, number>(dec, length, intervals)(props)), () => lastConnectSize(props)],
+  [T, () => innerConnectSize(props, index)]
 ])(index)) as ConnectSize);
 
 type MoveConnect = (props: View.Props, index: number, connect: HTMLDivElement) => HTMLDivElement;
@@ -276,79 +273,88 @@ const moveConnect = curry(((props, index, connect) => cond([
   [equals('vertical'), () => addInlineStyle(concat(
     `bottom: ${connectPos(props, index)}%;`,
     `max-height: ${connectSize(props, index)}%;`), connect)]
-])(orientationProp(props))) as MoveConnect);
+])(orientation(props))) as MoveConnect);
 
 type RenderConnect = (props: View.Props, index: number, base: HTMLDivElement) => HTMLDivElement;
 
 const renderConnect = curry(((props, index, base: HTMLDivElement) => compose<HTMLDivElement, HTMLDivElement, HTMLDivElement>(
   moveConnect(props, index),
-  appendConnect(props))(base)) as RenderConnect);
+  appendTo(base))(connect(props))) as RenderConnect);
 
-type ConnectsReducer = (props: View.Props, base: HTMLDivElement, acc: HTMLDivElement[], hasInterval: boolean, index: number) => HTMLDivElement[];
+type RenderConnectsReducer = (props: View.Props, base: HTMLDivElement, acc: HTMLDivElement[], hasInterval: boolean, index: number) => HTMLDivElement[];
 
-const connectReducer = curry(((props, base, acc, hasInterval, index) => ifElse(
+const renderConnectsReducer = curry(((props, base, acc, hasInterval, index) => ifElse(
   equals(true),
   () => concat(acc, [renderConnect(props, index, base)]),
   () => acc
-)(hasInterval)) as ConnectsReducer);
+)(hasInterval)) as RenderConnectsReducer);
 
 type RenderConnects = (props: View.Props, base: HTMLDivElement) => HTMLDivElement[];
 
-const renderConnects = curry(((props, base) => reduceIndexed(connectReducer(props, base),
-  [], intervalsProp(props))) as RenderConnects);
+const renderConnects = curry(((props, base) => reduceIndexed(renderConnectsReducer(props, base),
+  [], intervals(props))) as RenderConnects);
+
+/* connects update logic */
+
+type MoveConnectsReducer = (props: View.Props, connects: View.Nodes['connects'], connectIndex: number, hasInterval: boolean, intervalIndex: number) => void;
+
+const updateConnectsReducer = curry(((props, connects, connectIndex: number, hasInterval: boolean, intervalIndex: number) => ifElse(
+  equals(true),
+  () => compose(
+    () => add(1, connectIndex),
+    moveConnect(props, intervalIndex),
+    (index: number) => nth(index, connects)
+  )(connectIndex),
+  () => connectIndex
+)(hasInterval)) as MoveConnectsReducer);
+
+type UpdateConnects = (props: View.Props, nodes: View.Nodes['connects']) => void;
+
+const updateConnects = curry(((props, connects) => reduceIndexed(updateConnectsReducer(props, connects), 0, intervals(props))) as UpdateConnects);
 
 /* view methods */
 
-type Render = (props: View.Props, nodes: View.Nodes) => void;
+type Render = (props: View.Props) => View.Nodes;
 
-const render = curry(((props, nodes) => {
-  const newNodes: View.Nodes =  {
+const render = curry(((props) => {
+  const newNodes: View.Nodes = {
     connects: [],
     handlers: [],
     tooltips: [],
     base: null
   };
-  
-  newNodes.base = appendBase(props, containerProp(props));
+
+  newNodes.base = appendTo(container(props), base(props));
   newNodes.connects = renderConnects(props, newNodes.base);
   newNodes.handlers = renderHandlers(props, newNodes.base);
   newNodes.tooltips = renderTooltips(props, newNodes.handlers);
-  /* update nodes list */
-  nodes = merge(nodes, newNodes);
+
+  return (newNodes);
 }) as Render);
 
-type MoveSlider = (props: View.Props, nodes: View.Nodes, currents: number[]) => void;
+type UpdateSlider = (props: View.Props, nodes: View.Nodes) => void;
 
-const moveSlider = curry(((props, nodes, currents) => {
-  /* update props with new currents */
-  props = merge(props, {currents});
-  
-  forEachIndexed((handler: HTMLDivElement, index: number) => moveHandler(props, nth(index, currents), handler), prop('handlers', nodes));
-  forEachIndexed((tooltip: HTMLDivElement, index: number) => addInnerText(nth(index, currents).toString(), tooltip), prop('tooltips', nodes));
-  reduceIndexed((connectIndex: number, hasInterval: boolean, intervalIndex: number) => ifElse(
-    equals(true),
-    () => compose(
-      always(add(1, connectIndex)),
-      moveConnect(props, intervalIndex),
-      (index: number) => nth(index, prop('connects', nodes))
-    )(connectIndex),
-    () => connectIndex
-  )(hasInterval), 0, intervalsProp(props));
-}) as MoveSlider);
+const updateSlider = curry(((props, nodes) => {
+  updateHandlers(props, handlers(nodes));
+  updateTooltips(props, tooltips(nodes));
+  updateConnects(props, connects(nodes));
+}) as UpdateSlider);
 
-type Destroy = (props: View.Props, nodes: View.Nodes) => void;
+type Destroy = (props: View.Props) => void;
 
-const destroy = curry(((props, nodes) => {
-  const container = containerProp(props);
-  
-  nodes.connects = [];
-  nodes.handlers = [];
-  nodes.tooltips = [];
-  nodes.base = null;
-  
-  container.innerHTML = '';
-  
-  removeClassList(['pure-slider'], container);
+const destroy = curry(((props) => {
+  const emptyNodes: View.Nodes = {
+    connects: [],
+    handlers: [],
+    tooltips: [],
+    base: null
+  }
+
+  container(props).innerHTML = '';
+
+  removeClassList(['pure-slider'], container(props));
+
+  return (emptyNodes);
 }) as Destroy);
 
 /* view */
@@ -361,11 +367,11 @@ export default class implements View.Interface {
     intervals: [false, false],
     orientation: 'horizontal',
     container: null,
-    scale: {
+    scaleOptions: {
       enabled: true,
       measure: 1
     },
-    tooltip: {
+    tooltipOptions: {
       enabled: false,
       alwaysShown: false,
       prefix: 'prefix ',
@@ -379,9 +385,13 @@ export default class implements View.Interface {
     tooltips: [],
     base: null
   };
-  
-  public render = () => render(this.props, this.nodes);
-  public destroy = () => destroy(this.props, this.nodes);
+
+  public render = () => this.nodes = render(this.props);
+  public destroy = () => this.nodes = destroy(this.props);
   public setProps = (newProps: View.Props) => this.props = newProps;
-  public moveSlider = (currents: View.Props['currents']) => moveSlider(this.props, this.nodes, currents);
+  public updateSlider = (newCurrents: View.Props['currents']) => {
+    this.props = {...this.props, currents: newCurrents};
+
+    updateSlider(this.props, this.nodes);
+  };
 }

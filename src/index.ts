@@ -1,3 +1,4 @@
+/* ramda */
 import {forEach} from 'ramda';
 /* components */
 import View from './components/view';
@@ -12,11 +13,11 @@ const exampleViewProps = [
     intervals: [true, false, false, true],
     orientation: 'horizontal',
     container: document.querySelector('.js-example-slider-1'),
-    scale: {
+    scaleOptions: {
       enabled: true,
       measure: 100
     },
-    tooltip: {
+    tooltipOptions: {
       enabled: true,
       alwaysShown: false,
       prefix: 'prefix ',
@@ -37,11 +38,11 @@ const exampleViewProps = [
     intervals: [false, true, false],
     orientation: 'horizontal',
     container: document.querySelector('.js-example-slider-2'),
-    scale: {
+    scaleOptions: {
       enabled: true,
       measure: 100
     },
-    tooltip: {
+    tooltipOptions: {
       enabled: true,
       alwaysShown: false,
       prefix: 'prefix ',
@@ -62,11 +63,11 @@ const exampleViewProps = [
     intervals: [true, false],
     orientation: 'horizontal',
     container: document.querySelector('.js-example-slider-3'),
-    scale: {
+    scaleOptions: {
       enabled: true,
       measure: 100
     },
-    tooltip: {
+    tooltipOptions: {
       enabled: true,
       alwaysShown: false,
       prefix: 'prefix ',
@@ -87,11 +88,11 @@ const exampleViewProps = [
     intervals: [false, true],
     orientation: 'horizontal',
     container: document.querySelector('.js-example-slider-4'),
-    scale: {
+    scaleOptions: {
       enabled: true,
       measure: 100
     },
-    tooltip: {
+    tooltipOptions: {
       enabled: true,
       alwaysShown: false,
       prefix: 'prefix ',
@@ -111,5 +112,5 @@ forEach((exampleProps) => {
   const view = new View();
   
   view.setProps(exampleProps as typeof view.props);
-  view.render()
+  view.render();
 }, exampleViewProps);
