@@ -1,39 +1,51 @@
-import {addIndex, compose, curry, dec, divide, forEach, isNil, map, multiply, nth, reduce, subtract} from 'ramda';
+import * as O from 'fp-ts/Option';
+import {constant, pipe} from 'fp-ts/function';
 
-export const throwError = curry((name: string, message: string): void => {
-  const error = new Error();
 
-  error.name = name;
-  error.message = message;
+export const toStr = (x: number): string => x.toString();
 
-  throw error;
-});
+export const prop = <T>(k: keyof T): ((o: T) => T[keyof T]) => (o) => o[k];
 
-type IsDefined = (val: unknown) => boolean;
+export const sub = (x: number): (y: number) => number => (y) => pipe(y, O.fromNullable, O.getOrElse(constant(0))) - x;
 
-export const isDefined: IsDefined = (val) => !isNil(val);
+export const add = (x: number): (y: number) => number => y => x + pipe(y, O.fromNullable, O.getOrElse(constant(0)));
 
-type SubtractAdjacent = (index: number, array: number[]) => void;
+export const dec = (x: number): number => sub(1)(x);
 
-export const subtractAdjacent = curry(((index, arr) => subtract(nth(index, arr), nth(dec(index), arr))) as SubtractAdjacent);
+export const inc = (x: number): number => add(1)(x);
 
-export const reduceIndexed = addIndex(reduce);
+export const div = (x: number): (y: number) => number => (y) => y / x;
 
-export const mapIndexed = addIndex(map);
+export const mult = (x: number): (y: number) => number => (y) => x * y;
 
-export const forEachIndexed = addIndex(forEach);
+export const percent = (x: number): (y: number) => number => (y) => pipe(y, div(x), mult(100));
 
-type Trace = (val: unknown) => unknown;
+export const node = <T extends keyof HTMLElementTagNameMap>(tagName: T): HTMLElementTagNameMap[T] => document.createElement(tagName);
 
-export const trace: Trace = (val) => {
-  console.log(val);
+export const appendTo = <T extends HTMLElement, K extends HTMLElement>(p: T): (c: K) => K => (c) => {
+  p.appendChild(c);
 
-  return (val);
+  return (c);
 };
 
-type Percentage = (x: number, y: number) => number;
+export const addClassList = <T extends string, K extends HTMLElement>(classList: T[]): (n: K) => K => (n) => {
+  n.classList.add(...classList);
 
-export const percentage = curry(((x, y) => compose(
-  multiply(100),
-  divide(y)
-)(x)) as Percentage);
+  return (n);
+};
+
+export const removeClassList = <T extends string, K extends HTMLElement>(classList: T[]): (n: K) => K => (n) => {
+  n.classList.remove(...classList);
+
+  return (n);
+};
+
+export const setInlineStyle = <T extends string, K extends HTMLElement>(style: T): (n: K) => K => (n) => {
+  n.style.cssText = style;
+
+  return (n);
+};
+
+export const offsetWidth = (n: HTMLElement): number => n.offsetWidth;
+
+export const offsetHeight = (n: HTMLElement): number => n.offsetHeight;

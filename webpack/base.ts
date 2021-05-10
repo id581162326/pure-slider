@@ -5,41 +5,43 @@ import MiniCssExtractPlugin from 'mini-css-extract-plugin';
 import TerserJSPlugin from 'terser-webpack-plugin';
 import CssMinimizerWebpackPlugin from 'css-minimizer-webpack-plugin';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
-import HtmlWebpackHarddiskPlugin from 'html-webpack-harddisk-plugin';
+import HtmlWebpackHardDiskPlugin from 'html-webpack-harddisk-plugin';
 
 type BuildType = 'dev' | 'prod' | 'demo' | 'test';
 
 const getTypeDependingPlugins: (type: BuildType) => webpack.WebpackPluginInstance[] = type => {
   switch (type) {
     case 'dev':
-      return [
+      return ([
         new webpack.HotModuleReplacementPlugin(),
         new HtmlWebpackPlugin({
           template: './index.html',
           filename: 'index.html',
           inject: 'body',
         })
-      ];
+      ]);
     case 'demo':
-      return [
+      return ([
         new HtmlWebpackPlugin({
           template: './index.html',
           filename: 'index.html',
           inject: 'body',
           alwaysWriteToDisk: true
         }),
-        new HtmlWebpackHarddiskPlugin(),
+        new HtmlWebpackHardDiskPlugin(),
         new MiniCssExtractPlugin({filename: 'css/[name]'})
-      ];
+      ]);
     case 'prod':
-      return [new MiniCssExtractPlugin({filename: 'css/[name]'})];
+      return ([new MiniCssExtractPlugin({filename: 'css/[name]'})]);
+    default:
+      return ([]);
   }
 };
 
 const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = type => {
   switch (type) {
     case "dev":
-      return {
+      return ({
         mode: 'development',
         entry: './index.ts',
         output: {
@@ -55,9 +57,9 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
           inline: true,
           clientLogLevel: 'silent'
         }
-      };
+      });
     case 'demo':
-      return {
+      return ({
         mode: 'production',
         entry: './index.ts',
         output: {
@@ -69,9 +71,9 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
           minimize: true,
           minimizer: [new TerserJSPlugin({extractComments: false}), new CssMinimizerWebpackPlugin()]
         }
-      };
+      });
     case "prod":
-      return {
+      return ({
         mode: 'production',
         entry: './plugin.ts',
         output: {
@@ -83,14 +85,16 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
           minimize: true,
           minimizer: [new TerserJSPlugin({extractComments: false}), new CssMinimizerWebpackPlugin()]
         }
-      };
+      });
+    default:
+      return ({})
   }
 };
 
 export const getPlugins: (type: BuildType) => webpack.WebpackPluginInstance[] = type =>
-  [new CleanWebpackPlugin(), ...getTypeDependingPlugins(type)];
+  ([new CleanWebpackPlugin(), ...getTypeDependingPlugins(type)]);
 
-export const getRules: (type: BuildType) => webpack.RuleSetRule[] = type => [
+export const getRules: (type: BuildType) => webpack.RuleSetRule[] = type => ([
   {
     test: /\.js$/,
     use: 'babel-loader',
@@ -128,7 +132,7 @@ export const getRules: (type: BuildType) => webpack.RuleSetRule[] = type => [
       }
     }]
   }
-];
+]);
 
 export const getConfig: (type: BuildType) => webpack.Configuration = type => ({
   ...getTypeDependingConfigProps(type),

@@ -1,59 +1,50 @@
 namespace View {
-  interface Classes {
-    base?: string,
-    connect?: string,
-    handler?: string,
-    origin?: string,
-    tooltip?: string,
-    scale?: string
+  interface Node {
+    orientation: 'horizontal' | 'vertical',
+    classList: string[]
   }
 
-  export type Connect = HTMLDivElement;
-
-  export type Handler = HTMLDivElement;
-
-  export type Tooltip = HTMLSpanElement;
-
-  export type Base = HTMLDivElement;
-
-  export type NodeTypes = Connect | Handler | Tooltip | Base;
-  
-  export interface Nodes {
-    connects: Connect[],
-    handlers: Handler[],
-    tooltips: Tooltip[]
-    base: Base
+  export interface Connect extends Node {
+    size: number,
+    translate: number
   }
 
-  export type NodeKeys = 'tooltip' | 'handler' | 'origin' | 'connect' | 'base' | 'scale';
-  
+  export interface Handler extends Node {
+    translate: number
+  }
+
+  export interface Tooltip extends Node {
+    innerText: string
+  }
+
+  export interface ConnectMap {
+    node: HTMLDivElement,
+    index: number
+  }
+
+  export type NodeKeys = 'connect' | 'handler' | 'tooltip' | 'base';
+
   export interface Props {
-    container: HTMLDivElement,
+    container: HTMLElement,
     min: number,
     max: number,
     currents: number[],
     intervals: boolean[],
     orientation: 'vertical' | 'horizontal',
-    scaleOptions: {
-      enabled: boolean,
-      measure: number
-    },
     tooltipOptions: {
       enabled: boolean,
-      alwaysShown: boolean,
-      prefix: string,
-      postfix: string
+      alwaysShown: boolean
     },
-    classes: Classes
+    customBlockClassName: string,
+    onDragHandler: (index: number, coordinate: number) => void
   }
-  
+
   export interface Interface {
     props: Props,
-    nodes: Nodes,
     render: () => void,
     destroy: () => void,
     setProps: (newProps: Props) => void,
-    updateSlider: (newCurrents: Props['currents']) => void
+    updateCurrents: (newCurrents: Props['currents']) => void
   }
 }
 

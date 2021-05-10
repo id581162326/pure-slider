@@ -60,6 +60,8 @@
     position: absolute;
     display: grid;
     place-items: center;
+    user-select: none;
+    -webkit-user-drag: none;
 }
 
 /* tooltip */
@@ -67,6 +69,7 @@
 .pure-slider__tooltip {
     display: none;
     position: absolute;
+    user-select: none
 }
 
 .pure-slider__handler:active .pure-slider__tooltip,
