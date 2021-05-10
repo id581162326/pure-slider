@@ -18,6 +18,8 @@ export const div = (x: number): (y: number) => number => (y) => y / x;
 
 export const mult = (x: number): (y: number) => number => (y) => x * y;
 
+export const half = (x: number): number => div(2)(x);
+
 export const percent = (x: number): (y: number) => number => (y) => pipe(y, div(x), mult(100));
 
 export const node = <T extends keyof HTMLElementTagNameMap>(tagName: T): HTMLElementTagNameMap[T] => document.createElement(tagName);

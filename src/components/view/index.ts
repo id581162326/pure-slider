@@ -5,8 +5,8 @@ import {constant, pipe} from 'fp-ts/function';
 import * as H from '../../globals/helpers';
 
 import View from './namespace';
-import * as Connect from './connect';
 import './styles.css';
+import './theme.css';
 
 export default class implements View.Interface {
   public props: View.Props = {
@@ -20,27 +20,34 @@ export default class implements View.Interface {
       enabled: false,
       alwaysShown: false
     },
-    customBlockClassName: 'default-themed-slider',
+    customBlockClassName: 'themed-slider',
     onDragHandler: (i: number, coord: number) => console.log(i, coord)
   };
 
   private connectsMap: View.ConnectMap[] = [];
+
+  private handlersMap: View.HandlerMap[] = [];
 
   private base: HTMLDivElement = document.createElement('div');
 
   private range: number = H.sub(H.prop('min')(this.props))(H.prop('max')(this.props));
 
   public setProps(props: View.Props) {
-    this.props = props;
+    this.props = {...this.props, ...props};
   }
 
   public render() {
-    const {container} = this.props;
+    const {container, customBlockClassName} = this.props;
 
-    H.addClassList(['pure-slider'])(container);
+    H.addClassList([
+      'pure-slider',
+      ...(customBlockClassName !== undefined ? [`${customBlockClassName}`] : [])
+    ])(container);
 
     this.renderBase();
     this.renderConnects();
+    this.renderHandlers();
+    this.moveNodes();
   }
 
   public destroy() {
@@ -52,20 +59,15 @@ export default class implements View.Interface {
   }
 
   public updateCurrents(currents: View.Props['currents']) {
-    const {orientation} = this.props;
-
-    this.props = {...this.props, currents};
-
-    A.map(({node, index}: View.ConnectMap) => Connect.move({
-      orientation, ...this.getConnectConfig(index)
-    })(node))(this.connectsMap);
+    this.setProps({...this.props, currents});
+    this.moveNodes();
   }
 
-  private percentToRange = (x: number): number => H.percent(this.range)(x);
+  private percentToRange = H.percent(this.range);
 
-  private correctToMin = (x: number): number => H.sub(H.prop('min')(this.props))(x);
+  private correctToMin = H.sub(H.prop('min')(this.props));
 
-  private getConnectConfig = (i: number): { size: number, translate: number } => {
+  private getConnectDimensions = (i: number): { size: number, translate: number } => {
     const {currents, intervals} = this.props;
 
     switch (i) {
@@ -91,7 +93,13 @@ export default class implements View.Interface {
           translate: pipe(currents, A.lookup(H.dec(i)), O.getOrElse(constant(0)), this.correctToMin, this.percentToRange)
         });
     }
-  };
+  }
+
+  private getHandlerDimensions = (i: number): { translate: number } => {
+    const {currents} = this.props;
+
+    return ({translate: pipe(currents, A.lookup(i), O.getOrElse(constant(0)), this.correctToMin, this.percentToRange)});
+  }
 
   private getClassList = (key: View.NodeKeys): string[] => {
     const {customBlockClassName, orientation} = this.props;
@@ -104,7 +112,7 @@ export default class implements View.Interface {
         `${customBlockClassName}__${key}_orientation_${orientation}`
       ] : [])
     ]);
-  };
+  }
 
   private renderBase = () => {
     const {container} = this.props;
@@ -113,28 +121,72 @@ export default class implements View.Interface {
       H.node('div'),
       H.addClassList(this.getClassList('base')),
       H.appendTo(container)
-    ) as HTMLDivElement;
-  };
+    );
+  }
 
-  private renderConnects() {
-    const {orientation, intervals} = this.props;
+  private renderConnects = () => {
+    const {intervals} = this.props;
 
-    const connectConfigBase = {
-      orientation,
-      classList: this.getClassList('connect')
-    };
-
-    const connect = (i: number) => Connect.render({
-      ...connectConfigBase,
-      ...this.getConnectConfig(i)
-    });
+    const classList = this.getClassList('connect');
 
     const intervalsIndexes = A.reduceWithIndex([] as number[], (i, xs, x: boolean) => x ? [...xs, i] : xs)(intervals);
 
     this.connectsMap = A.map((x: number) => ({
-      node: pipe(x, connect, H.appendTo(this.base)),
-      index: x
+      node: pipe(
+        H.node('div'),
+        H.addClassList(classList),
+        H.appendTo(this.base)
+      ),
+      id: x
     }))(intervalsIndexes);
+  }
+
+  private moveConnect = ({node, id}: View.ConnectMap) => {
+    console.log(this);
+    const {orientation} = this.props;
+    const {translate, size} = this.getConnectDimensions(id);
+
+    switch (orientation) {
+      case 'horizontal':
+        H.setInlineStyle(`left: ${translate}%; max-width: ${size}%`)(node);
+        break;
+      case 'vertical':
+        H.setInlineStyle(`top: ${translate}%; max-height: ${size}%`)(node);
+        break;
+    }
+  }
+
+  private renderHandlers = () => {
+    const {currents} = this.props;
+
+    const classList = this.getClassList('handler');
+
+    this.handlersMap = A.mapWithIndex((i) => ({
+      node: pipe(
+        H.node('div'),
+        H.addClassList(classList),
+        H.appendTo(this.base)
+      ),
+      id: i
+    }))(currents);
+  }
+
+  private moveHandler = ({node, id}: View.HandlerMap) => {
+    const {orientation} = this.props;
+    const {translate} = this.getHandlerDimensions(id);
+
+    switch (orientation) {
+      case 'horizontal':
+        H.setInlineStyle(`left: calc(${translate}% - ${H.half(H.offsetWidth(node))}px)`)(node);
+        break;
+      case 'vertical':
+        H.setInlineStyle(`top: calc(${translate}% - ${H.half(H.offsetHeight(node))}px)`)(node);
+    }
+  }
+
+  private moveNodes = () => {
+    A.map(this.moveConnect)(this.connectsMap);
+    A.map(this.moveHandler)(this.handlersMap);
   }
 }
 

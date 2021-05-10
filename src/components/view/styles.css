@@ -35,24 +35,6 @@
     bottom: 0;
 }
 
-/* origin */
-
-.pure-slider__origin {
-    z-index: 2;
-    position: absolute;
-    display: grid;
-    place-items: center;
-    width: 1px;
-}
-
-.pure-slider__origin_orientation_horizontal {
-    left: 0;
-}
-
-.pure-slider__origin_orientation_vertical {
-    bottom: 0;
-}
-
 /* handler */
 
 .pure-slider__handler {

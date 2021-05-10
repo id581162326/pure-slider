@@ -15,7 +15,6 @@ view.setProps({
     enabled: false,
     alwaysShown: false
   },
-  customBlockClassName: 'example-slider',
   onDragHandler: (i: number, coord: number) => console.log(i, coord)
 });
 

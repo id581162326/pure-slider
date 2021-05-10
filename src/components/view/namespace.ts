@@ -19,7 +19,12 @@ namespace View {
 
   export interface ConnectMap {
     node: HTMLDivElement,
-    index: number
+    id: number
+  }
+
+  export interface HandlerMap {
+    node: HTMLDivElement,
+    id: number
   }
 
   export type NodeKeys = 'connect' | 'handler' | 'tooltip' | 'base';
@@ -35,7 +40,7 @@ namespace View {
       enabled: boolean,
       alwaysShown: boolean
     },
-    customBlockClassName: string,
+    customBlockClassName?: string,
     onDragHandler: (index: number, coordinate: number) => void
   }
 
