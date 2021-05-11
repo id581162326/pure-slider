@@ -1,10 +1,19 @@
 import * as O from 'fp-ts/Option';
+import * as A from 'fp-ts/Array';
+
 import {constant, pipe} from 'fp-ts/function';
 
 
-export const toStr = (x: number): string => x.toString();
+export const toString = (x: number): string => x.toString();
 
 export const prop = <T>(k: keyof T): ((o: T) => T[keyof T]) => (o) => o[k];
+
+export const nthOrNone = <T>(n: number, none: T): (xs: T[]) => T => (xs) => pipe(xs, A.lookup(n), O.getOrElse(constant(none)));
+
+export const lastOrNone = <T>(none: T): (xs: T[]) => T => (xs) => pipe(xs, A.last, O.getOrElse(constant(none)));
+
+export const headOrNone = <T>(none: T): (xs: T[]) => T => (xs) => pipe(xs, A.head, O.getOrElse(constant(none)));
+
 
 export const sub = (x: number): (y: number) => number => (y) => pipe(y, O.fromNullable, O.getOrElse(constant(0))) - x;
 
@@ -22,7 +31,8 @@ export const half = (x: number): number => div(2)(x);
 
 export const percent = (x: number): (y: number) => number => (y) => pipe(y, div(x), mult(100));
 
-export const node = <T extends keyof HTMLElementTagNameMap>(tagName: T): HTMLElementTagNameMap[T] => document.createElement(tagName);
+
+export const node = <T extends keyof HTMLElementTagNameMap>(n: T): HTMLElementTagNameMap[T] => document.createElement(n);
 
 export const appendTo = <T extends HTMLElement, K extends HTMLElement>(p: T): (c: K) => K => (c) => {
   p.appendChild(c);
@@ -30,20 +40,26 @@ export const appendTo = <T extends HTMLElement, K extends HTMLElement>(p: T): (c
   return (c);
 };
 
-export const addClassList = <T extends string, K extends HTMLElement>(classList: T[]): (n: K) => K => (n) => {
-  n.classList.add(...classList);
+export const addClassList = <T extends HTMLElement>(xs: string[]): (n: T) => T => (n) => {
+  n.classList.add(...xs);
 
   return (n);
 };
 
-export const removeClassList = <T extends string, K extends HTMLElement>(classList: T[]): (n: K) => K => (n) => {
-  n.classList.remove(...classList);
+export const removeClassList = <T extends HTMLElement>(xs: string[]): (n: T) => T => (n) => {
+  n.classList.remove(...xs);
 
   return (n);
 };
 
-export const setInlineStyle = <T extends string, K extends HTMLElement>(style: T): (n: K) => K => (n) => {
-  n.style.cssText = style;
+export const setInlineStyle = <T extends HTMLElement>(x: string): (n: T) => T => (n) => {
+  n.style.cssText = x;
+
+  return (n);
+};
+
+export const setInnerText = <T extends HTMLElement>(x: string): (n: T) => T => (n) => {
+  n.innerText = x;
 
   return (n);
 };

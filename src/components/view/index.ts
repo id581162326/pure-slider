@@ -1,8 +1,8 @@
-import * as O from 'fp-ts/Option';
 import * as A from 'fp-ts/Array';
-import {constant, pipe} from 'fp-ts/function';
+import {pipe} from 'fp-ts/function';
 
 import * as H from '../../globals/helpers';
+import {nthOrNone} from '../../globals/helpers';
 
 import View from './namespace';
 import './styles.css';
@@ -17,16 +17,17 @@ export default class implements View.Interface {
     intervals: [false, false],
     orientation: 'horizontal',
     tooltipOptions: {
-      enabled: false,
-      alwaysShown: false
+      enabled: false
     },
-    customBlockClassName: 'themed-slider',
+    bemBlockClassName: 'themed-slider',
     onDragHandler: (i: number, coord: number) => console.log(i, coord)
   };
 
-  private connectsMap: View.ConnectMap[] = [];
+  private connectsMap: View.NodeMap[] = [];
 
-  private handlersMap: View.HandlerMap[] = [];
+  private handlersMap: View.NodeMap[] = [];
+
+  private tooltipsMap: View.NodeMap[] = [];
 
   private base: HTMLDivElement = document.createElement('div');
 
@@ -37,82 +38,79 @@ export default class implements View.Interface {
   }
 
   public render() {
-    const {container, customBlockClassName} = this.props;
+    const {container, bemBlockClassName} = this.props;
 
     H.addClassList([
       'pure-slider',
-      ...(customBlockClassName !== undefined ? [`${customBlockClassName}`] : [])
+      `${bemBlockClassName}`
     ])(container);
 
-    this.renderBase();
-    this.renderConnects();
-    this.renderHandlers();
-    this.moveNodes();
+    this.renderNodes();
+    this.updateNodes();
   }
 
   public destroy() {
-    const {container} = this.props;
+    const {container, bemBlockClassName} = this.props;
 
     container.innerHTML = '';
 
-    H.removeClassList(['pure-slider'])(container);
+    H.removeClassList([
+      'pure-slider',
+      `${bemBlockClassName}`
+    ])(container);
   }
 
   public updateCurrents(currents: View.Props['currents']) {
     this.setProps({...this.props, currents});
-    this.moveNodes();
+    this.updateNodes();
   }
 
   private percentToRange = H.percent(this.range);
 
   private correctToMin = H.sub(H.prop('min')(this.props));
 
-  private getConnectDimensions = (i: number): { size: number, translate: number } => {
+  private getClassList = (key: View.NodeKeys): string[] => {
+    const {bemBlockClassName, orientation} = this.props;
+
+    return ([
+      `pure-slider__${key}`,
+      `pure-slider__${key}_orientation_${orientation}`,
+      `${bemBlockClassName}__${key}`,
+      `${bemBlockClassName}__${key}_orientation_${orientation}`
+    ]);
+  };
+
+  private getConnectDimensions = (i: number): { size: number, pos: number } => {
     const {currents, intervals} = this.props;
 
     switch (i) {
       case 0:
         return ({
-          size: pipe(currents[0], this.correctToMin, this.percentToRange),
-          translate: 0
+          size: pipe(currents, H.headOrNone(0), this.correctToMin, this.percentToRange),
+          pos: 0
         });
       case pipe(intervals, A.size, H.dec):
         return ({
-          size: pipe(H.sub(
-            pipe(currents, A.last, O.getOrElse(constant(0)))
-          )(this.range), this.correctToMin, this.percentToRange),
-          translate: pipe(currents, A.last, O.getOrElse(constant(0)), this.correctToMin, this.percentToRange)
+          size: pipe(this.range, H.sub(pipe(currents, H.lastOrNone(0))), this.correctToMin, this.percentToRange),
+          pos: pipe(currents, H.lastOrNone(0), this.correctToMin, this.percentToRange)
         });
       default:
         return ({
-          size: pipe(H.sub(
-            pipe(currents, A.lookup(H.dec(i)), O.getOrElse(constant(0)))
-          )(
-            pipe(currents, A.lookup(i), O.getOrElse(constant(0)))
-          ), this.correctToMin, this.percentToRange),
-          translate: pipe(currents, A.lookup(H.dec(i)), O.getOrElse(constant(0)), this.correctToMin, this.percentToRange)
+          size: pipe(
+            H.sub(pipe(currents, H.nthOrNone(H.dec(i), 0)))(pipe(currents, H.nthOrNone(i, 0))),
+            this.correctToMin,
+            this.percentToRange
+          ),
+          pos: pipe(currents, H.nthOrNone(H.dec(i), 0), this.correctToMin, this.percentToRange)
         });
     }
-  }
+  };
 
-  private getHandlerDimensions = (i: number): { translate: number } => {
+  private getHandlerDimensions = (i: number): { pos: number } => {
     const {currents} = this.props;
 
-    return ({translate: pipe(currents, A.lookup(i), O.getOrElse(constant(0)), this.correctToMin, this.percentToRange)});
-  }
-
-  private getClassList = (key: View.NodeKeys): string[] => {
-    const {customBlockClassName, orientation} = this.props;
-
-    return ([
-      `pure-slider__${key}`,
-      `pure-slider__${key}_orientation_${orientation}`,
-      ...(customBlockClassName !== undefined ? [
-        `${customBlockClassName}__${key}`,
-        `${customBlockClassName}__${key}_orientation_${orientation}`
-      ] : [])
-    ]);
-  }
+    return ({pos: pipe(currents, H.nthOrNone(i, 0), this.correctToMin, this.percentToRange)});
+  };
 
   private renderBase = () => {
     const {container} = this.props;
@@ -122,7 +120,7 @@ export default class implements View.Interface {
       H.addClassList(this.getClassList('base')),
       H.appendTo(container)
     );
-  }
+  };
 
   private renderConnects = () => {
     const {intervals} = this.props;
@@ -132,29 +130,14 @@ export default class implements View.Interface {
     const intervalsIndexes = A.reduceWithIndex([] as number[], (i, xs, x: boolean) => x ? [...xs, i] : xs)(intervals);
 
     this.connectsMap = A.map((x: number) => ({
+      id: x,
       node: pipe(
         H.node('div'),
         H.addClassList(classList),
         H.appendTo(this.base)
-      ),
-      id: x
+      )
     }))(intervalsIndexes);
-  }
-
-  private moveConnect = ({node, id}: View.ConnectMap) => {
-    console.log(this);
-    const {orientation} = this.props;
-    const {translate, size} = this.getConnectDimensions(id);
-
-    switch (orientation) {
-      case 'horizontal':
-        H.setInlineStyle(`left: ${translate}%; max-width: ${size}%`)(node);
-        break;
-      case 'vertical':
-        H.setInlineStyle(`top: ${translate}%; max-height: ${size}%`)(node);
-        break;
-    }
-  }
+  };
 
   private renderHandlers = () => {
     const {currents} = this.props;
@@ -162,32 +145,70 @@ export default class implements View.Interface {
     const classList = this.getClassList('handler');
 
     this.handlersMap = A.mapWithIndex((i) => ({
+      id: i,
       node: pipe(
         H.node('div'),
         H.addClassList(classList),
         H.appendTo(this.base)
-      ),
-      id: i
+      )
     }))(currents);
+  };
+
+  private renderTooltips = () => {
+    const classList = this.getClassList('tooltip');
+
+    this.tooltipsMap = A.map((x: View.NodeMap) => ({
+      id: x.id,
+      node: pipe(H.node('span'), H.addClassList(classList), H.appendTo(x.node))
+    }))(this.handlersMap);
+  };
+
+  private renderNodes = () => {
+    this.renderBase();
+    this.renderConnects();
+    this.renderHandlers();
+    this.renderTooltips();
   }
 
-  private moveHandler = ({node, id}: View.HandlerMap) => {
+  private updateConnect = ({node, id}: View.NodeMap) => {
     const {orientation} = this.props;
-    const {translate} = this.getHandlerDimensions(id);
+    const {pos, size} = this.getConnectDimensions(id);
 
     switch (orientation) {
       case 'horizontal':
-        H.setInlineStyle(`left: calc(${translate}% - ${H.half(H.offsetWidth(node))}px)`)(node);
+        H.setInlineStyle(`left: ${pos}%; max-width: ${size}%;`)(node);
         break;
       case 'vertical':
-        H.setInlineStyle(`top: calc(${translate}% - ${H.half(H.offsetHeight(node))}px)`)(node);
+        H.setInlineStyle(`top: ${pos}%; max-height: ${size}%;`)(node);
+        break;
     }
-  }
+  };
 
-  private moveNodes = () => {
-    A.map(this.moveConnect)(this.connectsMap);
-    A.map(this.moveHandler)(this.handlersMap);
-  }
+  private updateHandler = ({node, id}: View.NodeMap) => {
+    const {orientation} = this.props;
+    const {pos} = this.getHandlerDimensions(id);
+
+    switch (orientation) {
+      case 'horizontal':
+        H.setInlineStyle(`left: calc(${pos}% - ${pipe(node, H.offsetWidth, H.half)}px);`)(node);
+        break;
+      case 'vertical':
+        H.setInlineStyle(`top: calc(${pos}% - ${pipe(node, H.offsetHeight, H.half)}px);`)(node);
+        break;
+    }
+  };
+
+  private updateTooltip = ({node, id}: View.NodeMap) => {
+    const {currents} = this.props;
+
+    pipe(node, H.setInnerText(pipe(currents, nthOrNone(id, 0), H.toString)));
+  };
+
+  private updateNodes = () => {
+    A.map(this.updateConnect)(this.connectsMap);
+    A.map(this.updateHandler)(this.handlersMap);
+    A.map(this.updateTooltip)(this.tooltipsMap);
+  };
 }
 
 

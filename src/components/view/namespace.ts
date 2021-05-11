@@ -1,30 +1,7 @@
 namespace View {
-  interface Node {
-    orientation: 'horizontal' | 'vertical',
-    classList: string[]
-  }
-
-  export interface Connect extends Node {
-    size: number,
-    translate: number
-  }
-
-  export interface Handler extends Node {
-    translate: number
-  }
-
-  export interface Tooltip extends Node {
-    innerText: string
-  }
-
-  export interface ConnectMap {
-    node: HTMLDivElement,
-    id: number
-  }
-
-  export interface HandlerMap {
-    node: HTMLDivElement,
-    id: number
+  export interface NodeMap {
+    id: number,
+    node: HTMLDivElement | HTMLSpanElement
   }
 
   export type NodeKeys = 'connect' | 'handler' | 'tooltip' | 'base';
@@ -38,9 +15,9 @@ namespace View {
     orientation: 'vertical' | 'horizontal',
     tooltipOptions: {
       enabled: boolean,
-      alwaysShown: boolean
+      alwaysShown?: boolean
     },
-    customBlockClassName?: string,
+    bemBlockClassName?: string,
     onDragHandler: (index: number, coordinate: number) => void
   }
 

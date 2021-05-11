@@ -19,3 +19,5 @@ view.setProps({
 });
 
 view.render();
+
+view.updateCurrents([6, 7])
