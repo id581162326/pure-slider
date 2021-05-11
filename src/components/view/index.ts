@@ -18,27 +18,15 @@ export default class implements View.Interface {
   }
 
   public render: () => void = () => {
-    const {container, bemBlockClassName} = this.props;
-
-    H.addClassList([
-      'pure-slider-base',
-      `${bemBlockClassName}`
-    ])(container);
-
+    this.renderContainer();
     this.renderNodes();
     this.updateNodes();
     this.initEventListeners();
   };
 
   public destroy: () => void = () => {
-    const {container, bemBlockClassName} = this.props;
-
-    container.innerHTML = '';
-
-    H.removeClassList([
-      'pure-slider-base',
-      `${bemBlockClassName}`
-    ])(container);
+    this.removeEventListeners();
+    this.clearContainer();
   };
 
   public updateCurrents: (xs: View.Props['currents']) => void = (currents) => {
@@ -112,6 +100,15 @@ export default class implements View.Interface {
     const {currents} = this.props;
 
     return ({pos: pipe(currents, H.nthOrNone(i, 0), this.correctToMin, this.percentOfRange)});
+  };
+
+  private renderContainer: () => void = () => {
+    const {container, bemBlockClassName} = this.props;
+
+    H.addClassList([
+      'pure-slider-base',
+      `${bemBlockClassName}`
+    ])(container);
   };
 
   private renderBase: () => void = () => {
@@ -212,6 +209,8 @@ export default class implements View.Interface {
     A.map(this.updateTooltip)(this.tooltipsMap);
   };
 
+  private listeners: View.Listeners = {};
+
   private onDragHandler: (i: number) => (x: number) => void = (index) => (coord) => {
     const {onDragHandler} = this.props;
 
@@ -223,23 +222,61 @@ export default class implements View.Interface {
 
     switch (orientation) {
       case 'horizontal':
-        pipe(currents, H.nthOrNone(i, 0), H.add(pipe(x, H.sub(n.getBoundingClientRect().x), this.pxToNum)), this.onDragHandler(i));
+        pipe(
+          currents,
+          H.nthOrNone(i, 0), H.add(pipe(x, H.sub(n.getBoundingClientRect().x), this.pxToNum)),
+          this.onDragHandler(i)
+        );
         break;
       case 'vertical':
-        pipe(currents, H.nthOrNone(i, 0), H.add(pipe(y, H.sub(n.getBoundingClientRect().y), this.pxToNum)), this.onDragHandler(i));
+        pipe(
+          currents,
+          H.nthOrNone(i, 0), H.add(pipe(y, H.sub(n.getBoundingClientRect().y), this.pxToNum)),
+          this.onDragHandler(i)
+        );
         break;
     }
   };
 
-  private addDragListener: (o: View.NodeMap) => void = ({id, node}) => {
+  private setDragListener: (t: 'add' | 'remove') => (o: View.NodeMap) => void = (t) => ({id, node}) => {
     const listener = this.getDragListener(id, node as HTMLDivElement);
 
-    H.addEventListener('mousedown', () => H.addEventListener('mousemove', listener)(window))(node);
-    H.addEventListener('mouseup', () => H.removeEventListener('mousemove', listener)(window))(window);
+    if (!(this.listeners.startDragListener || this.listeners.stopDragListener)) {
+      this.listeners.startDragListener = () => H.addEventListener('mousemove', listener)(window);
+      this.listeners.stopDragListener = () => H.removeEventListener('mousemove', listener)(window);
+    }
+
+    switch (t) {
+      case 'add': {
+        H.addEventListener('mousedown', this.listeners.startDragListener as (e: MouseEvent) => any)(node);
+        H.addEventListener('mouseup', this.listeners.stopDragListener as (e: MouseEvent) => any)(window);
+        break;
+      }
+      case 'remove': {
+        H.removeEventListener('mousedown', this.listeners.startDragListener as (e: MouseEvent) => any)(node);
+        H.removeEventListener('mouseup', this.listeners.stopDragListener as (e: MouseEvent) => any)(window);
+        break;
+      }
+    }
   };
 
   private initEventListeners: () => void = () => {
-    A.map(this.addDragListener)(this.handlersMap);
+    A.map(this.setDragListener('add'))(this.handlersMap);
+  };
+
+  private removeEventListeners: () => void = () => {
+    A.map(this.setDragListener('remove'))(this.handlersMap);
+  };
+
+  private clearContainer = () => {
+    const {container, bemBlockClassName} = this.props;
+
+    container.innerHTML = '';
+
+    H.removeClassList([
+      'pure-slider-base',
+      `${bemBlockClassName}`
+    ])(container);
   };
 }
 
