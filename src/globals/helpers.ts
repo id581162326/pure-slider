@@ -3,73 +3,95 @@ import * as A from 'fp-ts/Array';
 
 import {constant, pipe} from 'fp-ts/function';
 
-export const trace = <T>(x: T): T => {
+type traceSignature = <T>(x: T) => T;
+export const trace: traceSignature = (x) => {
   console.log(x);
 
   return (x)
 }
 
+type toStringSignature = (x: number) => string;
+export const toString: toStringSignature = (x) => x.toString();
 
-export const toString = (x: number): string => x.toString();
+type propSignature = <T>(k: keyof T) => (o: T) => T[keyof T];
+export const prop: propSignature = (k) => (o) => o[k];
 
-export const prop = <T>(k: keyof T): ((o: T) => T[keyof T]) => (o) => o[k];
+type nthOrNoneSignature = <T>(n: number, none: T) => (xs: T[]) => T ;
+export const nthOrNone: nthOrNoneSignature = (n, none) => (xs) => pipe(xs, A.lookup(n), O.getOrElse(constant(none)));
 
-export const nthOrNone = <T>(n: number, none: T): (xs: T[]) => T => (xs) => pipe(xs, A.lookup(n), O.getOrElse(constant(none)));
+type lastOrNoneSignature = <T>(none: T) => (xs: T[]) => T;
+export const lastOrNone: lastOrNoneSignature = (none) => (xs) => pipe(xs, A.last, O.getOrElse(constant(none)));
 
-export const lastOrNone = <T>(none: T): (xs: T[]) => T => (xs) => pipe(xs, A.last, O.getOrElse(constant(none)));
-
-export const headOrNone = <T>(none: T): (xs: T[]) => T => (xs) => pipe(xs, A.head, O.getOrElse(constant(none)));
-
-
-export const sub = (x: number): (y: number) => number => (y) => pipe(y, O.fromNullable,O.getOrElse(constant(0))) - x;
-
-export const add = (x: number): (y: number) => number => y => x + pipe(y, O.fromNullable, O.getOrElse(constant(0)));
-
-export const dec = (x: number): number => sub(1)(x);
-
-export const inc = (x: number): number => add(1)(x);
-
-export const div = (x: number): (y: number) => number => (y) => y / x;
-
-export const mult = (x: number): (y: number) => number => (y) => x * y;
-
-export const half = (x: number): number => div(2)(x);
-
-export const percent = (x: number): (y: number) => number => (y) => pipe(y, div(x), mult(100));
+type headOrNoneSignature = <T>(none: T) => (xs: T[]) => T;
+export const headOrNone: headOrNoneSignature = (none) => (xs) => pipe(xs, A.head, O.getOrElse(constant(none)));
 
 
-export const node = <T extends keyof HTMLElementTagNameMap>(n: T): HTMLElementTagNameMap[T] => document.createElement(n);
+type subSignature = (x: number) => (y: number) => number;
+export const sub: subSignature = (x) => (y) => pipe(y, O.fromNullable,O.getOrElse(constant(0))) - x;
 
-export const appendTo = <T extends HTMLElement, K extends HTMLElement>(p: T): (c: K) => K => (c) => {
+type addSignature = (x: number) => (y: number) => number;
+export const add: addSignature = (x) => (y) => x + pipe(y, O.fromNullable, O.getOrElse(constant(0)));
+
+type decSignature = (x: number) => number;
+export const dec: decSignature = (x) => sub(1)(x);
+
+type incSignature = (x: number) => number;
+export const inc: incSignature = (x) => add(1)(x);
+
+type divSignature = (x: number) => (y: number) => number;
+export const div: divSignature = (x) => (y) => y / x;
+
+type multSignature = (x: number) => (y: number) => number;
+export const mult: multSignature = (x) => (y) => x * y;
+
+type halfSignature = (x: number) => number;
+export const half: halfSignature = (x) => div(2)(x);
+
+type percentSignature = (x: number) => (y: number) => number;
+export const percent: percentSignature = (x) => (y) => pipe(y, div(x), mult(100));
+
+
+type nodeSignature = <T extends keyof HTMLElementTagNameMap>(n: T) => HTMLElementTagNameMap[T];
+export const node: nodeSignature = (n) => document.createElement(n);
+
+type appendToSignature = <T extends HTMLElement, K extends HTMLElement>(p: T) => (c: K) => K
+export const appendTo: appendToSignature = (p) => (c) => {
   p.appendChild(c);
 
   return (c);
 };
 
-export const addClassList = <T extends HTMLElement>(xs: string[]): (n: T) => T => (n) => {
+type addClassListSignature = <T extends HTMLElement>(xs: string[]) => (n: T) => T;
+export const addClassList: addClassListSignature = (xs) => (n) => {
   n.classList.add(...xs);
 
   return (n);
 };
 
-export const removeClassList = <T extends HTMLElement>(xs: string[]): (n: T) => T => (n) => {
+type removeClassListSignature = <T extends HTMLElement>(xs: string[]) => (n: T) => T;
+export const removeClassList: removeClassListSignature = (xs) => (n) => {
   n.classList.remove(...xs);
 
   return (n);
 };
 
-export const setInlineStyle = <T extends HTMLElement>(x: string): (n: T) => T => (n) => {
+
+type setInlineStyleSignature = <T extends HTMLElement>(x: string) => (n: T) => T;
+export const setInlineStyle: setInlineStyleSignature = (x) => (n) => {
   n.style.cssText = x;
 
   return (n);
 };
 
-export const setInnerText = <T extends HTMLElement>(x: string): (n: T) => T => (n) => {
+type setInnerTextSignature = <T extends HTMLElement>(x: string) => (n: T) => T;
+export const setInnerText: setInnerTextSignature = (x) => (n) => {
   n.innerText = x;
 
   return (n);
 };
 
-export const offsetWidth = (n: HTMLElement): number => n.offsetWidth;
+type offsetWidthSignature = (n: HTMLElement) => number;
+export const offsetWidth: offsetWidthSignature = (n) => n.offsetWidth;
 
-export const offsetHeight = (n: HTMLElement): number => n.offsetHeight;
+type offsetHeightSignature = (n: HTMLElement) => number;
+export const offsetHeight: offsetHeightSignature = (n) => n.offsetHeight;

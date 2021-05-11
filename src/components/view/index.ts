@@ -28,7 +28,7 @@ export default class implements View.Interface {
     console.log(this.props);
   }
 
-  public render() {
+  public render: () => void = () => {
     const {container, bemBlockClassName} = this.props;
 
     H.addClassList([
@@ -40,7 +40,7 @@ export default class implements View.Interface {
     this.updateNodes();
   }
 
-  public destroy() {
+  public destroy: () => void = () => {
     const {container, bemBlockClassName} = this.props;
 
     container.innerHTML = '';
@@ -51,7 +51,7 @@ export default class implements View.Interface {
     ])(container);
   }
 
-  public updateCurrents(currents: View.Props['currents']) {
+  public updateCurrents: (xs: View.Props['currents']) => void = (currents) => {
     this.setProps({...this.props, currents});
     this.updateNodes();
   }
@@ -64,13 +64,13 @@ export default class implements View.Interface {
 
   private base: HTMLDivElement = document.createElement('div');
 
-  private range = (): number => H.sub(this.props.min)(this.props.max);
+  private range: () => number = () => H.sub(this.props.min)(this.props.max);
 
-  private percentToRange = (x: number): number => pipe(x, H.percent(this.range()));
+  private percentToRange: (x: number) => number = (x) => pipe(x, H.percent(this.range()));
 
-  private correctToMin = (x: number): number => pipe(x, H.sub(this.props.min));
+  private correctToMin: (x: number) => number = (x) => pipe(x, H.sub(this.props.min));
 
-  private getClassList = (key: View.NodeKeys): string[] => {
+  private getClassList: (k: View.NodeKeys) => string[] = (key) => {
     const {bemBlockClassName, orientation} = this.props;
 
     return ([
@@ -81,7 +81,7 @@ export default class implements View.Interface {
     ]);
   };
 
-  private getConnectDimensions = (i: number): { size: number, pos: number } => {
+  private getConnectDimensions: (i: number) => { size: number, pos: number } = (i) => {
     const {currents, intervals} = this.props;
 
     switch (i) {
@@ -107,13 +107,13 @@ export default class implements View.Interface {
     }
   };
 
-  private getHandlerDimensions = (i: number): { pos: number } => {
+  private getHandlerDimensions: (i: number) => { pos: number } = (i) => {
     const {currents} = this.props;
 
     return ({pos: pipe(currents, H.nthOrNone(i, 0), this.correctToMin, this.percentToRange)});
   };
 
-  private renderBase = () => {
+  private renderBase: () => void = () => {
     const {container} = this.props;
 
     this.base = pipe(
@@ -123,7 +123,7 @@ export default class implements View.Interface {
     );
   };
 
-  private renderConnects = () => {
+  private renderConnects: () => void = () => {
     const {intervals} = this.props;
 
     const classList = this.getClassList('connect');
@@ -140,7 +140,7 @@ export default class implements View.Interface {
     }))(intervalsIndexes);
   };
 
-  private renderHandlers = () => {
+  private renderHandlers: () => void = () => {
     const {currents} = this.props;
 
     const classList = this.getClassList('handler');
@@ -155,7 +155,7 @@ export default class implements View.Interface {
     }))(currents);
   };
 
-  private renderTooltips = () => {
+  private renderTooltips: () => void = () => {
     const classList = this.getClassList('tooltip');
 
     this.tooltipsMap = A.map((x: View.NodeMap) => ({
@@ -164,14 +164,14 @@ export default class implements View.Interface {
     }))(this.handlersMap);
   };
 
-  private renderNodes = () => {
+  private renderNodes: () => void = () => {
     this.renderBase();
     this.renderConnects();
     this.renderHandlers();
     this.renderTooltips();
   }
 
-  private updateConnect = ({node, id}: View.NodeMap) => {
+  private updateConnect: (nodeMap: View.NodeMap) => void = ({id, node}) => {
     const {orientation} = this.props;
     const {pos, size} = this.getConnectDimensions(id);
 
@@ -185,7 +185,7 @@ export default class implements View.Interface {
     }
   };
 
-  private updateHandler = ({node, id}: View.NodeMap) => {
+  private updateHandler: (nodeMap: View.NodeMap) => void = ({id, node}) => {
     const {orientation} = this.props;
     const {pos} = this.getHandlerDimensions(id);
 
@@ -199,13 +199,13 @@ export default class implements View.Interface {
     }
   };
 
-  private updateTooltip = ({node, id}: View.NodeMap) => {
+  private updateTooltip: (nodeMap: View.NodeMap) => void = ({id, node}) => {
     const {currents} = this.props;
 
     pipe(node, H.setInnerText(pipe(currents, H.nthOrNone(id, 0), H.toString)));
   };
 
-  private updateNodes = () => {
+  private updateNodes: () => void = () => {
     A.map(this.updateConnect)(this.connectsMap);
     A.map(this.updateHandler)(this.handlersMap);
     A.map(this.updateTooltip)(this.tooltipsMap);
