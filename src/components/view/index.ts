@@ -1,8 +1,7 @@
 import * as A from 'fp-ts/Array';
-import {pipe} from 'fp-ts/function';
+import {flow, pipe} from 'fp-ts/function';
 
 import * as H from '../../globals/helpers';
-import {nthOrNone} from '../../globals/helpers';
 
 import View from './namespace';
 import './styles.css';
@@ -19,29 +18,21 @@ export default class implements View.Interface {
     tooltipOptions: {
       enabled: false
     },
-    bemBlockClassName: 'themed-slider',
+    bemBlockClassName: 'pure-slider-theme',
     onDragHandler: (i: number, coord: number) => console.log(i, coord)
   };
 
-  private connectsMap: View.NodeMap[] = [];
-
-  private handlersMap: View.NodeMap[] = [];
-
-  private tooltipsMap: View.NodeMap[] = [];
-
-  private base: HTMLDivElement = document.createElement('div');
-
-  private range: number = H.sub(H.prop('min')(this.props))(H.prop('max')(this.props));
-
   public setProps(props: View.Props) {
     this.props = {...this.props, ...props};
+
+    console.log(this.props);
   }
 
   public render() {
     const {container, bemBlockClassName} = this.props;
 
     H.addClassList([
-      'pure-slider',
+      'pure-slider-base',
       `${bemBlockClassName}`
     ])(container);
 
@@ -55,7 +46,7 @@ export default class implements View.Interface {
     container.innerHTML = '';
 
     H.removeClassList([
-      'pure-slider',
+      'pure-slider-base',
       `${bemBlockClassName}`
     ])(container);
   }
@@ -65,16 +56,26 @@ export default class implements View.Interface {
     this.updateNodes();
   }
 
-  private percentToRange = H.percent(this.range);
+  private connectsMap: View.NodeMap[] = [];
 
-  private correctToMin = H.sub(H.prop('min')(this.props));
+  private handlersMap: View.NodeMap[] = [];
+
+  private tooltipsMap: View.NodeMap[] = [];
+
+  private base: HTMLDivElement = document.createElement('div');
+
+  private range = (): number => H.sub(this.props.min)(this.props.max);
+
+  private percentToRange = (x: number): number => pipe(x, H.percent(this.range()));
+
+  private correctToMin = (x: number): number => pipe(x, H.sub(this.props.min));
 
   private getClassList = (key: View.NodeKeys): string[] => {
     const {bemBlockClassName, orientation} = this.props;
 
     return ([
-      `pure-slider__${key}`,
-      `pure-slider__${key}_orientation_${orientation}`,
+      `pure-slider-base__${key}`,
+      `pure-slider-base__${key}_orientation_${orientation}`,
       `${bemBlockClassName}__${key}`,
       `${bemBlockClassName}__${key}_orientation_${orientation}`
     ]);
@@ -91,7 +92,7 @@ export default class implements View.Interface {
         });
       case pipe(intervals, A.size, H.dec):
         return ({
-          size: pipe(this.range, H.sub(pipe(currents, H.lastOrNone(0))), this.correctToMin, this.percentToRange),
+          size: flow(this.range, H.sub(pipe(currents, H.lastOrNone(0), this.correctToMin)), this.percentToRange)(),
           pos: pipe(currents, H.lastOrNone(0), this.correctToMin, this.percentToRange)
         });
       default:
@@ -201,7 +202,7 @@ export default class implements View.Interface {
   private updateTooltip = ({node, id}: View.NodeMap) => {
     const {currents} = this.props;
 
-    pipe(node, H.setInnerText(pipe(currents, nthOrNone(id, 0), H.toString)));
+    pipe(node, H.setInnerText(pipe(currents, H.nthOrNone(id, 0), H.toString)));
   };
 
   private updateNodes = () => {

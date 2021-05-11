@@ -3,6 +3,12 @@ import * as A from 'fp-ts/Array';
 
 import {constant, pipe} from 'fp-ts/function';
 
+export const trace = <T>(x: T): T => {
+  console.log(x);
+
+  return (x)
+}
+
 
 export const toString = (x: number): string => x.toString();
 
@@ -15,7 +21,7 @@ export const lastOrNone = <T>(none: T): (xs: T[]) => T => (xs) => pipe(xs, A.las
 export const headOrNone = <T>(none: T): (xs: T[]) => T => (xs) => pipe(xs, A.head, O.getOrElse(constant(none)));
 
 
-export const sub = (x: number): (y: number) => number => (y) => pipe(y, O.fromNullable, O.getOrElse(constant(0))) - x;
+export const sub = (x: number): (y: number) => number => (y) => pipe(y, O.fromNullable,O.getOrElse(constant(0))) - x;
 
 export const add = (x: number): (y: number) => number => y => x + pipe(y, O.fromNullable, O.getOrElse(constant(0)));
 

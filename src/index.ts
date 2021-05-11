@@ -6,9 +6,9 @@ const view = new View();
 
 view.setProps({
   container: document.querySelector('.js-example-slider-1') as HTMLDivElement,
-  min: 0,
-  max: 10,
-  currents: [3, 7],
+  min: 10,
+  max: 20,
+  currents: [12, 18],
   intervals: [true, false, true],
   orientation: 'horizontal',
   tooltipOptions: {
@@ -19,5 +19,3 @@ view.setProps({
 });
 
 view.render();
-
-view.updateCurrents([6, 7])
