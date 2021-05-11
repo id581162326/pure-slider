@@ -6,9 +6,9 @@ namespace View {
 
   export type NodeKeys = 'connect' | 'handler' | 'tooltip' | 'base';
 
-  export interface Listeners  {
-    startDragListener?: (e: MouseEvent) => any,
-    stopDragListener?: (e: MouseEvent) => any
+  export interface ListenersStore  {
+    startDragListener: ((e: MouseEvent) => any)[],
+    stopDragListener: ((e: MouseEvent) => any)[]
   }
 
   export interface Props {

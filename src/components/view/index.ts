@@ -46,14 +46,14 @@ export default class implements View.Interface {
 
   private percentOfRange: (x: number) => number = (x) => pipe(x, H.percent(this.range()));
 
-  private pxToNum: (x: number) => number = (x) => {
+  private pxToNum: (x: number) => number = (px) => {
     const {orientation, container} = this.props;
 
     switch (orientation) {
       case 'horizontal':
-        return pipe(x, H.mult(this.range()), H.div(pipe(container, H.offsetWidth)), H.ceil);
+        return pipe(px, H.mult(this.range()), H.div(pipe(container, H.offsetWidth)), H.ceil);
       case 'vertical':
-        return pipe(x, H.mult(this.range()), H.div(pipe(container, H.offsetHeight)), H.ceil);
+        return pipe(px, H.mult(this.range()), H.div(pipe(container, H.offsetHeight)), H.ceil);
     }
   };
 
@@ -70,10 +70,10 @@ export default class implements View.Interface {
     ]);
   };
 
-  private getConnectDimensions: (i: number) => { size: number, pos: number } = (i) => {
+  private getConnectDimensions: (i: number) => { size: number, pos: number } = (id) => {
     const {currents, intervals} = this.props;
 
-    switch (i) {
+    switch (id) {
       case 0:
         return ({
           size: pipe(currents, H.headOrNone(0), this.correctToMin, this.percentOfRange),
@@ -87,19 +87,19 @@ export default class implements View.Interface {
       default:
         return ({
           size: pipe(
-            H.sub(pipe(currents, H.nthOrNone(H.dec(i), 0)))(pipe(currents, H.nthOrNone(i, 0))),
+            H.sub(pipe(currents, H.nthOrNone(H.dec(id), 0)))(pipe(currents, H.nthOrNone(id, 0))),
             this.correctToMin,
             this.percentOfRange
           ),
-          pos: pipe(currents, H.nthOrNone(H.dec(i), 0), this.correctToMin, this.percentOfRange)
+          pos: pipe(currents, H.nthOrNone(H.dec(id), 0), this.correctToMin, this.percentOfRange)
         });
     }
   };
 
-  private getHandlerDimensions: (i: number) => { pos: number } = (i) => {
+  private getHandlerDimensions: (i: number) => { pos: number } = (id) => {
     const {currents} = this.props;
 
-    return ({pos: pipe(currents, H.nthOrNone(i, 0), this.correctToMin, this.percentOfRange)});
+    return ({pos: pipe(currents, H.nthOrNone(id, 0), this.correctToMin, this.percentOfRange)});
   };
 
   private renderContainer: () => void = () => {
@@ -128,8 +128,8 @@ export default class implements View.Interface {
 
     const intervalsIndexes = A.reduceWithIndex([] as number[], (i, xs, x: boolean) => x ? [...xs, i] : xs)(intervals);
 
-    this.connectsMap = A.map((x: number) => ({
-      id: x,
+    this.connectsMap = A.map((id: number) => ({
+      id,
       node: pipe(
         H.node('div'),
         H.addClassList(classList),
@@ -143,8 +143,8 @@ export default class implements View.Interface {
 
     const classList = this.getClassList('handler');
 
-    this.handlersMap = A.mapWithIndex((i) => ({
-      id: i,
+    this.handlersMap = A.mapWithIndex((id) => ({
+      id,
       node: pipe(
         H.node('div'),
         H.addClassList(classList),
@@ -156,9 +156,9 @@ export default class implements View.Interface {
   private renderTooltips: () => void = () => {
     const classList = this.getClassList('tooltip');
 
-    this.tooltipsMap = A.map((x: View.NodeMap) => ({
-      id: x.id,
-      node: pipe(H.node('span'), H.addClassList(classList), H.appendTo(x.node))
+    this.tooltipsMap = A.map(({id, node}: View.NodeMap) => ({
+      id,
+      node: pipe(H.node('span'), H.addClassList(classList), H.appendTo(node))
     }))(this.handlersMap);
   };
 
@@ -209,54 +209,55 @@ export default class implements View.Interface {
     A.map(this.updateTooltip)(this.tooltipsMap);
   };
 
-  private listeners: View.Listeners = {};
-
-  private onDragHandler: (i: number) => (x: number) => void = (index) => (coord) => {
-    const {onDragHandler} = this.props;
-
-    onDragHandler(index, coord);
+  private listenersStore: View.ListenersStore = {
+    startDragListener: [],
+    stopDragListener: []
   };
 
-  private getDragListener: (i: number, n: HTMLDivElement) => (e: MouseEvent) => void = (i, n) => ({x, y}) => {
+  private onDragHandler: (i: number) => (x: number) => void = (id) => (coord) => {
+    const {onDragHandler} = this.props;
+
+    onDragHandler(id, coord);
+  };
+
+  private getDragListener: (o: View.NodeMap)  => (e: MouseEvent) => void = ({id, node}) => ({x, y}) => {
     const {orientation, currents} = this.props;
 
     switch (orientation) {
       case 'horizontal':
         pipe(
           currents,
-          H.nthOrNone(i, 0), H.add(pipe(x, H.sub(n.getBoundingClientRect().x), this.pxToNum)),
-          this.onDragHandler(i)
+          H.nthOrNone(id, 0),
+          H.add(pipe(x, H.sub(node.getBoundingClientRect().x), this.pxToNum)),
+          this.onDragHandler(id)
         );
         break;
       case 'vertical':
         pipe(
           currents,
-          H.nthOrNone(i, 0), H.add(pipe(y, H.sub(n.getBoundingClientRect().y), this.pxToNum)),
-          this.onDragHandler(i)
+          H.nthOrNone(id, 0),
+          H.add(pipe(y, H.sub(node.getBoundingClientRect().y), this.pxToNum)),
+          this.onDragHandler(id)
         );
         break;
     }
   };
 
-  private setDragListener: (t: 'add' | 'remove') => (o: View.NodeMap) => void = (t) => ({id, node}) => {
-    const listener = this.getDragListener(id, node as HTMLDivElement);
+  private setDragListener: (t: 'add' | 'remove') => (o: View.NodeMap) => void = (type) => ({id, node}) => {
+    const listener = this.getDragListener({id, node});
 
-    if (!(this.listeners.startDragListener || this.listeners.stopDragListener)) {
-      this.listeners.startDragListener = () => H.addEventListener('mousemove', listener)(window);
-      this.listeners.stopDragListener = () => H.removeEventListener('mousemove', listener)(window);
-    }
+    this.listenersStore.startDragListener = [...this.listenersStore.startDragListener, () => H.addEventListener('mousemove', listener)(window)];
+    this.listenersStore.stopDragListener = [...this.listenersStore.stopDragListener, () => H.removeEventListener('mousemove', listener)(window)];
 
-    switch (t) {
-      case 'add': {
-        H.addEventListener('mousedown', this.listeners.startDragListener as (e: MouseEvent) => any)(node);
-        H.addEventListener('mouseup', this.listeners.stopDragListener as (e: MouseEvent) => any)(window);
+    switch (type) {
+      case 'add':
+        H.addEventListener('mousedown', this.listenersStore.startDragListener[id])(node);
+        H.addEventListener('mouseup', this.listenersStore.stopDragListener[id])(window);
         break;
-      }
-      case 'remove': {
-        H.removeEventListener('mousedown', this.listeners.startDragListener as (e: MouseEvent) => any)(node);
-        H.removeEventListener('mouseup', this.listeners.stopDragListener as (e: MouseEvent) => any)(window);
+      case 'remove':
+        H.removeEventListener('mousedown', this.listenersStore.startDragListener[id])(node);
+        H.removeEventListener('mouseup', this.listenersStore.stopDragListener[id])(window);
         break;
-      }
     }
   };
 

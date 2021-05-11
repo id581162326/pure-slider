@@ -9,7 +9,7 @@ import HtmlWebpackHardDiskPlugin from 'html-webpack-harddisk-plugin';
 
 type BuildType = 'dev' | 'prod' | 'demo' | 'test';
 
-const getTypeDependingPlugins: (type: BuildType) => webpack.WebpackPluginInstance[] = type => {
+const getTypeDependingPlugins: (type: BuildType) => webpack.WebpackPluginInstance[] = (type) => {
   switch (type) {
     case 'dev':
       return ([
@@ -38,7 +38,7 @@ const getTypeDependingPlugins: (type: BuildType) => webpack.WebpackPluginInstanc
   }
 };
 
-const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = type => {
+const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = (type) => {
   switch (type) {
     case "dev":
       return ({
@@ -91,10 +91,10 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
   }
 };
 
-export const getPlugins: (type: BuildType) => webpack.WebpackPluginInstance[] = type =>
+export const getPlugins: (type: BuildType) => webpack.WebpackPluginInstance[] = (type) =>
   ([new CleanWebpackPlugin(), ...getTypeDependingPlugins(type)]);
 
-export const getRules: (type: BuildType) => webpack.RuleSetRule[] = type => ([
+export const getRules: (type: BuildType) => webpack.RuleSetRule[] = (type) => ([
   {
     test: /\.js$/,
     use: 'babel-loader',
@@ -134,7 +134,7 @@ export const getRules: (type: BuildType) => webpack.RuleSetRule[] = type => ([
   }
 ]);
 
-export const getConfig: (type: BuildType) => webpack.Configuration = type => ({
+export const getConfig: (type: BuildType) => webpack.Configuration = (type) => ({
   ...getTypeDependingConfigProps(type),
   context: path.resolve(__dirname, '..', 'src'),
   resolve: {
