@@ -18,7 +18,7 @@ namespace View {
       alwaysShown?: boolean
     },
     bemBlockClassName?: string,
-    onDragHandler: (index: number, coordinate: number) => void
+    onDragHandler: (index: number, coord: number) => void
   }
 
   export interface Interface {

@@ -3,12 +3,14 @@ import * as A from 'fp-ts/Array';
 
 import {constant, pipe} from 'fp-ts/function';
 
+
 type traceSignature = <T>(x: T) => T;
 export const trace: traceSignature = (x) => {
   console.log(x);
 
-  return (x)
-}
+  return (x);
+};
+
 
 type toStringSignature = (x: number) => string;
 export const toString: toStringSignature = (x) => x.toString();
@@ -16,7 +18,7 @@ export const toString: toStringSignature = (x) => x.toString();
 type propSignature = <T>(k: keyof T) => (o: T) => T[keyof T];
 export const prop: propSignature = (k) => (o) => o[k];
 
-type nthOrNoneSignature = <T>(n: number, none: T) => (xs: T[]) => T ;
+type nthOrNoneSignature = <T>(n: number, none: T) => (xs: T[]) => T;
 export const nthOrNone: nthOrNoneSignature = (n, none) => (xs) => pipe(xs, A.lookup(n), O.getOrElse(constant(none)));
 
 type lastOrNoneSignature = <T>(none: T) => (xs: T[]) => T;
@@ -27,10 +29,10 @@ export const headOrNone: headOrNoneSignature = (none) => (xs) => pipe(xs, A.head
 
 
 type subSignature = (x: number) => (y: number) => number;
-export const sub: subSignature = (x) => (y) => pipe(y, O.fromNullable,O.getOrElse(constant(0))) - x;
+export const sub: subSignature = (x) => (y) => y - x;
 
 type addSignature = (x: number) => (y: number) => number;
-export const add: addSignature = (x) => (y) => x + pipe(y, O.fromNullable, O.getOrElse(constant(0)));
+export const add: addSignature = (x) => (y) => x + y;
 
 type decSignature = (x: number) => number;
 export const dec: decSignature = (x) => sub(1)(x);
@@ -49,6 +51,9 @@ export const half: halfSignature = (x) => div(2)(x);
 
 type percentSignature = (x: number) => (y: number) => number;
 export const percent: percentSignature = (x) => (y) => pipe(y, div(x), mult(100));
+
+type ceilSignature = (x: number) => number;
+export const ceil: ceilSignature = (x) => Math.ceil(x);
 
 
 type nodeSignature = <T extends keyof HTMLElementTagNameMap>(n: T) => HTMLElementTagNameMap[T];
@@ -75,7 +80,6 @@ export const removeClassList: removeClassListSignature = (xs) => (n) => {
   return (n);
 };
 
-
 type setInlineStyleSignature = <T extends HTMLElement>(x: string) => (n: T) => T;
 export const setInlineStyle: setInlineStyleSignature = (x) => (n) => {
   n.style.cssText = x;
@@ -90,8 +94,26 @@ export const setInnerText: setInnerTextSignature = (x) => (n) => {
   return (n);
 };
 
-type offsetWidthSignature = (n: HTMLElement) => number;
+type offsetWidthSignature = <T extends HTMLElement>(n: T) => number;
 export const offsetWidth: offsetWidthSignature = (n) => n.offsetWidth;
 
-type offsetHeightSignature = (n: HTMLElement) => number;
+type offsetHeightSignature = <T extends HTMLElement>(n: T) => number;
 export const offsetHeight: offsetHeightSignature = (n) => n.offsetHeight;
+
+type addEventListenerSignature = <
+  T extends keyof HTMLElementEventMap,
+  K extends EventTarget>(t: T, fn: (e: HTMLElementEventMap[T]) => any) => (n: K) => K;
+export const addEventListener: addEventListenerSignature = (t, fn) => (n) => {
+  n.addEventListener(t, fn as EventListener);
+
+  return (n);
+};
+
+type removeEventListenerSignature = <
+  T extends keyof HTMLElementEventMap,
+  K extends EventTarget>(t: T, fn: (e: HTMLElementEventMap[T]) => any) => (n: K) => K;
+export const removeEventListener: removeEventListenerSignature = (t, fn) => (n) => {
+  n.removeEventListener(t, fn as EventListener);
+
+  return (n);
+};
