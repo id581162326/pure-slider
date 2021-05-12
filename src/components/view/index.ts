@@ -1,38 +1,49 @@
 import * as A from 'fp-ts/Array';
-import {flow, pipe} from 'fp-ts/function';
+import {pipe} from 'fp-ts/function';
 
 import * as H from '../../globals/helpers';
 
 import View from './namespace';
-import defaultProps from './default';
+import * as d from './defaults';
 import './styles.css';
 import './theme.css';
 
 export default class implements View.Interface {
-  public props: View.Props = defaultProps;
+  public props: View.Props = d.defaultProps;
+
+  public state: View.State = d.defaultState;
+
+  // methods
 
   public setProps(props: View.Props) {
     this.props = {...this.props, ...props};
-
-    console.log(this.props);
   }
 
-  public render: () => void = () => {
+  public setState(state: View.State) {
+    this.state = state;
+  }
+
+  public render() {
     this.renderContainer();
     this.renderNodes();
     this.updateNodes();
     this.initEventListeners();
   };
 
-  public destroy: () => void = () => {
+  public destroy() {
     this.removeEventListeners();
+    this.clearListenersStore();
     this.clearContainer();
   };
 
-  public updateCurrents: (xs: View.Props['currents']) => void = (currents) => {
-    this.setProps({...this.props, currents});
-    this.updateNodes();
+  public updateState(action: View.StateActions) {
+    switch (action.type) {
+      case 'UPDATE_HANDLERS_POSITION':
+        this.updateHandlersPosition(action.currents);
+    }
   };
+
+  // variables
 
   private connectsMap: View.NodeMap[] = [];
 
@@ -40,7 +51,9 @@ export default class implements View.Interface {
 
   private tooltipsMap: View.NodeMap[] = [];
 
-  private base: HTMLDivElement = document.createElement('div');
+  private base: HTMLDivElement = H.node('div');
+
+  // helpers
 
   private range: () => number = () => H.sub(this.props.min)(this.props.max);
 
@@ -51,9 +64,9 @@ export default class implements View.Interface {
 
     switch (orientation) {
       case 'horizontal':
-        return pipe(px, H.mult(this.range()), H.div(pipe(container, H.offsetWidth)), H.ceil);
+        return pipe(px, H.round, H.mult(this.range()), H.div(pipe(container, H.offsetWidth)), H.round);
       case 'vertical':
-        return pipe(px, H.mult(this.range()), H.div(pipe(container, H.offsetHeight)), H.ceil);
+        return pipe(px, H.round, H.mult(this.range()), H.div(pipe(container, H.offsetHeight)), H.round);
     }
   };
 
@@ -71,7 +84,8 @@ export default class implements View.Interface {
   };
 
   private getConnectDimensions: (i: number) => { size: number, pos: number } = (id) => {
-    const {currents, intervals} = this.props;
+    const {intervals} = this.props;
+    const {currents} = this.state;
 
     switch (id) {
       case 0:
@@ -81,14 +95,13 @@ export default class implements View.Interface {
         });
       case pipe(intervals, A.size, H.dec):
         return ({
-          size: flow(this.range, H.sub(pipe(currents, H.lastOrNone(0), this.correctToMin)), this.percentOfRange)(),
+          size: pipe(this.range(), H.sub(pipe(currents, H.lastOrNone(0), this.correctToMin)), this.percentOfRange),
           pos: pipe(currents, H.lastOrNone(0), this.correctToMin, this.percentOfRange)
         });
       default:
         return ({
           size: pipe(
-            H.sub(pipe(currents, H.nthOrNone(H.dec(id), 0)))(pipe(currents, H.nthOrNone(id, 0))),
-            this.correctToMin,
+            pipe(pipe(currents, H.nthOrNone(id, 0), this.correctToMin), H.sub(pipe(currents, H.nthOrNone(H.dec(id), 0), this.correctToMin))),
             this.percentOfRange
           ),
           pos: pipe(currents, H.nthOrNone(H.dec(id), 0), this.correctToMin, this.percentOfRange)
@@ -97,9 +110,18 @@ export default class implements View.Interface {
   };
 
   private getHandlerDimensions: (i: number) => { pos: number } = (id) => {
-    const {currents} = this.props;
+    const {currents} = this.state;
 
     return ({pos: pipe(currents, H.nthOrNone(id, 0), this.correctToMin, this.percentOfRange)});
+  };
+
+  // render logic
+
+  private renderNodes: () => void = () => {
+    this.renderBase();
+    this.renderConnects();
+    this.renderHandlers();
+    this.renderTooltips();
   };
 
   private renderContainer: () => void = () => {
@@ -139,7 +161,7 @@ export default class implements View.Interface {
   };
 
   private renderHandlers: () => void = () => {
-    const {currents} = this.props;
+    const {currents} = this.state;
 
     const classList = this.getClassList('handler');
 
@@ -162,11 +184,25 @@ export default class implements View.Interface {
     }))(this.handlersMap);
   };
 
-  private renderNodes: () => void = () => {
-    this.renderBase();
-    this.renderConnects();
-    this.renderHandlers();
-    this.renderTooltips();
+  // update logic
+
+  private updateHandlersPosition: (xs: View.State['currents']) => void = (_currents) => {
+    const {currents} = this.state;
+
+    this.state = {...this.state, currents: _currents};
+
+    if (H.length(currents) !== (H.length(_currents))) {
+      this.destroy();
+      this.render();
+    }
+
+    this.updateNodes();
+  }
+
+  private updateNodes: () => void = () => {
+    A.map(this.updateConnect)(this.connectsMap);
+    A.map(this.updateHandler)(this.handlersMap);
+    A.map(this.updateTooltip)(this.tooltipsMap);
   };
 
   private updateConnect: (o: View.NodeMap) => void = ({id, node}) => {
@@ -198,16 +234,12 @@ export default class implements View.Interface {
   };
 
   private updateTooltip: (o: View.NodeMap) => void = ({id, node}) => {
-    const {currents} = this.props;
+    const {currents} = this.state;
 
     pipe(node, H.setInnerText(pipe(currents, H.nthOrNone(id, 0), H.toString)));
   };
 
-  private updateNodes: () => void = () => {
-    A.map(this.updateConnect)(this.connectsMap);
-    A.map(this.updateHandler)(this.handlersMap);
-    A.map(this.updateTooltip)(this.tooltipsMap);
-  };
+  // event listeners logic
 
   private listenersStore: View.ListenersStore = {
     startDragListener: [],
@@ -217,18 +249,23 @@ export default class implements View.Interface {
   private onDragHandler: (i: number) => (x: number) => void = (id) => (coord) => {
     const {onDragHandler} = this.props;
 
-    onDragHandler(id, coord);
+    const {currents} = this.state;
+
+    const setCurrent: (i: number, x: number) => number = (i, x) => i === id ? coord : x;
+
+    onDragHandler(A.mapWithIndex(setCurrent)(currents));
   };
 
-  private getDragListener: (o: View.NodeMap)  => (e: MouseEvent) => void = ({id, node}) => ({x, y}) => {
-    const {orientation, currents} = this.props;
+  private getDragListener: (o: View.NodeMap) => (e: MouseEvent) => void = ({id, node}) => ({x, y}) => {
+    const {orientation} = this.props;
+    const {currents} = this.state;
 
     switch (orientation) {
       case 'horizontal':
         pipe(
           currents,
           H.nthOrNone(id, 0),
-          H.add(pipe(x, H.sub(node.getBoundingClientRect().x), this.pxToNum)),
+          H.add(pipe(x, H.sub(node.getBoundingClientRect().x), H.sub(pipe(node, H.offsetWidth, H.half)), this.pxToNum)),
           this.onDragHandler(id)
         );
         break;
@@ -236,7 +273,7 @@ export default class implements View.Interface {
         pipe(
           currents,
           H.nthOrNone(id, 0),
-          H.add(pipe(y, H.sub(node.getBoundingClientRect().y), this.pxToNum)),
+          H.add(pipe(y, H.sub(node.getBoundingClientRect().y), H.sub(pipe(node, H.offsetHeight, H.half)), this.pxToNum)),
           this.onDragHandler(id)
         );
         break;
@@ -269,7 +306,16 @@ export default class implements View.Interface {
     A.map(this.setDragListener('remove'))(this.handlersMap);
   };
 
-  private clearContainer = () => {
+  private clearListenersStore: () => void = () => {
+    this.listenersStore = {
+      startDragListener: [],
+      stopDragListener: []
+    };
+  };
+
+  //
+
+  private clearContainer: () => void = () => {
     const {container, bemBlockClassName} = this.props;
 
     container.innerHTML = '';

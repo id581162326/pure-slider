@@ -4,6 +4,13 @@ namespace View {
     node: HTMLDivElement | HTMLSpanElement
   }
 
+  export interface CurrentsUpdated {
+    type: 'UPDATE_HANDLERS_POSITION',
+    currents: State['currents']
+  }
+
+  export type StateActions = CurrentsUpdated;
+
   export type NodeKeys = 'connect' | 'handler' | 'tooltip' | 'base';
 
   export interface ListenersStore  {
@@ -15,7 +22,6 @@ namespace View {
     container: HTMLElement,
     min: number,
     max: number,
-    currents: number[],
     intervals: boolean[],
     orientation: 'vertical' | 'horizontal',
     tooltipOptions: {
@@ -23,15 +29,21 @@ namespace View {
       alwaysShown?: boolean
     },
     bemBlockClassName?: string,
-    onDragHandler: (index: number, coord: number) => void
+    onDragHandler: (currents: View.State['currents']) => void
+  }
+
+  export interface State {
+    currents: number[],
   }
 
   export interface Interface {
     props: Props,
+    state: State,
     render: () => void,
     destroy: () => void,
-    setProps: (newProps: Props) => void,
-    updateCurrents: (newCurrents: Props['currents']) => void
+    setProps: (props: Props) => void,
+    setState: (state: State) => void,
+    updateState: (action: StateActions) => void
   }
 }
 

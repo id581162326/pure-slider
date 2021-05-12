@@ -3,6 +3,17 @@ import * as A from 'fp-ts/Array';
 
 import {constant, pipe} from 'fp-ts/function';
 
+// debug helpers
+
+type throwErrorSignature = (name: string) => (message: string) => void;
+export const throwError: throwErrorSignature = (name) => (message) => {
+  const error = new Error();
+
+  error.name = name;
+  error.message = message;
+
+  throw error;
+};
 
 type traceSignature = <T>(x: T) => T;
 export const trace: traceSignature = (x) => {
@@ -11,12 +22,21 @@ export const trace: traceSignature = (x) => {
   return (x);
 };
 
+// prop helpers
 
 type toStringSignature = (x: number) => string;
 export const toString: toStringSignature = (x) => x.toString();
 
 type propSignature = <T>(k: keyof T) => (o: T) => T[keyof T];
 export const prop: propSignature = (k) => (o) => o[k];
+
+type identSignature = <T>(x: T) => T;
+export const ident: identSignature = (x) => x;
+
+// array helpers
+
+type lengthSignature = (xs: unknown[]) => number;
+export const length: lengthSignature = (xs) => xs.length;
 
 type nthOrNoneSignature = <T>(n: number, none: T) => (xs: T[]) => T;
 export const nthOrNone: nthOrNoneSignature = (n, none) => (xs) => pipe(xs, A.lookup(n), O.getOrElse(constant(none)));
@@ -27,6 +47,10 @@ export const lastOrNone: lastOrNoneSignature = (none) => (xs) => pipe(xs, A.last
 type headOrNoneSignature = <T>(none: T) => (xs: T[]) => T;
 export const headOrNone: headOrNoneSignature = (none) => (xs) => pipe(xs, A.head, O.getOrElse(constant(none)));
 
+// math helpers
+
+type absSignature = (x: number) => number;
+export const abs: absSignature = (x) => Math.abs(x);
 
 type subSignature = (x: number) => (y: number) => number;
 export const sub: subSignature = (x) => (y) => y - x;
@@ -52,9 +76,10 @@ export const half: halfSignature = (x) => div(2)(x);
 type percentSignature = (x: number) => (y: number) => number;
 export const percent: percentSignature = (x) => (y) => pipe(y, div(x), mult(100));
 
-type ceilSignature = (x: number) => number;
-export const ceil: ceilSignature = (x) => Math.ceil(x);
+type roundSignature = (x: number) => number;
+export const round: roundSignature = (x) => Math.round(x);
 
+// DOM helpers
 
 type nodeSignature = <T extends keyof HTMLElementTagNameMap>(n: T) => HTMLElementTagNameMap[T];
 export const node: nodeSignature = (n) => document.createElement(n);
@@ -100,8 +125,7 @@ export const offsetWidth: offsetWidthSignature = (n) => n.offsetWidth;
 type offsetHeightSignature = <T extends HTMLElement>(n: T) => number;
 export const offsetHeight: offsetHeightSignature = (n) => n.offsetHeight;
 
-type addEventListenerSignature = <
-  T extends keyof HTMLElementEventMap,
+type addEventListenerSignature = <T extends keyof HTMLElementEventMap,
   K extends EventTarget>(t: T, fn: (e: HTMLElementEventMap[T]) => any) => (n: K) => K;
 export const addEventListener: addEventListenerSignature = (t, fn) => (n) => {
   n.addEventListener(t, fn as EventListener);
@@ -109,8 +133,7 @@ export const addEventListener: addEventListenerSignature = (t, fn) => (n) => {
   return (n);
 };
 
-type removeEventListenerSignature = <
-  T extends keyof HTMLElementEventMap,
+type removeEventListenerSignature = <T extends keyof HTMLElementEventMap,
   K extends EventTarget>(t: T, fn: (e: HTMLElementEventMap[T]) => any) => (n: K) => K;
 export const removeEventListener: removeEventListenerSignature = (t, fn) => (n) => {
   n.removeEventListener(t, fn as EventListener);
