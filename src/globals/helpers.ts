@@ -33,20 +33,6 @@ export const prop: propSignature = (k) => (o) => o[k];
 type identSignature = <T>(x: T) => T;
 export const ident: identSignature = (x) => x;
 
-// array helpers
-
-type lengthSignature = (xs: unknown[]) => number;
-export const length: lengthSignature = (xs) => xs.length;
-
-type nthOrNoneSignature = <T>(n: number, none: T) => (xs: T[]) => T;
-export const nthOrNone: nthOrNoneSignature = (n, none) => (xs) => pipe(xs, A.lookup(n), O.getOrElse(constant(none)));
-
-type lastOrNoneSignature = <T>(none: T) => (xs: T[]) => T;
-export const lastOrNone: lastOrNoneSignature = (none) => (xs) => pipe(xs, A.last, O.getOrElse(constant(none)));
-
-type headOrNoneSignature = <T>(none: T) => (xs: T[]) => T;
-export const headOrNone: headOrNoneSignature = (none) => (xs) => pipe(xs, A.head, O.getOrElse(constant(none)));
-
 // math helpers
 
 type absSignature = (x: number) => number;
@@ -78,6 +64,29 @@ export const percent: percentSignature = (x) => (y) => pipe(y, div(x), mult(100)
 
 type roundSignature = (x: number) => number;
 export const round: roundSignature = (x) => Math.round(x);
+
+// array helpers
+
+type lengthSignature = (xs: unknown[]) => number;
+export const length: lengthSignature = (xs) => xs.length;
+
+type nthOrNoneSignature = <T>(n: number, none: T) => (xs: T[]) => T;
+export const nthOrNone: nthOrNoneSignature = (n, none) => (xs) => pipe(xs, A.lookup(n), O.getOrElse(constant(none)));
+
+type lastOrNoneSignature = <T>(none: T) => (xs: T[]) => T;
+export const lastOrNone: lastOrNoneSignature = (none) => (xs) => pipe(xs, A.last, O.getOrElse(constant(none)));
+
+type headOrNoneSignature = <T>(none: T) => (xs: T[]) => T;
+export const headOrNone: headOrNoneSignature = (none) => (xs) => pipe(xs, A.head, O.getOrElse(constant(none)));
+
+type subAdjacentSignature = (i: number) => (xs: number[]) => number;
+export const subAdjacent: subAdjacentSignature = (i) => (xs) => {
+  const current = nthOrNone(i, NaN)(xs);
+
+  const prev = nthOrNone(dec(i), NaN)(xs);
+
+  return (sub(prev)(current))
+}
 
 // DOM helpers
 

@@ -2,7 +2,7 @@ import * as H from '../../globals/helpers';
 
 import View from './namespace';
 
-export const defaultProps: View.Props = {
+export const props: View.Props = {
   container: document.createElement('div'),
   min: 0,
   max: 10,
@@ -15,6 +15,6 @@ export const defaultProps: View.Props = {
   onChange: (currents) => H.trace(currents)
 };
 
-export const defaultState: View.State = {
+export const state: View.State = {
   currents: [5]
 }

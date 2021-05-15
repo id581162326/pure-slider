@@ -4,12 +4,12 @@ import {pipe} from 'fp-ts/function';
 import * as H from '../../globals/helpers';
 
 import Model from './namespace';
-import * as d from './defaults';
+import * as D from './defaults';
 
 export default class implements Model.Interface {
-  public props: Model.Props = d.defaultProps;
+  public props: Model.Props = D.props;
 
-  public state: Model.State = d.defaultState;
+  public state: Model.State = D.state;
 
   // methods
 
@@ -29,16 +29,17 @@ export default class implements Model.Interface {
 
   public updateState(action: Model.StateActions) {
     switch (action.type) {
-      case 'UPDATE_CURRENTS':
+      case 'UPDATE_CURRENTS': {
         this.updateCurrents(action.currents);
+
+        break;
+      }
     }
   }
 
   // variables
 
-  private listener: Model.Listener = {
-    update: (action) => H.trace(action)
-  };
+  private listener: Model.Listener = D.listener;
 
   // update logic
 
@@ -78,11 +79,15 @@ export default class implements Model.Interface {
 
     const next = H.nthOrNone(H.inc(i), NaN)(currents);
 
-    if (!isNaN(prev) && H.sub(prev)(current) < margin) {
+    const hasPrevCond = !isNaN(prev) && H.sub(prev)(current) < margin;
+
+    const hasNextCond = !isNaN(next) && H.sub(current)(next) < margin;
+
+    if (hasPrevCond) {
       return (H.add(margin)(prev));
     }
 
-    if (!isNaN(next) && H.sub(current)(next) < margin) {
+    if (hasNextCond) {
       return (H.sub(margin)(next));
     }
 
@@ -109,7 +114,9 @@ export default class implements Model.Interface {
 
   private validateProps: (p: Model.Props) => void = (props) => {
     this.validateRange(props);
+
     this.validateStep(props);
+
     this.validateMargin(props);
   };
 

@@ -1,12 +1,18 @@
+import * as H from '../../globals/helpers'
+
 import Model from './namespace';
 
-export const defaultProps: Model.Props = {
+export const props: Model.Props = {
   min: 0,
   max: 10,
   step: 1,
   margin: 1
 };
 
-export const defaultState: Model.State = {
+export const state: Model.State = {
   currents: [5]
 };
+
+export const listener: Model.Listener = {
+  update: (a) => H.trace(a)
+}

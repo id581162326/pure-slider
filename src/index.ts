@@ -25,13 +25,13 @@ interface SliderConfig {
 
 const sliderConfigs: SliderConfig[] = [
   {
-    min: 0,
-    max: 1000,
+    min: 1500,
+    max: 3000,
     step: 100,
     margin: 100,
-    currents: [250, 750],
+    currents: [1500, 1750, 2500, 2750],
     container: document.querySelector('.js-example-slider-1') as HTMLElement,
-    intervals: [true, false, true],
+    intervals: [true, false, true, false, true],
     orientation: 'horizontal',
     tooltipOptions: {
       enabled: true,
@@ -40,11 +40,11 @@ const sliderConfigs: SliderConfig[] = [
     onChange: (currents) => H.trace(currents)
   },
   {
-    min: 0,
-    max: 1000,
+    min: 1000,
+    max: 2000,
     step: 10,
     margin: 500,
-    currents: [200, 700],
+    currents: [1300, 1700],
     container: document.querySelector('.js-example-slider-2') as HTMLElement,
     intervals: [false, true, false],
     orientation: 'horizontal',
