@@ -37,13 +37,13 @@ export default class implements Model.Interface {
   // variables
 
   private listener: Model.Listener = {
-    update: (action) => console.log(action)
+    update: (action) => H.trace(action)
   };
 
   // update logic
 
-  private updateCurrents: (xs: Model.State['currents']) => void = (newCurrents) => {
-    const corrected = this.correctCurrents(newCurrents);
+  private updateCurrents: (xs: Model.State['currents']) => void = (currents) => {
+    const corrected = this.correctCurrents(currents);
 
     this.state = {...this.state, currents: corrected};
 
@@ -55,50 +55,52 @@ export default class implements Model.Interface {
   private correctCurrents: (xs: number[]) => number[] = (newCurrents) => {
     const {currents} = this.state;
 
-    const changed: (i: number, x: number) => boolean = (i, x) => pipe(currents, H.nthOrNone(i, 0)) !== x;
+    const changed: (i: number, x: number) => boolean = (i, current) => pipe(currents, H.nthOrNone(i, NaN)) !== current;
 
-    const correct: (i: number, x: number) => number = (i, x) => changed(i, x)
-      ? pipe(x, this.correctToStep, this.correctToMargin(i), this.correctToEnds) : x;
+    const correct: (i: number, x: number) => number = (i, current) => changed(i, current)
+      ? pipe(current, this.correctToStep, this.correctToMargin(i), this.correctToEnds) : current;
 
     return (A.mapWithIndex(correct)(newCurrents));
   };
 
-  private correctToStep: (x: number) => number = (x) => {
+  private correctToStep: (x: number) => number = (current) => {
     const {step} = this.props;
 
-    return (pipe(x, H.div(step), Math.round, H.mult(step)));
+    return (pipe(current, H.div(step), Math.round, H.mult(step)));
   };
 
-  private correctToMargin: (i: number) => (x: number) => number = (i) => (x) => {
+  private correctToMargin: (i: number) => (x: number) => number = (i) => (current) => {
     const {margin} = this.props;
+
     const {currents} = this.state;
 
-    const prev = H.nthOrNone(H.dec(i), -1)(currents);
-    const next = H.nthOrNone(H.inc(i), -1)(currents);
+    const prev = H.nthOrNone(H.dec(i), NaN)(currents);
 
-      if (prev !== -1 && H.sub(prev)(x) < margin) {
-      return (H.add(margin)(prev))
+    const next = H.nthOrNone(H.inc(i), NaN)(currents);
+
+    if (!isNaN(prev) && H.sub(prev)(current) < margin) {
+      return (H.add(margin)(prev));
     }
 
-    if (next !== -1 && H.sub(x)(next) < margin) {
-      return (H.sub(margin)(next))
+    if (!isNaN(next) && H.sub(current)(next) < margin) {
+      return (H.sub(margin)(next));
     }
 
-    return (x);
-  }
+    return (current);
+  };
 
-  private correctToEnds: (x: number) => number = (x) => {
+  private correctToEnds: (x: number) => number = (current) => {
     const {min, max} = this.props;
 
-    if (x < min) {
+    if (current < min) {
       return (min);
     }
 
-    if (x > max) {
+    if (current > max) {
       return (max);
     }
 
-    return (x);
+    return (current);
   };
 
   // validate props logic

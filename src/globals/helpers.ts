@@ -22,7 +22,7 @@ export const trace: traceSignature = (x) => {
   return (x);
 };
 
-// prop helpers
+// misc helpers
 
 type toStringSignature = (x: number) => string;
 export const toString: toStringSignature = (x) => x.toString();

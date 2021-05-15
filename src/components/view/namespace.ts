@@ -29,7 +29,7 @@ namespace View {
       alwaysShown?: boolean
     },
     bemBlockClassName?: string,
-    onDragHandler: (currents: View.State['currents']) => void
+    onChange: (currents: View.State['currents']) => void
   }
 
   export interface State {

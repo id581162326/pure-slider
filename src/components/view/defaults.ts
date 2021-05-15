@@ -1,3 +1,5 @@
+import * as H from '../../globals/helpers';
+
 import View from './namespace';
 
 export const defaultProps: View.Props = {
@@ -10,7 +12,7 @@ export const defaultProps: View.Props = {
     enabled: false
   },
   bemBlockClassName: 'pure-slider-theme',
-  onDragHandler: (currents) => console.log(currents)
+  onChange: (currents) => H.trace(currents)
 };
 
 export const defaultState: View.State = {
