@@ -2,8 +2,7 @@ import * as A from 'fp-ts/Array';
 
 import * as H from './globals/helpers';
 
-import View from './components/view';
-import Model from './components/model';
+import Plugin from './plugin';
 
 import './styles.css';
 
@@ -37,14 +36,14 @@ const sliderConfigs: SliderConfig[] = [
       enabled: true,
       alwaysShown: false
     },
-    onChange: (currents) => H.trace(currents)
+    onChange: H.trace
   },
   {
     min: 1000,
     max: 2000,
     step: 10,
     margin: 500,
-    currents: [1300, 1700],
+    currents: [1200, 1800],
     container: document.querySelector('.js-example-slider-2') as HTMLElement,
     intervals: [false, true, false],
     orientation: 'horizontal',
@@ -52,7 +51,7 @@ const sliderConfigs: SliderConfig[] = [
       enabled: true,
       alwaysShown: true
     },
-    onChange: (currents) => H.trace(currents)
+    onChange: H.trace
   },
   {
     min: 0,
@@ -67,38 +66,14 @@ const sliderConfigs: SliderConfig[] = [
       enabled: true,
       alwaysShown: true
     },
-    onChange: (currents) => H.trace(currents)
+    onChange: H.trace
   }
 ];
 
+A.map((config: SliderConfig) => {
+  const plugin = new Plugin(config);
 
-A.map(({min, max, step, margin, currents, container, intervals, orientation, tooltipOptions, onChange}: SliderConfig) => {
-  const model = new Model();
-
-  const view = new View();
-
-  model.setProps({min, max, step, margin});
-
-  model.setState({currents});
-
-  view.setProps({
-    min, max, container, intervals, orientation, tooltipOptions,
-    onChange: (currents) => {
-      onChange(currents);
-      model.updateState({type: 'UPDATE_CURRENTS', currents});
-    }
-  });
-
-  view.setState({currents});
-
-  view.render();
-
-  model.setListener({
-    update: (a) => {
-      switch (a.type) {
-        case 'CURRENTS_UPDATED':
-          view.updateState({type: 'UPDATE_HANDLERS_POSITION', currents: a.currents});
-      }
-    }
-  });
+  setTimeout(() => {
+    plugin.setOrientation('horizontal');
+  }, 10000)
 })(sliderConfigs);

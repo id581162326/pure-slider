@@ -4,23 +4,23 @@ import {pipe} from 'fp-ts/function';
 
 import * as H from '../../globals/helpers';
 
-import View from './namespace';
+import V from './namespace';
 import * as D from './defaults';
 import './styles.css';
 import './theme.css';
 
-export default class implements View.Interface {
-  public props: View.Props = D.props;
+export default class implements V.Interface {
+  public props: V.Props = D.props;
 
-  public state: View.State = D.state;
+  public state: V.State = D.state;
 
   // methods
 
-  public setProps(props: View.Props) {
+  public setProps(props: V.Props) {
     this.props = {...this.props, ...props};
   }
 
-  public setState(state: View.State) {
+  public setState(state: V.State) {
     this.state = state;
   }
 
@@ -42,27 +42,31 @@ export default class implements View.Interface {
     this.clearContainer();
   };
 
-  public updateState(action: View.StateActions) {
+  public updateState(action: V.Action) {
     switch (action.type) {
       case 'UPDATE_HANDLERS_POSITION': {
         this.updateHandlersPosition(action.currents);
 
         break;
       }
+
+      case 'SET_ORIENTATION': {
+        this.setOrientation(action.orientation)
+      }
     }
   };
 
-  // variables
+  // properties
 
-  private connectsMap: View.NodeMap[] = [];
+  private connectsMap: V.NodeMap[] = [];
 
-  private handlersMap: View.NodeMap[] = [];
+  private handlersMap: V.NodeMap[] = [];
 
-  private tooltipsMap: View.NodeMap[] = [];
+  private tooltipsMap: V.NodeMap[] = [];
 
   private base: HTMLDivElement = H.node('div');
 
-  private listenersStore: View.ListenersStore = {
+  private eventListenersStore: V.EventListenersStore = {
     startDragListener: [],
     stopDragListener: []
   };
@@ -74,23 +78,27 @@ export default class implements View.Interface {
   private percentOfRange: (x: number) => number = (x) => pipe(x, H.percent(this.range()));
 
   private pxToNum: (x: number) => number = (px) => {
-    const {orientation, container} = this.props;
+    const {container} = this.props;
+
+    const {orientation} = this.state;
 
     switch (orientation) {
       case 'horizontal': {
-        return pipe(px, H.mult(this.range()), H.div(pipe(container, H.offsetWidth)), H.round);
+        return pipe(px, H.mult(this.range()), H.div(pipe(container, H.offsetWidth)), Math.round);
       }
 
       case 'vertical': {
-        return pipe(px, H.mult(this.range()), H.div(pipe(container, H.offsetHeight)), H.round);
+        return pipe(px, H.mult(this.range()), H.div(pipe(container, H.offsetHeight)), Math.round);
       }
     }
   };
 
   private correctToMin: (x: number) => number = (x) => pipe(x, H.sub(this.props.min));
 
-  private getClassList: (k: View.NodeKeys) => string[] = (key) => {
-    const {bemBlockClassName, orientation} = this.props;
+  private getClassList: (k: V.NodeKeys) => string[] = (key) => {
+    const {bemBlockClassName} = this.props;
+
+    const {orientation} = this.state;
 
     const baseClassList = [`pure-slider-base__${key}`, `pure-slider-base__${key}_orientation_${orientation}`];
 
@@ -108,7 +116,7 @@ export default class implements View.Interface {
 
     switch (id) {
       case first: {
-        const size = pipe(currents, H.headOrNone(0), this.correctToMin, this.percentOfRange);
+        const size = pipe(currents, H.headOrNone(NaN), this.correctToMin, this.percentOfRange);
 
         return ({size, pos: 0});
       }
@@ -116,7 +124,7 @@ export default class implements View.Interface {
       case last: {
         const size = pipe(currents, H.lastOrNone(NaN), this.correctToMin, H.sub(this.range()), H.abs, this.percentOfRange);
 
-        const pos = pipe(currents, H.lastOrNone(NaN), this.correctToMin, this.percentOfRange)
+        const pos = pipe(currents, H.lastOrNone(NaN), this.correctToMin, this.percentOfRange);
 
         return ({size, pos});
       }
@@ -160,7 +168,9 @@ export default class implements View.Interface {
   private renderBase: () => void = () => {
     const {container} = this.props;
 
-    this.base = pipe(H.node('div'), H.addClassList(this.getClassList('base')), H.appendTo(container));
+    const classList = this.getClassList('base');
+
+    this.base = pipe(H.node('div'), H.addClassList(classList), H.appendTo(container));
   };
 
   private renderConnects: () => void = () => {
@@ -174,7 +184,7 @@ export default class implements View.Interface {
 
     const renderConnect: () => HTMLDivElement = () => pipe(H.node('div'), H.addClassList(classList), H.appendTo(this.base));
 
-    const setConnectMap: (x: number) => View.NodeMap = (id) => ({id, node: renderConnect()});
+    const setConnectMap: (x: number) => V.NodeMap = (id) => ({id, node: renderConnect()});
 
     this.connectsMap = A.map(setConnectMap)(intervalsIndexes);
   };
@@ -186,7 +196,7 @@ export default class implements View.Interface {
 
     const renderHandler: () => HTMLDivElement = () => pipe(H.node('div'), H.addClassList(classList), H.appendTo(this.base));
 
-    const setHandlerMap: (i: number) => View.NodeMap = (id: number) => ({id, node: renderHandler()});
+    const setHandlerMap: (i: number) => V.NodeMap = (id: number) => ({id, node: renderHandler()});
 
     this.handlersMap = A.mapWithIndex(setHandlerMap)(currents);
   };
@@ -196,14 +206,24 @@ export default class implements View.Interface {
 
     const renderTooltip: <T extends HTMLElement>(p: T) => HTMLSpanElement = (parent) => pipe(H.node('span'), H.addClassList(classList), H.appendTo(parent));
 
-    const setTooltipMap: (o: View.NodeMap) => View.NodeMap = ({id, node}) => ({id, node: renderTooltip(node)});
+    const setTooltipMap: (o: V.NodeMap) => V.NodeMap = ({id, node}) => ({id, node: renderTooltip(node)});
 
     this.tooltipsMap = A.map(setTooltipMap)(this.handlersMap);
   };
 
-  // update logic
+  // set orientation action
 
-  private updateHandlersPosition: (xs: View.State['currents']) => void = (currents) => {
+  private setOrientation: (x: V.State['orientation']) => void = (orientation) => {
+    this.state = {...this.state, orientation};
+
+    this.destroy();
+
+    this.render();
+  }
+
+  // update handlers action logic
+
+  private updateHandlersPosition: (xs: V.State['currents']) => void = (currents) => {
     this.state = {...this.state, currents};
 
     this.updateNodes();
@@ -217,8 +237,8 @@ export default class implements View.Interface {
     A.map(this.updateTooltip)(this.tooltipsMap);
   };
 
-  private updateConnect: (o: View.NodeMap) => void = ({id, node}) => {
-    const {orientation} = this.props;
+  private updateConnect: (o: V.NodeMap) => void = ({id, node}) => {
+    const {orientation} = this.state;
 
     const {pos, size} = this.getConnectDimensions(id);
 
@@ -237,8 +257,8 @@ export default class implements View.Interface {
     }
   };
 
-  private updateHandler: (o: View.NodeMap) => void = ({id, node}) => {
-    const {orientation} = this.props;
+  private updateHandler: (o: V.NodeMap) => void = ({id, node}) => {
+    const {orientation} = this.state;
 
     const {pos} = this.getHandlerDimensions(id);
 
@@ -261,7 +281,7 @@ export default class implements View.Interface {
     }
   };
 
-  private updateTooltip: (o: View.NodeMap) => void = ({id, node}) => {
+  private updateTooltip: (o: V.NodeMap) => void = ({id, node}) => {
     const {currents} = this.state;
 
     const text = pipe(currents, H.nthOrNone(id, NaN), H.toString);
@@ -293,14 +313,18 @@ export default class implements View.Interface {
 
       const singleCond = isNaN(deltaNext) && isNaN(deltaPrev);
 
-      return (hasNextCond || hasPrevCond || hasNotNextButHasPrevCond || hasNotPrevButHasNextCond || singleCond ? coord : x);
+      return (hasNextCond || hasPrevCond || hasNotNextButHasPrevCond || hasNotPrevButHasNextCond || singleCond
+        ? coord
+        : x);
     };
 
     onChange(A.mapWithIndex(setNearestCurrent)(currents));
   };
 
   private clickListener: (e: MouseEvent) => void = ({x, y}) => {
-    const {orientation, min} = this.props;
+    const {min} = this.props;
+
+    const {orientation} = this.state;
 
     switch (orientation) {
       case 'horizontal': {
@@ -345,10 +369,8 @@ export default class implements View.Interface {
     onChange(A.mapWithIndex(setCorrespondingCurrent)(currents));
   };
 
-  private getDragListener: (o: View.NodeMap) => (e: MouseEvent) => void = ({id, node}) => ({x, y}) => {
-    const {orientation} = this.props;
-
-    const {currents} = this.state;
+  private getDragListener: (o: V.NodeMap) => (e: MouseEvent) => void = ({id, node}) => ({x, y}) => {
+    const {currents, orientation} = this.state;
 
     switch (orientation) {
       case 'horizontal': {
@@ -373,8 +395,8 @@ export default class implements View.Interface {
     }
   };
 
-  private setDragListener: (t: 'add' | 'remove') => (o: View.NodeMap) => void = (type) => ({id, node}) => {
-    const {startDragListener, stopDragListener} = this.listenersStore;
+  private setDragListener: (t: 'add' | 'remove') => (o: V.NodeMap) => void = (type) => ({id, node}) => {
+    const {startDragListener, stopDragListener} = this.eventListenersStore;
 
     const hasStartDragListener = pipe(startDragListener, A.lookup(id)) !== O.none;
 
@@ -383,26 +405,26 @@ export default class implements View.Interface {
     if (!(hasStartDragListener || hasStopDragListener)) {
       const listener = this.getDragListener({id, node});
 
-      this.listenersStore.startDragListener = [...this.listenersStore.startDragListener,
+      this.eventListenersStore.startDragListener = [...this.eventListenersStore.startDragListener,
         () => H.addEventListener('mousemove', listener)(window)];
 
-      this.listenersStore.stopDragListener = [...this.listenersStore.stopDragListener,
+      this.eventListenersStore.stopDragListener = [...this.eventListenersStore.stopDragListener,
         () => H.removeEventListener('mousemove', listener)(window)];
     }
 
     switch (type) {
       case 'add': {
-        H.addEventListener('mousedown', this.listenersStore.startDragListener[id])(node);
+        H.addEventListener('mousedown', this.eventListenersStore.startDragListener[id])(node);
 
-        H.addEventListener('mouseup', this.listenersStore.stopDragListener[id])(window);
+        H.addEventListener('mouseup', this.eventListenersStore.stopDragListener[id])(window);
 
         break;
       }
 
       case 'remove': {
-        H.removeEventListener('mousedown', this.listenersStore.startDragListener[id])(node);
+        H.removeEventListener('mousedown', this.eventListenersStore.startDragListener[id])(node);
 
-        H.removeEventListener('mouseup', this.listenersStore.stopDragListener[id])(window);
+        H.removeEventListener('mouseup', this.eventListenersStore.stopDragListener[id])(window);
 
         break;
       }
@@ -424,7 +446,7 @@ export default class implements View.Interface {
   };
 
   private clearListenersStore: () => void = () => {
-    this.listenersStore = {startDragListener: [], stopDragListener: []};
+    this.eventListenersStore = {startDragListener: [], stopDragListener: []};
   };
 
   // clear inner html

@@ -62,13 +62,7 @@ export const half: halfSignature = (x) => div(2)(x);
 type percentSignature = (x: number) => (y: number) => number;
 export const percent: percentSignature = (x) => (y) => pipe(y, div(x), mult(100));
 
-type roundSignature = (x: number) => number;
-export const round: roundSignature = (x) => Math.round(x);
-
 // array helpers
-
-type lengthSignature = (xs: unknown[]) => number;
-export const length: lengthSignature = (xs) => xs.length;
 
 type nthOrNoneSignature = <T>(n: number, none: T) => (xs: T[]) => T;
 export const nthOrNone: nthOrNoneSignature = (n, none) => (xs) => pipe(xs, A.lookup(n), O.getOrElse(constant(none)));

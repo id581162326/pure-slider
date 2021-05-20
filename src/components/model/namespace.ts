@@ -1,20 +1,20 @@
-namespace Model {
+namespace M {
   export interface UpdateCurrents {
     type: 'UPDATE_CURRENTS',
-    currents: State['currents']
+    currents: number[]
   }
+
+  export type ModelAction = UpdateCurrents;
 
   export interface CurrentsUpdated {
     type: 'CURRENTS_UPDATED',
-    currents: State['currents']
+    currents: number[]
   }
 
-  export type StateActions = UpdateCurrents;
-
-  export type ListenerActions = CurrentsUpdated;
+  export type ListenerAction = CurrentsUpdated;
 
   export interface Listener {
-    update: (action: ListenerActions) => void
+    update: (action: ListenerAction) => void
   }
 
   export interface Props {
@@ -31,12 +31,11 @@ namespace Model {
   export interface Interface {
     props: Props,
     state: State,
-
     setProps: (props: Props) => void,
     setState: (state: State) => void,
-    updateState: (action: StateActions) => void,
+    updateState: (action: ModelAction) => void,
     setListener: <T extends Listener>(listener: T) => void
   }
 }
 
-export default Model;
+export default M;

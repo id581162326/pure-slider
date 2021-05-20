@@ -3,31 +3,31 @@ import {pipe} from 'fp-ts/function';
 
 import * as H from '../../globals/helpers';
 
-import Model from './namespace';
+import M from './namespace';
 import * as D from './defaults';
 
-export default class implements Model.Interface {
-  public props: Model.Props = D.props;
+export default class implements M.Interface {
+  public props: M.Props = D.props;
 
-  public state: Model.State = D.state;
+  public state: M.State = D.state;
 
   // methods
 
-  public setProps(props: Model.Props) {
+  public setProps(props: M.Props) {
     this.validateProps(props);
 
     this.props = props;
   }
 
-  public setState(state: Model.State) {
+  public setState(state: M.State) {
     this.state = state;
   }
 
-  public setListener(listener: Model.Listener) {
+  public setListener(listener: M.Listener) {
     this.listener = listener;
   }
 
-  public updateState(action: Model.StateActions) {
+  public updateState(action: M.ModelAction) {
     switch (action.type) {
       case 'UPDATE_CURRENTS': {
         this.updateCurrents(action.currents);
@@ -37,13 +37,13 @@ export default class implements Model.Interface {
     }
   }
 
-  // variables
+  // properties
 
-  private listener: Model.Listener = D.listener;
+  private listener: M.Listener = D.listener;
 
   // update logic
 
-  private updateCurrents: (xs: Model.State['currents']) => void = (currents) => {
+  private updateCurrents: (xs: M.State['currents']) => void = (currents) => {
     const corrected = this.correctCurrents(currents);
 
     this.state = {...this.state, currents: corrected};
@@ -58,10 +58,11 @@ export default class implements Model.Interface {
 
     const changed: (i: number, x: number) => boolean = (i, current) => pipe(currents, H.nthOrNone(i, NaN)) !== current;
 
-    const correct: (i: number, x: number) => number = (i, current) => changed(i, current)
-      ? pipe(current, this.correctToStep, this.correctToMargin(i), this.correctToEnds) : current;
+    const correct: (i: number, x: number) => number = (i, current) => pipe(current, this.correctToStep, this.correctToMargin(i), this.correctToEnds);
 
-    return (A.mapWithIndex(correct)(newCurrents));
+    const setCurrent: (i: number, x: number) => number = (i, current) => changed(i, current) ? correct(i, current) : current;
+
+    return (A.mapWithIndex(setCurrent)(newCurrents));
   };
 
   private correctToStep: (x: number) => number = (current) => {
@@ -112,7 +113,7 @@ export default class implements Model.Interface {
 
   private invalidPropError = H.throwError('Invalid prop');
 
-  private validateProps: (p: Model.Props) => void = (props) => {
+  private validateProps: (p: M.Props) => void = (props) => {
     this.validateRange(props);
 
     this.validateStep(props);
@@ -120,7 +121,7 @@ export default class implements Model.Interface {
     this.validateMargin(props);
   };
 
-  private validateRange: (p: Model.Props) => void = (props) => {
+  private validateRange: (p: M.Props) => void = (props) => {
     const {min, max} = props;
 
     if (min < 0) {
@@ -136,7 +137,7 @@ export default class implements Model.Interface {
     }
   };
 
-  private validateStep: (p: Model.Props) => void = (props) => {
+  private validateStep: (p: M.Props) => void = (props) => {
     const {min, max, step} = props;
 
     if (step > H.sub(min)(max)) {
@@ -148,7 +149,7 @@ export default class implements Model.Interface {
     }
   };
 
-  private validateMargin: (p: Model.Props) => void = (props) => {
+  private validateMargin: (p: M.Props) => void = (props) => {
     const {min, max, margin} = props;
 
     if (margin > H.sub(min)(max)) {

@@ -7,14 +7,14 @@ export const props: View.Props = {
   min: 0,
   max: 10,
   intervals: [false, false],
-  orientation: 'horizontal',
   tooltipOptions: {
     enabled: false
   },
   bemBlockClassName: 'pure-slider-theme',
-  onChange: (currents) => H.trace(currents)
+  onChange: H.trace
 };
 
 export const state: View.State = {
-  currents: [5]
+  currents: [5],
+  orientation: 'horizontal'
 }

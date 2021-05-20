@@ -1,19 +1,24 @@
-namespace View {
+namespace V {
   export interface NodeMap {
     id: number,
     node: HTMLDivElement | HTMLSpanElement
   }
 
-  export interface CurrentsUpdated {
+  export interface UpdateHandlersPosition {
     type: 'UPDATE_HANDLERS_POSITION',
-    currents: State['currents']
+    currents: number[]
   }
 
-  export type StateActions = CurrentsUpdated;
+  export interface SetOrientation {
+    type: 'SET_ORIENTATION',
+    orientation: 'horizontal' | 'vertical'
+  }
+
+  export type Action = UpdateHandlersPosition | SetOrientation;
 
   export type NodeKeys = 'connect' | 'handler' | 'tooltip' | 'base';
 
-  export interface ListenersStore  {
+  export interface EventListenersStore  {
     startDragListener: ((e: MouseEvent) => any)[],
     stopDragListener: ((e: MouseEvent) => any)[]
   }
@@ -23,17 +28,17 @@ namespace View {
     min: number,
     max: number,
     intervals: boolean[],
-    orientation: 'vertical' | 'horizontal',
     tooltipOptions: {
       enabled: boolean,
       alwaysShown?: boolean
     },
     bemBlockClassName?: string,
-    onChange: (currents: View.State['currents']) => void
+    onChange: (currents: number[]) => void
   }
 
   export interface State {
     currents: number[],
+    orientation: 'vertical' | 'horizontal'
   }
 
   export interface Interface {
@@ -43,8 +48,8 @@ namespace View {
     destroy: () => void,
     setProps: (props: Props) => void,
     setState: (state: State) => void,
-    updateState: (action: StateActions) => void
+    updateState: (action: Action) => void
   }
 }
 
-export default View;
+export default V;

@@ -14,5 +14,5 @@ export const state: Model.State = {
 };
 
 export const listener: Model.Listener = {
-  update: (a) => H.trace(a)
+  update: H.trace
 }
