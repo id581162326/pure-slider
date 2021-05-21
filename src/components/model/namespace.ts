@@ -1,14 +1,16 @@
 namespace M {
+  export type Currents = [number] | [number, number];
+
   export interface UpdateCurrents {
     type: 'UPDATE_CURRENTS',
-    currents: number[]
+    currents: Currents
   }
 
   export type ModelAction = UpdateCurrents;
 
   export interface CurrentsUpdated {
     type: 'CURRENTS_UPDATED',
-    currents: number[]
+    currents: Currents
   }
 
   export type ListenerAction = CurrentsUpdated;
@@ -17,21 +19,20 @@ namespace M {
     update: (action: ListenerAction) => void
   }
 
-  export interface Props {
+  export interface State {
     min: number,
     max: number,
+    currents: Currents,
     step: number,
-    margin: number
+    margin: number,
+    onChangeCurrents?: (currents: Currents) => void
   }
 
   export interface State {
-    currents: number[]
   }
 
   export interface Interface {
-    props: Props,
     state: State,
-    setProps: (props: Props) => void,
     setState: (state: State) => void,
     updateState: (action: ModelAction) => void,
     setListener: <T extends Listener>(listener: T) => void

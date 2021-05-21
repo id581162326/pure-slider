@@ -1,79 +1,38 @@
 import * as A from 'fp-ts/Array';
+import {pipe} from 'fp-ts/function';
 
 import * as H from './globals/helpers';
 
-import Plugin from './plugin';
+import Slider from './slider';
+import S from './slider/namespace';
 
 import './styles.css';
 
-interface SliderConfig {
-  min: number,
-  max: number,
-  step: number,
-  margin: number,
-  currents: number[],
-  container: HTMLElement,
-  intervals: boolean[],
-  orientation: 'horizontal' | 'vertical',
-  tooltipOptions: {
-    enabled: boolean,
-    alwaysShown: boolean
-  },
-  onChange: (currents: number[]) => void
+const options = {
+  handlers: pipe(document, H.querySelector('.js-text-field__input')) as HTMLInputElement[],
+  addHandlerBtn: pipe(document, H.querySelector('.js-add-handler'))[0] as HTMLButtonElement
 }
 
-const sliderConfigs: SliderConfig[] = [
-  {
-    min: 1500,
-    max: 3000,
-    step: 100,
-    margin: 100,
-    currents: [1500, 1750, 2500, 2750],
-    container: document.querySelector('.js-example-slider-1') as HTMLElement,
-    intervals: [true, false, true, false, true],
-    orientation: 'horizontal',
-    tooltipOptions: {
-      enabled: true,
-      alwaysShown: false
-    },
-    onChange: H.trace
+const exampleConfig: S.Props = {
+  min: 0,
+  max: 10,
+  step: 1,
+  margin: 1,
+  currents: [5, 7],
+  container: pipe(document, H.querySelector('.js-example-slider'))[0],
+  intervals: [true, false, true],
+  orientation: 'horizontal',
+  tooltipOptions: {
+    enabled: true,
+    alwaysShown: true
   },
-  {
-    min: 1000,
-    max: 2000,
-    step: 10,
-    margin: 500,
-    currents: [1200, 1800],
-    container: document.querySelector('.js-example-slider-2') as HTMLElement,
-    intervals: [false, true, false],
-    orientation: 'horizontal',
-    tooltipOptions: {
-      enabled: true,
-      alwaysShown: true
-    },
-    onChange: H.trace
-  },
-  {
-    min: 0,
-    max: 1000000,
-    step: 1,
-    margin: 100,
-    currents: [50000],
-    container: document.querySelector('.js-example-slider-3') as HTMLElement,
-    intervals: [false, false],
-    orientation: 'vertical',
-    tooltipOptions: {
-      enabled: true,
-      alwaysShown: true
-    },
-    onChange: H.trace
+  onChangeCurrents: (currents: number[]) => {
+    A.mapWithIndex((i: number, x: HTMLInputElement) => {
+      x.value = pipe(currents, H.nthOrNone(i, NaN), H.toString);
+    })(options.handlers);
   }
-];
+};
 
-A.map((config: SliderConfig) => {
-  const plugin = new Plugin(config);
+const exampleSlider = new Slider(exampleConfig);
 
-  setTimeout(() => {
-    plugin.setOrientation('horizontal');
-  }, 10000)
-})(sliderConfigs);
+H.addEventListener('click', () => exampleSlider.setHandlers([4]))(options.addHandlerBtn);

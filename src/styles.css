@@ -25,16 +25,12 @@ body {
 
 .demo-page__content {
     display: grid;
-    grid-template-columns: 3fr 1fr;
+    grid-template-columns: 2fr 1fr;
     grid-template-rows: max-content repeat(auto-fill, max-content);
     grid-gap: 100px;
 }
 
-.demo-page__examples {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-gap: 20px;
-}
+/* example */
 
 .example {
     position: relative;
@@ -65,8 +61,20 @@ body {
     font-style: italic;
 }
 
-.example:nth-child(3) {
-    grid-column: 2;
-    grid-row: 1/3;
-    align-items: stretch;
+/* options */
+
+.options {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+}
+
+.options__column {
+    display: grid;
+    grid-auto-rows: max-content;
+    grid-row-gap: 20px;
+    justify-content: stretch;
+}
+
+.options__text-field .text-field__input {
+    width: 100%;
 }

@@ -7,20 +7,16 @@ import M from './namespace';
 import * as D from './defaults';
 
 export default class implements M.Interface {
-  public props: M.Props = D.props;
-
   public state: M.State = D.state;
 
   // methods
 
-  public setProps(props: M.Props) {
-    this.validateProps(props);
-
-    this.props = props;
-  }
-
   public setState(state: M.State) {
+    this.validateState(state);
+
     this.state = state;
+
+    this.onChangeCurrents(state.currents);
   }
 
   public setListener(listener: M.Listener) {
@@ -41,19 +37,31 @@ export default class implements M.Interface {
 
   private listener: M.Listener = D.listener;
 
+  // helpers
+
+  private onChangeCurrents: (xs: M.Currents) => void = (currents) => {
+    const {onChangeCurrents} = this.state;
+
+    if (onChangeCurrents) {
+      onChangeCurrents(currents);
+    }
+  }
+
   // update logic
 
-  private updateCurrents: (xs: M.State['currents']) => void = (currents) => {
+  private updateCurrents: (xs: M.Currents) => void = (currents) => {
     const corrected = this.correctCurrents(currents);
 
     this.state = {...this.state, currents: corrected};
 
     this.listener.update({type: 'CURRENTS_UPDATED', currents: corrected});
+
+    this.onChangeCurrents(corrected);
   };
 
   // correct currents logic
 
-  private correctCurrents: (xs: number[]) => number[] = (newCurrents) => {
+  private correctCurrents: (xs: M.Currents) => M.Currents = (newCurrents) => {
     const {currents} = this.state;
 
     const changed: (i: number, x: number) => boolean = (i, current) => pipe(currents, H.nthOrNone(i, NaN)) !== current;
@@ -62,19 +70,17 @@ export default class implements M.Interface {
 
     const setCurrent: (i: number, x: number) => number = (i, current) => changed(i, current) ? correct(i, current) : current;
 
-    return (A.mapWithIndex(setCurrent)(newCurrents));
+    return (A.mapWithIndex(setCurrent)(newCurrents) as M.Currents);
   };
 
   private correctToStep: (x: number) => number = (current) => {
-    const {step} = this.props;
+    const {step} = this.state;
 
     return (pipe(current, H.div(step), Math.round, H.mult(step)));
   };
 
   private correctToMargin: (i: number) => (x: number) => number = (i) => (current) => {
-    const {margin} = this.props;
-
-    const {currents} = this.state;
+    const {currents, margin} = this.state;
 
     const prev = H.nthOrNone(H.dec(i), NaN)(currents);
 
@@ -96,7 +102,7 @@ export default class implements M.Interface {
   };
 
   private correctToEnds: (x: number) => number = (current) => {
-    const {min, max} = this.props;
+    const {min, max} = this.state;
 
     if (current < min) {
       return (min);
@@ -113,7 +119,7 @@ export default class implements M.Interface {
 
   private invalidPropError = H.throwError('Invalid prop');
 
-  private validateProps: (p: M.Props) => void = (props) => {
+  private validateState: (S: M.State) => void = (props) => {
     this.validateRange(props);
 
     this.validateStep(props);
@@ -121,7 +127,7 @@ export default class implements M.Interface {
     this.validateMargin(props);
   };
 
-  private validateRange: (p: M.Props) => void = (props) => {
+  private validateRange: (p: M.State) => void = (props) => {
     const {min, max} = props;
 
     if (min < 0) {
@@ -137,7 +143,7 @@ export default class implements M.Interface {
     }
   };
 
-  private validateStep: (p: M.Props) => void = (props) => {
+  private validateStep: (p: M.State) => void = (props) => {
     const {min, max, step} = props;
 
     if (step > H.sub(min)(max)) {
@@ -149,7 +155,7 @@ export default class implements M.Interface {
     }
   };
 
-  private validateMargin: (p: M.Props) => void = (props) => {
+  private validateMargin: (p: M.State) => void = (props) => {
     const {min, max, margin} = props;
 
     if (margin > H.sub(min)(max)) {

@@ -12,16 +12,10 @@ import './theme.css';
 export default class implements V.Interface {
   public props: V.Props = D.props;
 
-  public state: V.State = D.state;
-
   // methods
 
   public setProps(props: V.Props) {
     this.props = {...this.props, ...props};
-  }
-
-  public setState(state: V.State) {
-    this.state = state;
   }
 
   public render() {
@@ -31,7 +25,7 @@ export default class implements V.Interface {
 
     this.updateNodes();
 
-    this.initEventListeners();
+    this.addEventListeners();
   };
 
   public destroy() {
@@ -39,19 +33,21 @@ export default class implements V.Interface {
 
     this.clearListenersStore();
 
+    this.clearNodeMaps();
+
     this.clearContainer();
   };
 
-  public updateState(action: V.Action) {
+  public updateProps(action: V.Action) {
     switch (action.type) {
-      case 'UPDATE_HANDLERS_POSITION': {
-        this.updateHandlersPosition(action.currents);
+      case 'SET_HANDLERS': {
+        this.updateHandlers(action.currents);
 
         break;
       }
 
       case 'SET_ORIENTATION': {
-        this.setOrientation(action.orientation)
+        this.setOrientation(action.orientation);
       }
     }
   };
@@ -78,9 +74,7 @@ export default class implements V.Interface {
   private percentOfRange: (x: number) => number = (x) => pipe(x, H.percent(this.range()));
 
   private pxToNum: (x: number) => number = (px) => {
-    const {container} = this.props;
-
-    const {orientation} = this.state;
+    const {container, orientation} = this.props;
 
     switch (orientation) {
       case 'horizontal': {
@@ -96,11 +90,12 @@ export default class implements V.Interface {
   private correctToMin: (x: number) => number = (x) => pipe(x, H.sub(this.props.min));
 
   private getClassList: (k: V.NodeKeys) => string[] = (key) => {
-    const {bemBlockClassName} = this.props;
+    const {orientation, bemBlockClassName, tooltipOptions} = this.props;
 
-    const {orientation} = this.state;
+    const baseBemBlockClassName = 'pure-slider';
 
-    const baseClassList = [`pure-slider-base__${key}`, `pure-slider-base__${key}_orientation_${orientation}`];
+    const baseClassList = [`${baseBemBlockClassName}__${key}`, `${baseBemBlockClassName}__${key}_orientation_${orientation}`,
+      ...(key === 'tooltip' && tooltipOptions.alwaysShown ? [`${baseBemBlockClassName}__${key}_shown`] : [])];
 
     const themeClassList = [`${bemBlockClassName}__${key}`, `${bemBlockClassName}__${key}_orientation_${orientation}`];
 
@@ -108,9 +103,7 @@ export default class implements V.Interface {
   };
 
   private getConnectDimensions: (i: number) => { size: number, pos: number } = (id) => {
-    const {intervals} = this.props;
-
-    const {currents} = this.state;
+    const {currents, intervals} = this.props;
 
     const first = 0, last = pipe(intervals, A.size, H.dec);
 
@@ -140,7 +133,7 @@ export default class implements V.Interface {
   };
 
   private getHandlerDimensions: (i: number) => { pos: number } = (id) => {
-    const {currents} = this.state;
+    const {currents} = this.props;
 
     const pos = pipe(currents, H.nthOrNone(id, NaN), this.correctToMin, this.percentOfRange);
 
@@ -162,7 +155,7 @@ export default class implements V.Interface {
   private renderContainer: () => void = () => {
     const {container, bemBlockClassName} = this.props;
 
-    H.addClassList(['pure-slider-base', `${bemBlockClassName}`])(container);
+    H.addClassList(['pure-slider', `${bemBlockClassName}`])(container);
   };
 
   private renderBase: () => void = () => {
@@ -190,7 +183,7 @@ export default class implements V.Interface {
   };
 
   private renderHandlers: () => void = () => {
-    const {currents} = this.state;
+    const {currents} = this.props;
 
     const classList = this.getClassList('handler');
 
@@ -213,18 +206,16 @@ export default class implements V.Interface {
 
   // set orientation action
 
-  private setOrientation: (x: V.State['orientation']) => void = (orientation) => {
-    this.state = {...this.state, orientation};
+  private setOrientation: (x: V.Orientation) => void = (orientation) => {
+    this.props = {...this.props, orientation};
 
-    this.destroy();
-
-    this.render();
-  }
+    this.reRender();
+  };
 
   // update handlers action logic
 
-  private updateHandlersPosition: (xs: V.State['currents']) => void = (currents) => {
-    this.state = {...this.state, currents};
+  private updateHandlers: (xs: V.Currents) => void = (currents) => {
+    this.props = {...this.props, currents};
 
     this.updateNodes();
   };
@@ -238,7 +229,7 @@ export default class implements V.Interface {
   };
 
   private updateConnect: (o: V.NodeMap) => void = ({id, node}) => {
-    const {orientation} = this.state;
+    const {orientation} = this.props;
 
     const {pos, size} = this.getConnectDimensions(id);
 
@@ -258,7 +249,7 @@ export default class implements V.Interface {
   };
 
   private updateHandler: (o: V.NodeMap) => void = ({id, node}) => {
-    const {orientation} = this.state;
+    const {orientation} = this.props;
 
     const {pos} = this.getHandlerDimensions(id);
 
@@ -282,7 +273,7 @@ export default class implements V.Interface {
   };
 
   private updateTooltip: (o: V.NodeMap) => void = ({id, node}) => {
-    const {currents} = this.state;
+    const {currents} = this.props;
 
     const text = pipe(currents, H.nthOrNone(id, NaN), H.toString);
 
@@ -292,9 +283,7 @@ export default class implements V.Interface {
   // on click listener logic
 
   private onClick: (x: number) => void = (coord) => {
-    const {onChange} = this.props;
-
-    const {currents} = this.state;
+    const {onChange, currents} = this.props;
 
     const setNearestCurrent: (i: number, x: number) => number = (i, x) => {
       const deltaCurrent = pipe(x, H.sub(coord), H.abs);
@@ -318,13 +307,11 @@ export default class implements V.Interface {
         : x);
     };
 
-    onChange(A.mapWithIndex(setNearestCurrent)(currents));
+    onChange(A.mapWithIndex(setNearestCurrent)(currents) as V.Currents);
   };
 
   private clickListener: (e: MouseEvent) => void = ({x, y}) => {
-    const {min} = this.props;
-
-    const {orientation} = this.state;
+    const {min, orientation} = this.props;
 
     switch (orientation) {
       case 'horizontal': {
@@ -360,17 +347,15 @@ export default class implements V.Interface {
   // on drag listener logic
 
   private onDrag: (i: number) => (x: number) => void = (id) => (coord) => {
-    const {onChange} = this.props;
-
-    const {currents} = this.state;
+    const {currents, onChange} = this.props;
 
     const setCorrespondingCurrent: (i: number, x: number) => number = (i, x) => i === id ? coord : x;
 
-    onChange(A.mapWithIndex(setCorrespondingCurrent)(currents));
+    onChange(A.mapWithIndex(setCorrespondingCurrent)(currents) as V.Currents);
   };
 
   private getDragListener: (o: V.NodeMap) => (e: MouseEvent) => void = ({id, node}) => ({x, y}) => {
-    const {currents, orientation} = this.state;
+    const {currents, orientation} = this.props;
 
     switch (orientation) {
       case 'horizontal': {
@@ -433,7 +418,7 @@ export default class implements V.Interface {
 
   // set listeners logic
 
-  private initEventListeners: () => void = () => {
+  private addEventListeners: () => void = () => {
     A.map(this.setDragListener('add'))(this.handlersMap);
 
     this.setClickListener('add')(this.base);
@@ -445,18 +430,32 @@ export default class implements V.Interface {
     this.setClickListener('remove')(this.base);
   };
 
-  private clearListenersStore: () => void = () => {
-    this.eventListenersStore = {startDragListener: [], stopDragListener: []};
-  };
-
-  // clear inner html
+  // clear logic
 
   private clearContainer: () => void = () => {
     const {container, bemBlockClassName} = this.props;
 
     container.innerHTML = '';
 
-    H.removeClassList(['pure-slider-base', `${bemBlockClassName}`])(container);
+    H.removeClassList(['pure-slider', `${bemBlockClassName}`])(container);
+  };
+
+  private clearListenersStore: () => void = () => {
+    this.eventListenersStore = {startDragListener: [], stopDragListener: []};
+  };
+
+  private clearNodeMaps: () => void = () => {
+    this.handlersMap = [];
+
+    this.connectsMap = [];
+  };
+
+  // re-render
+
+  private reRender: () => void = () => {
+    this.destroy();
+
+    this.render();
   };
 }
 

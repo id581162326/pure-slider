@@ -143,3 +143,6 @@ export const removeEventListener: removeEventListenerSignature = (t, fn) => (n) 
 
   return (n);
 };
+
+type querySelectorSignature = <T extends HTMLElement | Document, K extends HTMLElement>(s: string) => (n: T) => K[];
+export const querySelector: querySelectorSignature = (s) => (n) => Array.from(n.querySelectorAll(s));

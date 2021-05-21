@@ -1,3 +1,7 @@
+import V from '../view/namespace';
+
+import M from '../model/namespace';
+
 import C from './namespace';
 import * as D from './defaults';
 
@@ -9,39 +13,39 @@ export default class implements C.Interface {
     this.model.setListener(this.listener);
   }
 
-  public setView(view: C.View) {
+  public setView(view: V.Interface) {
     this.view = view;
   }
 
-  public setModel(model: C.Model) {
+  public setModel(model: M.Interface) {
     this.model = model;
   }
 
-  public updateState(action: C.Action) {
+  public updateProps(action: C.Action) {
     switch (action.type) {
-      case 'UPDATE_HANDLERS_POSITION': {
+      case 'SET_HANDLERS': {
         this.model.updateState({type: 'UPDATE_CURRENTS', currents: action.currents});
 
         break;
       }
 
       case 'SET_ORIENTATION': {
-        this.view.updateState({type: 'SET_ORIENTATION', orientation: action.orientation});
+        this.view.updateProps({type: 'SET_ORIENTATION', orientation: action.orientation});
       }
     }
   }
 
   // properties
 
-  private view: C.View = D.view;
+  private view: V.Interface = D.view;
 
-  private model: C.Model = D.model;
+  private model: M.Interface = D.model;
 
-  private listener: C.Listener = {
+  private listener: M.Listener = {
     update: (action) => {
       switch (action.type) {
         case 'CURRENTS_UPDATED': {
-          this.view.updateState({type: 'UPDATE_HANDLERS_POSITION', currents: action.currents});
+          this.view.updateProps({type: 'SET_HANDLERS', currents: action.currents});
 
           break;
         }

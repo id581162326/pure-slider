@@ -1,25 +1,21 @@
 import * as H from '../../globals/helpers';
 
-import * as ViewD from '../view/defaults';
+import V from '../view/namespace';
+import * as VD from '../view/defaults';
 
-import * as ModelD from '../model/defaults';
+import M from '../model/namespace';
+import * as MD from '../model/defaults';
 
-import C from './namespace';
-
-export const view: C.View = {
-  props: ViewD.props,
-  state: ViewD.state,
+export const view: V.Interface = {
+  props: VD.props,
   render: () => {},
   destroy: () => {},
   setProps: H.trace,
-  setState: H.trace,
-  updateState: H.trace
+  updateProps: H.trace
 }
 
-export const model: C.Model = {
-  props: ModelD.props,
-  state: ModelD.state,
-  setProps: H.trace,
+export const model: M.Interface = {
+  state: MD.state,
   setState: H.trace,
   updateState: H.trace,
   setListener: H.trace

@@ -75,7 +75,7 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
     case "prod":
       return ({
         mode: 'production',
-        entry: './plugin.ts',
+        entry: './slider.ts',
         output: {
           publicPath: '',
           filename: 'bundle.js',

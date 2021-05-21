@@ -6,15 +6,12 @@ export const props: View.Props = {
   container: document.createElement('div'),
   min: 0,
   max: 10,
+  currents: [5],
   intervals: [false, false],
+  orientation: 'horizontal',
   tooltipOptions: {
     enabled: false
   },
-  bemBlockClassName: 'pure-slider-theme',
+  bemBlockClassName: 'slider-default',
   onChange: H.trace
 };
-
-export const state: View.State = {
-  currents: [5],
-  orientation: 'horizontal'
-}
