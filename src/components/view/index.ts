@@ -1,8 +1,9 @@
 import * as A from 'fp-ts/Array';
+import * as NEA from 'fp-ts/NonEmptyArray';
 import * as O from 'fp-ts/Option';
 import {pipe} from 'fp-ts/function';
 
-import * as H from '../../globals/helpers';
+import * as H from '../../helpers';
 
 import V from './namespace';
 import * as D from './defaults';
@@ -69,25 +70,31 @@ export default class implements V.Interface {
 
   // helpers
 
-  private range: () => number = () => pipe(this.props.max, H.sub(this.props.min));
+  private getRange: () => number = () => pipe(this.props.range, H.subAdjacent(1));
 
-  private percentOfRange: (x: number) => number = (x) => pipe(x, H.percent(this.range()));
+  private percentOfRange: (x: number) => number = (x) => {
+    const range = this.getRange();
 
-  private pxToNum: (x: number) => number = (px) => {
-    const {container, orientation} = this.props;
-
-    switch (orientation) {
-      case 'horizontal': {
-        return pipe(px, H.mult(this.range()), H.div(pipe(container, H.offsetWidth)), Math.round);
-      }
-
-      case 'vertical': {
-        return pipe(px, H.mult(this.range()), H.div(pipe(container, H.offsetHeight)), Math.round);
-      }
-    }
+    return (pipe(x, H.percent(range)))
   };
 
-  private correctToMin: (x: number) => number = (x) => pipe(x, H.sub(this.props.min));
+  private nodeSize: <T extends HTMLElement>(n: T) => number = (node) => {
+    const {orientation} = this.props;
+
+    return (orientation === 'horizontal' ? H.offsetWidth(node) : H.offsetHeight(node));
+  }
+
+  private pxToNum: (x: number) => number = (px) => {
+    const {container} = this.props;
+
+    const containerSize = pipe(container, this.nodeSize);
+
+    const range = this.getRange();
+
+    return pipe(px, H.mult(range), H.div(containerSize), Math.round);
+  };
+
+  private correctToMin: (x: number) => number = (x) => pipe(x, H.sub(pipe(this.props.range, NEA.head)));
 
   private getClassList: (k: V.NodeKeys) => string[] = (key) => {
     const {orientation, bemBlockClassName, tooltipOptions} = this.props;
@@ -107,6 +114,8 @@ export default class implements V.Interface {
 
     const first = 0, last = pipe(intervals, A.size, H.dec);
 
+    const range = this.getRange();
+
     switch (id) {
       case first: {
         const size = pipe(currents, H.headOrNone(NaN), this.correctToMin, this.percentOfRange);
@@ -115,7 +124,7 @@ export default class implements V.Interface {
       }
 
       case last: {
-        const size = pipe(currents, H.lastOrNone(NaN), this.correctToMin, H.sub(this.range()), H.abs, this.percentOfRange);
+        const size = pipe(currents, H.lastOrNone(NaN), this.correctToMin, H.sub(range), H.abs, this.percentOfRange);
 
         const pos = pipe(currents, H.lastOrNone(NaN), this.correctToMin, this.percentOfRange);
 
@@ -143,13 +152,17 @@ export default class implements V.Interface {
   // render logic
 
   private renderNodes: () => void = () => {
+    const {tooltipOptions} = this.props;
+
     this.renderBase();
 
     this.renderConnects();
 
     this.renderHandlers();
 
-    this.renderTooltips();
+    if (tooltipOptions.enabled) {
+      this.renderTooltips();
+    }
   };
 
   private renderContainer: () => void = () => {
@@ -221,11 +234,15 @@ export default class implements V.Interface {
   };
 
   private updateNodes: () => void = () => {
+    const {tooltipOptions} = this.props;
+
     A.map(this.updateConnect)(this.connectsMap);
 
     A.map(this.updateHandler)(this.handlersMap);
 
-    A.map(this.updateTooltip)(this.tooltipsMap);
+    if (tooltipOptions.enabled) {
+      A.map(this.updateTooltip)(this.tooltipsMap);
+    }
   };
 
   private updateConnect: (o: V.NodeMap) => void = ({id, node}) => {
@@ -233,19 +250,11 @@ export default class implements V.Interface {
 
     const {pos, size} = this.getConnectDimensions(id);
 
-    switch (orientation) {
-      case 'horizontal': {
-        H.setInlineStyle(`left: ${pos}%; max-width: ${size}%;`)(node);
+    const style = orientation === 'horizontal'
+      ? `left: ${pos}%; max-width: ${size}%;`
+      : `top: ${pos}%; max-height: ${size}%;`;
 
-        break;
-      }
-
-      case 'vertical': {
-        H.setInlineStyle(`top: ${pos}%; max-height: ${size}%;`)(node);
-
-        break;
-      }
-    }
+    H.setInlineStyle(style)(node);
   };
 
   private updateHandler: (o: V.NodeMap) => void = ({id, node}) => {
@@ -253,23 +262,13 @@ export default class implements V.Interface {
 
     const {pos} = this.getHandlerDimensions(id);
 
-    switch (orientation) {
-      case 'horizontal': {
-        const offset = pipe(node, H.offsetWidth, H.half);
+    const offset = pipe(node, this.nodeSize, H.half);
 
-        H.setInlineStyle(`left: calc(${pos}% - ${offset}px);`)(node);
+    const style = orientation === 'horizontal'
+      ? `left: calc(${pos}% - ${offset}px);`
+      : `top: calc(${pos}% - ${offset}px);`;
 
-        break;
-      }
-
-      case 'vertical': {
-        const offset = pipe(node, H.offsetHeight, H.half);
-
-        H.setInlineStyle(`top: calc(${pos}% - ${offset}px);`)(node);
-
-        break;
-      }
-    }
+    H.setInlineStyle(style)(node);
   };
 
   private updateTooltip: (o: V.NodeMap) => void = ({id, node}) => {
@@ -292,7 +291,7 @@ export default class implements V.Interface {
 
       const deltaPrev = pipe(currents, H.nthOrNone(H.dec(i), NaN), H.sub(coord), H.abs);
 
-      const hasNextCond = !isNaN(deltaNext) && coord > x && deltaCurrent < deltaNext;
+      const hasNextCond = !isNaN(deltaNext) && coord > x && deltaCurrent <= deltaNext;
 
       const hasNotNextButHasPrevCond = isNaN(deltaNext) && !isNaN(deltaPrev) && coord > x;
 
@@ -302,46 +301,28 @@ export default class implements V.Interface {
 
       const singleCond = isNaN(deltaNext) && isNaN(deltaPrev);
 
-      return (hasNextCond || hasPrevCond || hasNotNextButHasPrevCond || hasNotPrevButHasNextCond || singleCond
-        ? coord
-        : x);
+      const isClosest = hasNextCond || hasPrevCond || hasNotNextButHasPrevCond || hasNotPrevButHasNextCond || singleCond;
+
+      return (isClosest ? coord : x);
     };
 
     onChange(A.mapWithIndex(setNearestCurrent)(currents) as V.Currents);
   };
 
-  private clickListener: (e: MouseEvent) => void = ({x, y}) => {
-    const {min, orientation} = this.props;
+  private clickListener: (e: MouseEvent) => void = (event) => {
+    const {range, orientation} = this.props;
 
-    switch (orientation) {
-      case 'horizontal': {
-        pipe(x, H.sub(this.base.getBoundingClientRect().x), this.pxToNum, H.add(min), this.onClick);
+    const min = pipe(range, NEA.head);
 
-        break;
-      }
+    const coordKey = orientation === 'horizontal' ? 'x' : 'y';
 
-      case 'vertical': {
-        pipe(y, H.sub(this.base.getBoundingClientRect().y), this.pxToNum, H.add(min), this.onClick);
-
-        break;
-      }
-    }
+    pipe(event[coordKey], H.sub(this.base.getBoundingClientRect()[coordKey]), this.pxToNum, H.add(min), this.onClick);
   };
 
   private setClickListener: (t: 'add' | 'remove') => (n: HTMLElement) => void = (type) => (node) => {
-    switch (type) {
-      case 'add': {
-        H.addEventListener('click', this.clickListener)(node);
-
-        break;
-      }
-
-      case 'remove': {
-        H.removeEventListener('click', this.clickListener)(node);
-
-        break;
-      }
-    }
+    type === 'add'
+      ? H.addEventListener('click', this.clickListener)(node)
+      : H.removeEventListener('click', this.clickListener)(node);
   };
 
   // on drag listener logic
@@ -354,30 +335,16 @@ export default class implements V.Interface {
     onChange(A.mapWithIndex(setCorrespondingCurrent)(currents) as V.Currents);
   };
 
-  private getDragListener: (o: V.NodeMap) => (e: MouseEvent) => void = ({id, node}) => ({x, y}) => {
+  private getDragListener: (o: V.NodeMap) => (e: MouseEvent) => void = ({id, node}) => (event) => {
     const {currents, orientation} = this.props;
 
-    switch (orientation) {
-      case 'horizontal': {
-        const offset = pipe(node, H.offsetWidth, H.half);
+    const coordKey = orientation === 'horizontal' ? 'x' : 'y';
 
-        const delta = pipe(x, H.sub(node.getBoundingClientRect().x), H.sub(offset), this.pxToNum);
+    const offset = pipe(node, this.nodeSize, H.half);
 
-        pipe(currents, H.nthOrNone(id, NaN), H.add(delta), this.onDrag(id));
+    const delta = pipe(event[coordKey], H.sub(node.getBoundingClientRect()[coordKey]), H.sub(offset), this.pxToNum);
 
-        break;
-      }
-
-      case 'vertical': {
-        const offset = pipe(node, H.offsetHeight, H.half);
-
-        const delta = pipe(y, H.sub(node.getBoundingClientRect().y), H.sub(offset), this.pxToNum);
-
-        pipe(currents, H.nthOrNone(id, NaN), H.add(delta), this.onDrag(id));
-
-        break;
-      }
-    }
+    pipe(currents, H.nthOrNone(id, NaN), H.add(delta), this.onDrag(id));
   };
 
   private setDragListener: (t: 'add' | 'remove') => (o: V.NodeMap) => void = (type) => ({id, node}) => {
@@ -397,23 +364,13 @@ export default class implements V.Interface {
         () => H.removeEventListener('mousemove', listener)(window)];
     }
 
-    switch (type) {
-      case 'add': {
-        H.addEventListener('mousedown', this.eventListenersStore.startDragListener[id])(node);
+    type === 'add'
+      ? H.addEventListener('mousedown', this.eventListenersStore.startDragListener[id])(node)
+      : H.removeEventListener('mousedown', this.eventListenersStore.startDragListener[id])(node);
 
-        H.addEventListener('mouseup', this.eventListenersStore.stopDragListener[id])(window);
-
-        break;
-      }
-
-      case 'remove': {
-        H.removeEventListener('mousedown', this.eventListenersStore.startDragListener[id])(node);
-
-        H.removeEventListener('mouseup', this.eventListenersStore.stopDragListener[id])(window);
-
-        break;
-      }
-    }
+    type === 'add'
+      ? H.addEventListener('mouseup', this.eventListenersStore.stopDragListener[id])(window)
+      : H.removeEventListener('mouseup', this.eventListenersStore.stopDragListener[id])(window);
   };
 
   // set listeners logic

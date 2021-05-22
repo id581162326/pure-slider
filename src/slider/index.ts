@@ -18,12 +18,12 @@ export default class implements S.Interface {
 
   // methods
 
-  public setHandlers(currents: V.Currents) {
-    this.controller.updateProps({type: 'SET_HANDLERS', currents});
+  public setHandlers(currents: S.Currents) {
+    this.controller.dispatch({type: 'SET_HANDLERS', currents});
   }
 
-  public setOrientation(orientation: V.Orientation) {
-    this.controller.updateProps({type: 'SET_ORIENTATION', orientation});
+  public setOrientation(orientation: S.Orientation) {
+    this.controller.dispatch({type: 'SET_ORIENTATION', orientation});
   }
 
   public getCurrents(): number[] {
@@ -43,11 +43,15 @@ export default class implements S.Interface {
   // init
 
   private init: () => void = () => {
-    const {container, min, max, step, margin, currents, intervals, orientation, tooltipOptions, onChangeCurrents} = this.props;
+    const {container, range, step, margin, currents, intervals, orientation, tooltipOptions, onChangeCurrents} = this.props;
+
+    const modelState: M.State = {range, currents, margin, step, ...(onChangeCurrents ? {onChangeCurrents} : {})};
+
+    this.model.setState(modelState);
 
     const viewProps: V.Props = {
-      container, min, max, currents, intervals, orientation, tooltipOptions,
-      onChange: (currents: V.Currents) => this.controller.updateProps({type: 'SET_HANDLERS', currents}),
+      container, range, currents, intervals, orientation, tooltipOptions,
+      onChange: (currents) => this.controller.dispatch({type: 'SET_HANDLERS', currents}),
       ...(this.props.bemBlockClassName ? {bemBlockClassName: this.props.bemBlockClassName} : {})
     };
 
@@ -55,13 +59,9 @@ export default class implements S.Interface {
 
     this.view.render();
 
-    const modelState: M.State = {min, max, currents, margin, step, ...(onChangeCurrents ? {onChangeCurrents} : {})};
-
-    this.model.setState(modelState);
+    this.controller.setModel(this.model);
 
     this.controller.setView(this.view);
-
-    this.controller.setModel(this.model);
 
     this.controller.initListener();
   };

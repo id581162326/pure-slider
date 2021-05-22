@@ -1,23 +1,30 @@
-import V from '../components/view/namespace';
-
 namespace S {
+  export type Range = [number, number]
+
+  export type Currents = [number] | [number, number]
+
+  export type Intervals = [boolean, boolean] | [boolean, boolean, boolean]
+
+  export type Orientation = 'horizontal' | 'vertical'
+
+  export type TooltipOptions = {enabled: boolean, alwaysShown?: boolean}
+
   export interface Props {
     container: HTMLElement,
-    min: number,
-    max: number,
+    range: Range,
     step: number,
     margin: number,
-    currents: V.Currents,
-    intervals: V.Intervals,
-    orientation: V.Orientation,
-    tooltipOptions: V.TooltipOptions,
+    currents: Currents,
+    intervals: Intervals,
+    orientation: Orientation,
+    tooltipOptions: TooltipOptions,
     bemBlockClassName?: string,
-    onChangeCurrents?: (currents: V.Currents) => void
+    onChangeCurrents?: (currents: Currents) => void
   }
 
   export interface Interface {
-    setOrientation: (orientation: V.Orientation) => void,
-    setHandlers: (currents: V.Currents) => void
+    setOrientation: (orientation: Orientation) => void,
+    setHandlers: (currents: Currents) => void
   }
 }
 

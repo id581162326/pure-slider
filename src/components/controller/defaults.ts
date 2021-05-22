@@ -1,4 +1,4 @@
-import * as H from '../../globals/helpers';
+import * as H from '../../helpers';
 
 import V from '../view/namespace';
 import * as VD from '../view/defaults';

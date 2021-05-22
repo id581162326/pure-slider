@@ -1,13 +1,12 @@
-import * as H from '../../globals/helpers'
+import * as H from '../../helpers'
 
 import Model from './namespace';
 
 export const state: Model.State = {
-  min: 0,
-  max: 10,
-  currents: [5],
+  range: [0, 10],
   step: 1,
-  margin: 1
+  margin: 1,
+  currents: [5]
 };
 
 export const listener: Model.Listener = {

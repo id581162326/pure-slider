@@ -36,8 +36,7 @@ namespace V {
 
   export interface Props {
     container: HTMLElement,
-    min: number,
-    max: number,
+    range: [number, number],
     orientation: Orientation,
     tooltipOptions: TooltipOptions,
     currents: Currents,
