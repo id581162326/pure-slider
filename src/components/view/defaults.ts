@@ -1,11 +1,10 @@
-import * as H from '../../globals/helpers';
+import * as H from '../../helpers';
 
 import View from './namespace';
 
 export const props: View.Props = {
   container: document.createElement('div'),
-  min: 0,
-  max: 10,
+  range: [0, 10],
   currents: [5],
   intervals: [false, false],
   orientation: 'horizontal',

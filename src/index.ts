@@ -1,7 +1,7 @@
 import * as A from 'fp-ts/Array';
 import {pipe} from 'fp-ts/function';
 
-import * as H from './globals/helpers';
+import * as H from './helpers';
 
 import Slider from './slider';
 import S from './slider/namespace';
@@ -14,11 +14,10 @@ const options = {
 }
 
 const exampleConfig: S.Props = {
-  min: 0,
-  max: 10,
-  step: 1,
-  margin: 1,
-  currents: [5, 7],
+  range: [-1000000, 1000000],
+  step: 10000,
+  margin: 100000,
+  currents: [-700010, 700010],
   container: pipe(document, H.querySelector('.js-example-slider'))[0],
   intervals: [true, false, true],
   orientation: 'horizontal',
@@ -35,4 +34,4 @@ const exampleConfig: S.Props = {
 
 const exampleSlider = new Slider(exampleConfig);
 
-H.addEventListener('click', () => exampleSlider.setHandlers([4]))(options.addHandlerBtn);
+H.addEventListener('click', () => exampleSlider.setHandlers([10000010, 754551]))(options.addHandlerBtn);

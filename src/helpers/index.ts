@@ -1,6 +1,5 @@
 import * as O from 'fp-ts/Option';
 import * as A from 'fp-ts/Array';
-
 import {constant, pipe} from 'fp-ts/function';
 
 // debug helpers
@@ -27,7 +26,7 @@ export const trace: traceSignature = (x) => {
 type toStringSignature = (x: number) => string;
 export const toString: toStringSignature = (x) => x.toString();
 
-type propSignature = <T>(k: keyof T) => (o: T) => T[keyof T];
+type propSignature = <T, K extends keyof T>(k: K) => (o: T) => T[K];
 export const prop: propSignature = (k) => (o) => o[k];
 
 type identSignature = <T>(x: T) => T;

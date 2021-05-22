@@ -1,4 +1,6 @@
 namespace M {
+  export type Range = [number, number];
+
   export type Currents = [number] | [number, number];
 
   export interface UpdateCurrents {
@@ -20,15 +22,10 @@ namespace M {
   }
 
   export interface State {
-    min: number,
-    max: number,
+    range: Range,
     currents: Currents,
     step: number,
-    margin: number,
-    onChangeCurrents?: (currents: Currents) => void
-  }
-
-  export interface State {
+    margin: number
   }
 
   export interface Interface {

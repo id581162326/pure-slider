@@ -21,7 +21,7 @@ export default class implements C.Interface {
     this.model = model;
   }
 
-  public updateProps(action: C.Action) {
+  public dispatch(action: C.Action) {
     switch (action.type) {
       case 'SET_HANDLERS': {
         this.model.updateState({type: 'UPDATE_CURRENTS', currents: action.currents});

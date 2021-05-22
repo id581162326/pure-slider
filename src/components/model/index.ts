@@ -1,7 +1,8 @@
 import * as A from 'fp-ts/Array';
+import * as NEA from 'fp-ts/NonEmptyArray';
 import {pipe} from 'fp-ts/function';
 
-import * as H from '../../globals/helpers';
+import * as H from '../../helpers';
 
 import M from './namespace';
 import * as D from './defaults';
@@ -12,11 +13,7 @@ export default class implements M.Interface {
   // methods
 
   public setState(state: M.State) {
-    this.validateState(state);
-
-    this.state = state;
-
-    this.onChangeCurrents(state.currents);
+    this.state = pipe(state, this.validateState);
   }
 
   public setListener(listener: M.Listener) {
@@ -37,26 +34,30 @@ export default class implements M.Interface {
 
   private listener: M.Listener = D.listener;
 
-  // helpers
-
-  private onChangeCurrents: (xs: M.Currents) => void = (currents) => {
-    const {onChangeCurrents} = this.state;
-
-    if (onChangeCurrents) {
-      onChangeCurrents(currents);
-    }
-  }
-
-  // update logic
+  // update currents logic
 
   private updateCurrents: (xs: M.Currents) => void = (currents) => {
-    const corrected = this.correctCurrents(currents);
+    const corrected = pipe(currents, this.validateCurrents, this.correctCurrents);
 
     this.state = {...this.state, currents: corrected};
 
     this.listener.update({type: 'CURRENTS_UPDATED', currents: corrected});
+  };
 
-    this.onChangeCurrents(corrected);
+  // validate currents logic
+
+  private validateCurrents: (xs: M.Currents) => M.Currents = (currents) => pipe(currents, this.validateByLength);
+
+  private validateByLength: (xs: M.Currents) => M.Currents = (currents) => {
+    const currentsLength = pipe(this.state, H.prop('currents'), A.size);
+
+    const newCurrentsLength = pipe(currents, A.size);
+
+    if (currentsLength !== newCurrentsLength) {
+      this.invalidStateError('Length of new currents must be equal to length of old one');
+    }
+
+    return (currents);
   };
 
   // correct currents logic
@@ -66,9 +67,16 @@ export default class implements M.Interface {
 
     const changed: (i: number, x: number) => boolean = (i, current) => pipe(currents, H.nthOrNone(i, NaN)) !== current;
 
-    const correct: (i: number, x: number) => number = (i, current) => pipe(current, this.correctToStep, this.correctToMargin(i), this.correctToEnds);
+    const correct: (i: number, x: number) => number = (i, current) => pipe(
+      current,
+      this.correctToStep,
+      this.correctToMargin(i),
+      this.correctToEnds
+    );
 
-    const setCurrent: (i: number, x: number) => number = (i, current) => changed(i, current) ? correct(i, current) : current;
+    const setCurrent: (i: number, x: number) => number = (i, current) => changed(i, current)
+      ? correct(i, current)
+      : current;
 
     return (A.mapWithIndex(setCurrent)(newCurrents) as M.Currents);
   };
@@ -102,7 +110,11 @@ export default class implements M.Interface {
   };
 
   private correctToEnds: (x: number) => number = (current) => {
-    const {min, max} = this.state;
+    const {range} = this.state;
+
+    const min = pipe(range, NEA.head);
+
+    const max = pipe(range, NEA.last);
 
     if (current < min) {
       return (min);
@@ -115,55 +127,83 @@ export default class implements M.Interface {
     return (current);
   };
 
-  // validate props logic
+  // validate state logic
 
-  private invalidPropError = H.throwError('Invalid prop');
+  private invalidStateError = H.throwError('Invalid state');
 
-  private validateState: (S: M.State) => void = (props) => {
-    this.validateRange(props);
+  private validateState: (o: M.State) => M.State = (state) => pipe(
+    state,
+    this.validateByRange,
+    this.validateByStep,
+    this.validateByMargin,
+    this.validateByCurrents
+  );
 
-    this.validateStep(props);
+  private validateByRange: (o: M.State) => M.State = (state) => {
+    const {range} = state;
 
-    this.validateMargin(props);
+    const min = pipe(range, NEA.head);
+
+    const max = pipe(range, NEA.last);
+
+    if (max < min) {
+      this.invalidStateError('Max value must not be less than min');
+    }
+
+    if (pipe(range, H.subAdjacent(1)) === 0) {
+      this.invalidStateError('Range value must not be equal to zero');
+    }
+
+    return (state);
   };
 
-  private validateRange: (p: M.State) => void = (props) => {
-    const {min, max} = props;
+  private validateByStep: (o: M.State) => M.State = (state) => {
+    const {range, step} = state;
 
-    if (min < 0) {
-      this.invalidPropError('Min value must not be less than zero');
-    }
-
-    if (max <= 0) {
-      this.invalidPropError('Max value must not be less than zero or equal to it');
-    }
-
-    if (max <= min) {
-      this.invalidPropError('Max value must not be less than min value or equal to it');
-    }
-  };
-
-  private validateStep: (p: M.State) => void = (props) => {
-    const {min, max, step} = props;
-
-    if (step > H.sub(min)(max)) {
-      this.invalidPropError('Step value must not be more than range value');
+    if (step > pipe(range, H.subAdjacent(1))) {
+      this.invalidStateError('Step value must not be more than range value');
     }
 
     if (step < 0) {
-      this.invalidPropError('Step value must not be less than zero');
+      this.invalidStateError('Step value must not be less than zero');
     }
+
+    return (state);
   };
 
-  private validateMargin: (p: M.State) => void = (props) => {
-    const {min, max, margin} = props;
+  private validateByMargin: (o: M.State) => M.State = (state) => {
+    const {range, margin} = state;
 
-    if (margin > H.sub(min)(max)) {
-      this.invalidPropError('Margin value must not be more than range value');
+    if (margin > pipe(range, H.subAdjacent(1))) {
+      this.invalidStateError('Margin value must not be more than range value');
     }
 
     if (margin < 0) {
-      this.invalidPropError('Margin value must not be less than zero');
+      this.invalidStateError('Margin value must not be less than zero');
     }
+
+    return (state);
+  };
+
+  private validateByCurrents: (o: M.State) => M.State = (state) => {
+    const {range, currents} = state;
+
+    const min = pipe(range, NEA.head);
+
+    const max = pipe(range, NEA.last);
+
+    const hasDescending = A.reduceWithIndex(false, (i, bool) => i > 0 && H.subAdjacent(i)(currents) < 0 ? true : bool);
+
+    const hasOutOfRange = A.reduce(false, (bool, x: number) => x < min || x > max ? true : bool);
+
+    if (pipe(currents, hasDescending)) {
+      this.invalidStateError('Currents must not contain descending values');
+    }
+
+    if (pipe(currents, hasOutOfRange)) {
+      this.invalidStateError('Currents must not contain values out of range');
+    }
+
+    return (state);
   };
 }

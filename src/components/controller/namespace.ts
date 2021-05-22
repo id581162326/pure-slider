@@ -9,7 +9,7 @@ namespace C {
     initListener: () => void,
     setView: (view: V.Interface) => void,
     setModel: (model: M.Interface) => void,
-    updateProps: (action: Action) => void;
+    dispatch: (action: Action) => void;
   }
 }
 
