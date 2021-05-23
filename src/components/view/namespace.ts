@@ -41,14 +41,14 @@ namespace View {
     alwaysShown: boolean
   };
 
-  export interface MoveElements {
-    type: 'MOVE_ELEMENTS',
+  export interface MoveHandlers {
+    type: 'MOVE_HANDLERS',
     currents: Currents
   }
 
-  export type Action = MoveElements;
+  export type Action = MoveHandlers;
 
-  export type Of = (o: Props) => Interface;
+  export type Of = (o: Props, s: State) => Interface;
 
   export type Update = (a: Action) => void;
 
@@ -72,20 +72,25 @@ namespace View {
 
   export type MoveAllElementsTo = (xs: Currents) => void;
 
+  export type OnChange = (currents: Currents) => void;
+
   export interface Props {
     container: HTMLElement,
     range: Range,
     orientation: Orientation,
     tooltipOptions: TooltipOptions,
-    currents: Currents,
     intervals: Intervals,
     themeBemBlockClassName?: string,
-    onChange: (currents: Currents) => void
+    onChange: OnChange
+  }
+
+  export interface State {
+    currents: Currents
   }
 
   export interface Interface {
-    destroy: () => void,
-    update: (action: Action) => void
+    destroy: Destroy,
+    update: Update
   }
 }
 

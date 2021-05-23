@@ -13,8 +13,8 @@ const options = {
 }
 
 const exampleConfig: Namespace.Props = {
-  range: [-10, 10],
-  step: 1,
+  range: [0, 10],
+  step: 3,
   margin: 1,
   currents: [-6, 6],
   container: pipe(document, H.querySelector('.js-example-slider'))[0],
@@ -27,4 +27,4 @@ const exampleConfig: Namespace.Props = {
 
 const exampleSlider = new Slider(exampleConfig);
 
-H.addEventListener('click', () => exampleSlider.setHandlers([10000010, 754551]))(options.addHandlerBtn);
+H.addEventListener('click', () => exampleSlider.moveHandlers([10000010, 754551]))(options.addHandlerBtn);

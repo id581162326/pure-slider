@@ -15,21 +15,23 @@ import './styles.css';
 import './theme.css';
 
 class View implements Namespace.Interface {
-  static readonly of: Namespace.Of = (props) => new View(props);
+  static readonly of: Namespace.Of = (props, state) => new View(props, state);
 
   public readonly destroy: Namespace.Destroy = () => {};
 
   public readonly update: Namespace.Update = (action) => {
     switch (action.type) {
-      case 'MOVE_ELEMENTS': {
-        this.moveAllElementsTo(action.currents);
+      case 'MOVE_HANDLERS': {
+        this.state = {...this.state, currents: action.currents};
+
+        this.moveHandlersTo(action.currents);
 
         break;
       }
     }
   };
 
-  private constructor(private readonly props: Namespace.Props) {
+  private constructor(private readonly props: Namespace.Props, private state: Namespace.State) {
     this.container = this.renderContainer();
 
     this.base = this.renderBase();
@@ -43,7 +45,6 @@ class View implements Namespace.Interface {
     this.tooltips = tooltipsEnabled ? this.renderTooltips() : [];
   }
 
-
   private readonly container: Namespace.Container;
 
   private readonly base: Namespace.Base;
@@ -56,7 +57,7 @@ class View implements Namespace.Interface {
 
   private readonly getBemBlockClassName: Namespace.GetBemBlockClassName = () => ({
     base: 'pure-slider',
-    theme: pipe(this.props, H.prop('themeBemBlockClassName'), O.fromNullable, O.getOrElse(constant('slider-default')))
+    theme: pipe(this.props, H.prop('themeBemBlockClassName'), O.fromNullable, O.getOrElse(constant('-slider')))
   });
 
   private readonly appendElementTo: Namespace.AppendElementTo = (parent) => (element) => {
@@ -96,7 +97,9 @@ class View implements Namespace.Interface {
   };
 
   private readonly renderConnects: Namespace.RenderConnects = () => {
-    const {intervals, currents, orientation, range, container} = this.props;
+    const {intervals, orientation, range, container} = this.props;
+
+    const {currents} = this.state;
 
     const hasIntervalReducer = (i: number, xs: number[], x: boolean): number[] => x ? [...xs, i] : xs;
 
@@ -126,7 +129,9 @@ class View implements Namespace.Interface {
   };
 
   private readonly renderHandlers: Namespace.RenderHandlers = () => {
-    const {currents, orientation, range, container, onChange} = this.props;
+    const {orientation, range, container, onChange} = this.props;
+
+    const {currents} = this.state;
 
     const getHandlerProps = (idx: number): Namespace.HandlerProps => ({
       container,
@@ -134,10 +139,11 @@ class View implements Namespace.Interface {
       orientation,
       range,
       type: A.size(currents) === 2 ? H.trace(idx) === 0 ? 'start' : 'end' : 'single',
-      onDrag: (type) => (coord) => pipe(
-        type === 'start'
-          ? [coord, pipe(currents, NEA.last)] :
-          type === 'single' ? [coord] : [pipe(currents, NEA.head), coord],
+      onDrag: (type) => (coord) => pipe(type === 'start'
+        ? [pipe(this.state, H.prop('currents'), NEA.head, H.add(coord)), pipe(this.state, H.prop('currents'), NEA.last)]
+        : type === 'single'
+          ? [pipe(this.state, H.prop('currents'), NEA.head, H.add(coord))]
+          : [pipe(this.state, H.prop('currents'), NEA.head), pipe(this.state, H.prop('currents'), NEA.last, H.add(coord))],
         onChange
       )
     });
@@ -156,7 +162,9 @@ class View implements Namespace.Interface {
   };
 
   private readonly renderTooltips: Namespace.RenderTooltips = () => {
-    const {container, currents, orientation, range, tooltipOptions} = this.props;
+    const {container, orientation, range, tooltipOptions} = this.props;
+
+    const {currents} = this.state;
 
     const ofTooltip = pipe(Tooltip, H.prop('of'));
 
@@ -166,7 +174,7 @@ class View implements Namespace.Interface {
       orientation,
       range,
       alwaysShown: pipe(tooltipOptions, H.prop('alwaysShown')),
-      type: A.size(currents) === 1 ? idx === 0 ? 'start' : 'end' : 'single'
+      type: A.size(currents) === 2 ? idx === 0 ? 'start' : 'end' : 'single'
     });
 
     const initTooltip = (idx: number, handler: Namespace.Handler): Namespace.Tooltip => pipe(
@@ -180,7 +188,7 @@ class View implements Namespace.Interface {
     return (A.mapWithIndex(initTooltip)(this.handlers));
   };
 
-  private readonly moveAllElementsTo: Namespace.MoveAllElementsTo = (currents) => {
+  private readonly moveHandlersTo: Namespace.MoveAllElementsTo = (currents) => {
     pipe(this.connects, A.map(this.moveElementTo(currents)));
 
     pipe(this.handlers, A.map(this.moveElementTo(currents)));

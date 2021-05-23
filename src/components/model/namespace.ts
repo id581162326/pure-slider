@@ -12,13 +12,15 @@ namespace Model {
 
   export type Of = (o: State) => Interface;
 
-  export type Update = (action: Action) => void
+  export type AttachListener = (o: Listener) => void;
+
+  export type Update = (action: Action) => void;
 
   export type ValidateCurrents = (xs: Currents) => Currents;
 
   export type ValidateByLength = (xs: Currents) => Currents;
 
-  export type CorrectCurrents = (xs: Currents) => Currents;
+  export type CorrectCurrents = (t: 'init' | 'change') => (xs: Currents) => Currents;
 
   export type CorrectByStep = (x: number) => number;
 
@@ -36,6 +38,10 @@ namespace Model {
 
   export type ValidateByCurrents = (o: State) => State;
 
+  export interface Listener {
+    update: Update
+  }
+
   export interface State {
     range: Range,
     currents: Currents,
@@ -44,6 +50,7 @@ namespace Model {
   }
 
   export interface Interface {
+    attachListener: AttachListener
     update: Update
   }
 }

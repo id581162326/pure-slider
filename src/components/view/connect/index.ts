@@ -7,7 +7,7 @@ import AbstractElement from '../abstract-element';
 
 import Namespace from './namespace';
 
-class Connect extends AbstractElement<Namespace.Props, Namespace.Node>{
+class Connect extends AbstractElement<Namespace.Props, Namespace.Node> {
   static readonly of: Namespace.Of = (props) => new Connect(props);
 
   public readonly moveTo: Namespace.MoveTo = (currents) => {
@@ -22,7 +22,7 @@ class Connect extends AbstractElement<Namespace.Props, Namespace.Node>{
       : `top: ${pos}%; max-height: ${size}%;`;
 
     pipe(this.node, H.setInlineStyle(style));
-  }
+  };
 
   protected readonly setClassList = () => {
     const {orientation, bemBlockClassName} = this.props;
@@ -35,7 +35,7 @@ class Connect extends AbstractElement<Namespace.Props, Namespace.Node>{
       `${theme}__connect`,
       `${theme}__connect_orientation_${orientation}`,
     ]));
-  }
+  };
 
   private constructor(props: Namespace.Props) {
     super(props, H.node('div'));

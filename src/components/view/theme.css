@@ -1,4 +1,4 @@
-.slider-default {
+.-slider {
     --base-background-color: #AAB7BF;
     --connect-background-color: #AD1D1D;
     --handler-background-color: #BFB1A8;
@@ -9,22 +9,22 @@
 
 /* base */
 
-.slider-default__base {
+.-slider__base {
     background: var(--base-background-color);
     border-radius: 4px;
 }
 
-.slider-default__base_orientation_horizontal {
+.-slider__base_orientation_horizontal {
     height: 10px;
 }
 
-.slider-default__base_orientation_vertical {
+.-slider__base_orientation_vertical {
     width: 10px;
 }
 
 /* connect */
 
-.slider-default__connect {
+.-slider__connect {
     background: var(--connect-background-color);
     border-radius: 4px;
 }
@@ -32,7 +32,7 @@
 
 /* handler */
 
-.slider-default__handler {
+.-slider__handler {
     width: 20px;
     height: 20px;
     background: var(--handler-background-color);
@@ -43,7 +43,7 @@
 
 /* tooltip */
 
-.slider-default__tooltip {
+.-slider__tooltip {
     padding: 5px 10px;
     border: 1px solid var(--handler-border-color);
     border-radius: 4px;
@@ -53,10 +53,10 @@
     cursor: auto;
 }
 
-.slider-default__tooltip_orientation_horizontal {
+.-slider__tooltip_orientation_horizontal {
     bottom: calc(100% + 15px);
 }
 
-.slider-default__tooltip_orientation_vertical {
+.-slider__tooltip_orientation_vertical {
     left: calc(100% + 15px);
 }

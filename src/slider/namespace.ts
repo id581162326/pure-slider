@@ -32,7 +32,7 @@ namespace Slider {
   }
 
   export interface Interface {
-    setHandlers: (currents: Currents) => void
+    moveHandlers: (currents: Currents) => void
   }
 }
 

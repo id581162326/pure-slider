@@ -1,24 +1,41 @@
 namespace Controller {
-  export type Currents = [number] | [number, number];
+  export type Currents<Type extends 'Model' | 'View'> = Type extends 'Model'
+    ? number[]
+    : Type extends 'View'
+      ? [number] | [number, number]
+      : never;
 
-  export interface MoveElements {type: 'MOVE_ELEMENTS', currents: Currents}
+  export interface MoveHandlers {type: 'MOVE_HANDLERS', currents: Currents<'View'>}
 
-  export type ViewAction = MoveElements;
+  export type ViewAction = MoveHandlers;
 
-  export interface UpdateCurrents {type: 'UPDATE_CURRENTS', currents: Currents}
+  export interface UpdateCurrents {type: 'UPDATE_CURRENTS', currents: Currents<'Model'>}
 
   export type ModelAction = UpdateCurrents;
 
-  export type Of = (view: View, model: Model) => Interface;
+  export type Listener = {
+    update: Update<'Model'>
+  }
 
-  export type Dispatch = (action: ViewAction) => void;
+  export type Of = (v: View, m: Model) => Interface;
+
+  export type Update<Type extends 'Model' | 'View'> = (a: Type extends 'Model'
+    ? ModelAction
+    : Type extends 'View'
+      ? ViewAction
+      : never) => void;
+
+  export type AttachListener = (o: Listener) => void;
+
+  export type Dispatch = (a: ViewAction) => void;
 
   export interface View {
-    update: (a: ViewAction) => void
+    update: Update<'View'>
   }
 
   export interface Model {
-    update: (a: ModelAction) => void
+    attachListener: AttachListener,
+    update: Update<'Model'>
   }
 
   export interface Interface {

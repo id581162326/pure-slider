@@ -64,7 +64,9 @@ class Handler extends AbstractElement<Namespace.Props, Namespace.Node> {
 
     const offset = pipe(this.node, this.nodeSize, H.half);
 
-    pipe(event[coordKey], H.sub(this.node.getBoundingClientRect()[coordKey]), H.sub(offset), this.pxToNum, onDrag(type));
+    const bouncingClientRect = pipe(this.node.getBoundingClientRect(), H.prop(coordKey));
+
+    pipe(event, H.prop(coordKey), H.sub(bouncingClientRect), H.sub(offset), this.pxToNum, onDrag(type));
   };
 
   private readonly startDrag: Namespace.StartDrag = () => {
