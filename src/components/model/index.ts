@@ -4,51 +4,30 @@ import {pipe} from 'fp-ts/function';
 
 import * as H from '../../helpers';
 
-import M from './namespace';
-import * as D from './defaults';
+import Namespace from './namespace';
 
-export default class implements M.Interface {
-  public state: M.State = D.state;
+class Model implements Namespace.Interface {
+  static of: Namespace.Of = (state) => new Model(state);
 
-  // methods
-
-  public setState(state: M.State) {
-    this.state = pipe(state, this.validateState);
-  }
-
-  public setListener(listener: M.Listener) {
-    this.listener = listener;
-  }
-
-  public updateState(action: M.ModelAction) {
+  public update(action: Namespace.Action) {
     switch (action.type) {
       case 'UPDATE_CURRENTS': {
-        this.updateCurrents(action.currents);
+
 
         break;
       }
     }
   }
 
-  // properties
+  private constructor(protected state: Namespace.State) {
+    this.validateState(state);
 
-  private listener: M.Listener = D.listener;
+    this.update({type: 'UPDATE_CURRENTS', currents: state.currents});
+  }
 
-  // update currents logic
+  private validateCurrents: Namespace.ValidateCurrents = (currents) => pipe(currents, this.validateByLength);
 
-  private updateCurrents: (xs: M.Currents) => void = (currents) => {
-    const corrected = pipe(currents, this.validateCurrents, this.correctCurrents);
-
-    this.state = {...this.state, currents: corrected};
-
-    this.listener.update({type: 'CURRENTS_UPDATED', currents: corrected});
-  };
-
-  // validate currents logic
-
-  private validateCurrents: (xs: M.Currents) => M.Currents = (currents) => pipe(currents, this.validateByLength);
-
-  private validateByLength: (xs: M.Currents) => M.Currents = (currents) => {
+  private validateByLength: Namespace.ValidateByLength = (currents) => {
     const currentsLength = pipe(this.state, H.prop('currents'), A.size);
 
     const newCurrentsLength = pipe(currents, A.size);
@@ -60,9 +39,7 @@ export default class implements M.Interface {
     return (currents);
   };
 
-  // correct currents logic
-
-  private correctCurrents: (xs: M.Currents) => M.Currents = (newCurrents) => {
+  private correctCurrents: Namespace.CorrectCurrents = (newCurrents) => {
     const {currents} = this.state;
 
     const changed: (i: number, x: number) => boolean = (i, current) => pipe(currents, H.nthOrNone(i, NaN)) !== current;
@@ -71,23 +48,23 @@ export default class implements M.Interface {
       current,
       this.correctToStep,
       this.correctToMargin(i),
-      this.correctToEnds
+      this.correctToRange
     );
 
     const setCurrent: (i: number, x: number) => number = (i, current) => changed(i, current)
       ? correct(i, current)
       : current;
 
-    return (A.mapWithIndex(setCurrent)(newCurrents) as M.Currents);
+    return (A.mapWithIndex(setCurrent)(newCurrents) as Namespace.Currents);
   };
 
-  private correctToStep: (x: number) => number = (current) => {
+  private correctToStep: Namespace.CorrectByStep = (current) => {
     const {step} = this.state;
 
     return (pipe(current, H.div(step), Math.round, H.mult(step)));
   };
 
-  private correctToMargin: (i: number) => (x: number) => number = (i) => (current) => {
+  private correctToMargin: Namespace.CorrectToMargin = (i) => (current) => {
     const {currents, margin} = this.state;
 
     const prev = H.nthOrNone(H.dec(i), NaN)(currents);
@@ -109,7 +86,7 @@ export default class implements M.Interface {
     return (current);
   };
 
-  private correctToEnds: (x: number) => number = (current) => {
+  private correctToRange: Namespace.CorrectToRange = (current) => {
     const {range} = this.state;
 
     const min = pipe(range, NEA.head);
@@ -131,7 +108,7 @@ export default class implements M.Interface {
 
   private invalidStateError = H.throwError('Invalid state');
 
-  private validateState: (o: M.State) => M.State = (state) => pipe(
+  private validateState: Namespace.ValidateState = (state) => pipe(
     state,
     this.validateByRange,
     this.validateByStep,
@@ -139,7 +116,7 @@ export default class implements M.Interface {
     this.validateByCurrents
   );
 
-  private validateByRange: (o: M.State) => M.State = (state) => {
+  private validateByRange: Namespace.ValidateByRange = (state) => {
     const {range} = state;
 
     const min = pipe(range, NEA.head);
@@ -157,7 +134,7 @@ export default class implements M.Interface {
     return (state);
   };
 
-  private validateByStep: (o: M.State) => M.State = (state) => {
+  private validateByStep: Namespace.ValidateByStep = (state) => {
     const {range, step} = state;
 
     if (step > pipe(range, H.subAdjacent(1))) {
@@ -171,7 +148,7 @@ export default class implements M.Interface {
     return (state);
   };
 
-  private validateByMargin: (o: M.State) => M.State = (state) => {
+  private validateByMargin: Namespace.ValidateByMargin = (state) => {
     const {range, margin} = state;
 
     if (margin > pipe(range, H.subAdjacent(1))) {
@@ -185,7 +162,7 @@ export default class implements M.Interface {
     return (state);
   };
 
-  private validateByCurrents: (o: M.State) => M.State = (state) => {
+  private validateByCurrents: Namespace.ValidateByCurrents = (state) => {
     const {range, currents} = state;
 
     const min = pipe(range, NEA.head);
@@ -207,3 +184,5 @@ export default class implements M.Interface {
     return (state);
   };
 }
+
+export default Model;

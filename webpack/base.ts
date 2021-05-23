@@ -29,18 +29,18 @@ const getTypeDependingPlugins: (type: BuildType) => webpack.WebpackPluginInstanc
           alwaysWriteToDisk: true
         }),
         new HtmlWebpackHardDiskPlugin(),
-        new MiniCssExtractPlugin({filename: 'css/[name]'})
+        new MiniCssExtractPlugin({filename: 'css/[name].css'})
       ]);
     case 'prod':
-      return ([new MiniCssExtractPlugin({filename: 'css/[name]'})]);
-    default:
+      return ([new MiniCssExtractPlugin({filename: 'css/[name].css'})]);
+    case 'test':
       return ([]);
   }
 };
 
 const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = (type) => {
   switch (type) {
-    case "dev":
+    case 'dev':
       return ({
         mode: 'development',
         entry: './index.ts',
@@ -72,13 +72,13 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
           minimizer: [new TerserJSPlugin({extractComments: false}), new CssMinimizerWebpackPlugin()]
         }
       });
-    case "prod":
+    case 'prod':
       return ({
         mode: 'production',
-        entry: './slider.ts',
+        entry: './slider/index.ts',
         output: {
           publicPath: '',
-          filename: 'bundle.js',
+          filename: 'slider.js',
           path: path.resolve(__dirname, '..', 'dist')
         },
         optimization: {
@@ -86,8 +86,8 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
           minimizer: [new TerserJSPlugin({extractComments: false}), new CssMinimizerWebpackPlugin()]
         }
       });
-    default:
-      return ({})
+    case 'test':
+      return ({});
   }
 };
 
@@ -107,7 +107,12 @@ export const getRules: (type: BuildType) => webpack.RuleSetRule[] = (type) => ([
   },
   {
     test: /\.css$/,
-    use: ['style-loader', 'css-loader', {
+    use: [
+      ...(type === 'prod' || type ==='demo' ? [{
+        loader: MiniCssExtractPlugin.loader
+      }]: ['style-loader']),
+      'css-loader',
+      {
       loader: 'postcss-loader',
       options: {
         postcssOptions: {
@@ -121,9 +126,9 @@ export const getRules: (type: BuildType) => webpack.RuleSetRule[] = (type) => ([
                   'not-pseudo-class': true
                 },
                 ...(
-                  (type === 'prod' || type === 'demo') && {
+                  (type === 'prod' || type === 'demo') ? {
                     browsers: 'last 2 versions'
-                  }
+                  } : {}
                 )
               },
             ],

@@ -1,420 +1,195 @@
+import * as O from 'fp-ts/Option';
 import * as A from 'fp-ts/Array';
 import * as NEA from 'fp-ts/NonEmptyArray';
-import * as O from 'fp-ts/Option';
-import {pipe} from 'fp-ts/function';
+import {constant, pipe} from 'fp-ts/function';
 
 import * as H from '../../helpers';
 
-import V from './namespace';
-import * as D from './defaults';
+import Connect from './connect';
+import Handler from './handler';
+import Tooltip from './tooltip';
+import Base from './base';
+import Container from './container';
+import Namespace from './namespace';
 import './styles.css';
 import './theme.css';
 
-export default class implements V.Interface {
-  public props: V.Props = D.props;
+class View implements Namespace.Interface {
+  static readonly of: Namespace.Of = (props) => new View(props);
 
-  // methods
+  public readonly destroy: Namespace.Destroy = () => {};
 
-  public setProps(props: V.Props) {
-    this.props = {...this.props, ...props};
-  }
-
-  public render() {
-    this.renderContainer();
-
-    this.renderNodes();
-
-    this.updateNodes();
-
-    this.addEventListeners();
-  };
-
-  public destroy() {
-    this.removeEventListeners();
-
-    this.clearListenersStore();
-
-    this.clearNodeMaps();
-
-    this.clearContainer();
-  };
-
-  public updateProps(action: V.Action) {
+  public readonly update: Namespace.Update = (action) => {
     switch (action.type) {
-      case 'SET_HANDLERS': {
-        this.updateHandlers(action.currents);
+      case 'MOVE_ELEMENTS': {
+        this.moveAllElementsTo(action.currents);
 
         break;
       }
-
-      case 'SET_ORIENTATION': {
-        this.setOrientation(action.orientation);
-      }
     }
   };
 
-  // properties
+  private constructor(private readonly props: Namespace.Props) {
+    this.container = this.renderContainer();
 
-  private connectsMap: V.NodeMap[] = [];
+    this.base = this.renderBase();
 
-  private handlersMap: V.NodeMap[] = [];
+    this.handlers = this.renderHandlers();
 
-  private tooltipsMap: V.NodeMap[] = [];
+    this.connects = this.renderConnects();
 
-  private base: HTMLDivElement = H.node('div');
+    const tooltipsEnabled = pipe(props, H.prop('tooltipOptions'), H.prop('enabled'));
 
-  private eventListenersStore: V.EventListenersStore = {
-    startDragListener: [],
-    stopDragListener: []
-  };
-
-  // helpers
-
-  private getRange: () => number = () => pipe(this.props.range, H.subAdjacent(1));
-
-  private percentOfRange: (x: number) => number = (x) => {
-    const range = this.getRange();
-
-    return (pipe(x, H.percent(range)))
-  };
-
-  private nodeSize: <T extends HTMLElement>(n: T) => number = (node) => {
-    const {orientation} = this.props;
-
-    return (orientation === 'horizontal' ? H.offsetWidth(node) : H.offsetHeight(node));
+    this.tooltips = tooltipsEnabled ? this.renderTooltips() : [];
   }
 
-  private pxToNum: (x: number) => number = (px) => {
-    const {container} = this.props;
 
-    const containerSize = pipe(container, this.nodeSize);
+  private readonly container: Namespace.Container;
 
-    const range = this.getRange();
+  private readonly base: Namespace.Base;
 
-    return pipe(px, H.mult(range), H.div(containerSize), Math.round);
+  private readonly connects: Namespace.Connect[];
+
+  private readonly handlers: Namespace.Handler[];
+
+  private readonly tooltips: Namespace.Tooltip[];
+
+  private readonly getBemBlockClassName: Namespace.GetBemBlockClassName = () => ({
+    base: 'pure-slider',
+    theme: pipe(this.props, H.prop('themeBemBlockClassName'), O.fromNullable, O.getOrElse(constant('slider-default')))
+  });
+
+  private readonly appendElementTo: Namespace.AppendElementTo = (parent) => (element) => {
+    const node = pipe(element, H.prop('getNode'))();
+
+    const parentNode = pipe(parent, H.prop('getNode'))();
+
+    pipe(node, H.appendTo(parentNode));
+
+    return (element);
   };
 
-  private correctToMin: (x: number) => number = (x) => pipe(x, H.sub(pipe(this.props.range, NEA.head)));
+  private readonly moveElementTo: Namespace.MoveElementTo = (currents) => (element) => {
+    pipe(element, H.prop('moveTo'))(currents);
 
-  private getClassList: (k: V.NodeKeys) => string[] = (key) => {
-    const {orientation, bemBlockClassName, tooltipOptions} = this.props;
-
-    const baseBemBlockClassName = 'pure-slider';
-
-    const baseClassList = [`${baseBemBlockClassName}__${key}`, `${baseBemBlockClassName}__${key}_orientation_${orientation}`,
-      ...(key === 'tooltip' && tooltipOptions.alwaysShown ? [`${baseBemBlockClassName}__${key}_shown`] : [])];
-
-    const themeClassList = [`${bemBlockClassName}__${key}`, `${bemBlockClassName}__${key}_orientation_${orientation}`];
-
-    return ([...baseClassList, ...themeClassList]);
+    return (element);
   };
 
-  private getConnectDimensions: (i: number) => { size: number, pos: number } = (id) => {
-    const {currents, intervals} = this.props;
+  private readonly renderContainer: Namespace.RenderContainer = () => {
+    const {orientation, range, container} = this.props;
 
-    const first = 0, last = pipe(intervals, A.size, H.dec);
+    const containerProps: Namespace.ContainerProps = {bemBlockClassName: this.getBemBlockClassName(), orientation, range, container};
 
-    const range = this.getRange();
+    const ofContainer = pipe(Container, H.prop('of'));
 
-    switch (id) {
-      case first: {
-        const size = pipe(currents, H.headOrNone(NaN), this.correctToMin, this.percentOfRange);
-
-        return ({size, pos: 0});
-      }
-
-      case last: {
-        const size = pipe(currents, H.lastOrNone(NaN), this.correctToMin, H.sub(range), H.abs, this.percentOfRange);
-
-        const pos = pipe(currents, H.lastOrNone(NaN), this.correctToMin, this.percentOfRange);
-
-        return ({size, pos});
-      }
-
-      default: {
-        const size = pipe(currents, H.subAdjacent(id), this.percentOfRange);
-
-        const pos = pipe(currents, H.nthOrNone(H.dec(id), NaN), this.correctToMin, this.percentOfRange);
-
-        return ({size, pos});
-      }
-    }
+    return (pipe(containerProps, ofContainer));
   };
 
-  private getHandlerDimensions: (i: number) => { pos: number } = (id) => {
-    const {currents} = this.props;
+  private readonly renderBase: Namespace.RenderBase = () => {
+    const {orientation, range, container} = this.props;
 
-    const pos = pipe(currents, H.nthOrNone(id, NaN), this.correctToMin, this.percentOfRange);
+    const baseProps: Namespace.BaseProps = {bemBlockClassName: this.getBemBlockClassName(), orientation, range, container, onClick: H.trace};
 
-    return ({pos});
+    const ofBase = pipe(Base, H.prop('of'));
+
+    return (pipe(baseProps, ofBase, this.appendElementTo(this.container)));
   };
 
-  // render logic
+  private readonly renderConnects: Namespace.RenderConnects = () => {
+    const {intervals, currents, orientation, range, container} = this.props;
 
-  private renderNodes: () => void = () => {
-    const {tooltipOptions} = this.props;
-
-    this.renderBase();
-
-    this.renderConnects();
-
-    this.renderHandlers();
-
-    if (tooltipOptions.enabled) {
-      this.renderTooltips();
-    }
-  };
-
-  private renderContainer: () => void = () => {
-    const {container, bemBlockClassName} = this.props;
-
-    H.addClassList(['pure-slider', `${bemBlockClassName}`])(container);
-  };
-
-  private renderBase: () => void = () => {
-    const {container} = this.props;
-
-    const classList = this.getClassList('base');
-
-    this.base = pipe(H.node('div'), H.addClassList(classList), H.appendTo(container));
-  };
-
-  private renderConnects: () => void = () => {
-    const {intervals} = this.props;
-
-    const classList = this.getClassList('connect');
-
-    const hasIntervalReducer: (i: number, xs: number[], x: boolean) => number[] = (i, xs, x) => x ? [...xs, i] : xs;
+    const hasIntervalReducer = (i: number, xs: number[], x: boolean): number[] => x ? [...xs, i] : xs;
 
     const intervalsIndexes = A.reduceWithIndex([] as number[], hasIntervalReducer)(intervals);
 
-    const renderConnect: () => HTMLDivElement = () => pipe(H.node('div'), H.addClassList(classList), H.appendTo(this.base));
+    const getConnectProps = (idx: number): Namespace.ConnectProps => ({
+      container,
+      bemBlockClassName: this.getBemBlockClassName(),
+      orientation,
+      range,
+      type: A.size(intervals) === 3
+        ? idx === 0 ? 'from-start' : idx === 2 ? 'to-end' : 'inner'
+        : idx === 0 ? 'from-start' : 'to-end'
+    });
 
-    const setConnectMap: (x: number) => V.NodeMap = (id) => ({id, node: renderConnect()});
+    const ofConnect = pipe(Connect, H.prop('of'));
 
-    this.connectsMap = A.map(setConnectMap)(intervalsIndexes);
+    const initConnect = (idx: number): Namespace.Connect => pipe(
+      idx,
+      getConnectProps,
+      ofConnect,
+      this.appendElementTo(this.base),
+      this.moveElementTo(currents)
+    );
+
+    return (A.map(initConnect)(intervalsIndexes));
   };
 
-  private renderHandlers: () => void = () => {
-    const {currents} = this.props;
+  private readonly renderHandlers: Namespace.RenderHandlers = () => {
+    const {currents, orientation, range, container, onChange} = this.props;
 
-    const classList = this.getClassList('handler');
+    const getHandlerProps = (idx: number): Namespace.HandlerProps => ({
+      container,
+      bemBlockClassName: this.getBemBlockClassName(),
+      orientation,
+      range,
+      type: A.size(currents) === 2 ? H.trace(idx) === 0 ? 'start' : 'end' : 'single',
+      onDrag: (type) => (coord) => pipe(
+        type === 'start'
+          ? [coord, pipe(currents, NEA.last)] :
+          type === 'single' ? [coord] : [pipe(currents, NEA.head), coord],
+        onChange
+      )
+    });
 
-    const renderHandler: () => HTMLDivElement = () => pipe(H.node('div'), H.addClassList(classList), H.appendTo(this.base));
+    const ofHandler = pipe(Handler, H.prop('of'));
 
-    const setHandlerMap: (i: number) => V.NodeMap = (id: number) => ({id, node: renderHandler()});
+    const initHandler = (idx: number): Namespace.Handler => pipe(
+      idx,
+      getHandlerProps,
+      ofHandler,
+      this.appendElementTo(this.base),
+      this.moveElementTo(currents)
+    );
 
-    this.handlersMap = A.mapWithIndex(setHandlerMap)(currents);
+    return (A.mapWithIndex(initHandler)(currents));
   };
 
-  private renderTooltips: () => void = () => {
-    const classList = this.getClassList('tooltip');
+  private readonly renderTooltips: Namespace.RenderTooltips = () => {
+    const {container, currents, orientation, range, tooltipOptions} = this.props;
 
-    const renderTooltip: <T extends HTMLElement>(p: T) => HTMLSpanElement = (parent) => pipe(H.node('span'), H.addClassList(classList), H.appendTo(parent));
+    const ofTooltip = pipe(Tooltip, H.prop('of'));
 
-    const setTooltipMap: (o: V.NodeMap) => V.NodeMap = ({id, node}) => ({id, node: renderTooltip(node)});
+    const getTooltipProps = (idx: number): Namespace.TooltipProps => ({
+      container,
+      bemBlockClassName: this.getBemBlockClassName(),
+      orientation,
+      range,
+      alwaysShown: pipe(tooltipOptions, H.prop('alwaysShown')),
+      type: A.size(currents) === 1 ? idx === 0 ? 'start' : 'end' : 'single'
+    });
 
-    this.tooltipsMap = A.map(setTooltipMap)(this.handlersMap);
+    const initTooltip = (idx: number, handler: Namespace.Handler): Namespace.Tooltip => pipe(
+      idx,
+      getTooltipProps,
+      ofTooltip,
+      this.appendElementTo(handler),
+      this.moveElementTo(currents)
+    );
+
+    return (A.mapWithIndex(initTooltip)(this.handlers));
   };
 
-  // set orientation action
+  private readonly moveAllElementsTo: Namespace.MoveAllElementsTo = (currents) => {
+    pipe(this.connects, A.map(this.moveElementTo(currents)));
 
-  private setOrientation: (x: V.Orientation) => void = (orientation) => {
-    this.props = {...this.props, orientation};
+    pipe(this.handlers, A.map(this.moveElementTo(currents)));
 
-    this.reRender();
-  };
-
-  // update handlers action logic
-
-  private updateHandlers: (xs: V.Currents) => void = (currents) => {
-    this.props = {...this.props, currents};
-
-    this.updateNodes();
-  };
-
-  private updateNodes: () => void = () => {
-    const {tooltipOptions} = this.props;
-
-    A.map(this.updateConnect)(this.connectsMap);
-
-    A.map(this.updateHandler)(this.handlersMap);
-
-    if (tooltipOptions.enabled) {
-      A.map(this.updateTooltip)(this.tooltipsMap);
-    }
-  };
-
-  private updateConnect: (o: V.NodeMap) => void = ({id, node}) => {
-    const {orientation} = this.props;
-
-    const {pos, size} = this.getConnectDimensions(id);
-
-    const style = orientation === 'horizontal'
-      ? `left: ${pos}%; max-width: ${size}%;`
-      : `top: ${pos}%; max-height: ${size}%;`;
-
-    H.setInlineStyle(style)(node);
-  };
-
-  private updateHandler: (o: V.NodeMap) => void = ({id, node}) => {
-    const {orientation} = this.props;
-
-    const {pos} = this.getHandlerDimensions(id);
-
-    const offset = pipe(node, this.nodeSize, H.half);
-
-    const style = orientation === 'horizontal'
-      ? `left: calc(${pos}% - ${offset}px);`
-      : `top: calc(${pos}% - ${offset}px);`;
-
-    H.setInlineStyle(style)(node);
-  };
-
-  private updateTooltip: (o: V.NodeMap) => void = ({id, node}) => {
-    const {currents} = this.props;
-
-    const text = pipe(currents, H.nthOrNone(id, NaN), H.toString);
-
-    pipe(node, H.setInnerText(text));
-  };
-
-  // on click listener logic
-
-  private onClick: (x: number) => void = (coord) => {
-    const {onChange, currents} = this.props;
-
-    const setNearestCurrent: (i: number, x: number) => number = (i, x) => {
-      const deltaCurrent = pipe(x, H.sub(coord), H.abs);
-
-      const deltaNext = pipe(currents, H.nthOrNone(H.inc(i), NaN), H.sub(coord), H.abs);
-
-      const deltaPrev = pipe(currents, H.nthOrNone(H.dec(i), NaN), H.sub(coord), H.abs);
-
-      const hasNextCond = !isNaN(deltaNext) && coord > x && deltaCurrent <= deltaNext;
-
-      const hasNotNextButHasPrevCond = isNaN(deltaNext) && !isNaN(deltaPrev) && coord > x;
-
-      const hasPrevCond = !isNaN(deltaPrev) && coord < x && deltaCurrent < deltaPrev;
-
-      const hasNotPrevButHasNextCond = isNaN(deltaPrev) && !isNaN(deltaNext) && coord < x;
-
-      const singleCond = isNaN(deltaNext) && isNaN(deltaPrev);
-
-      const isClosest = hasNextCond || hasPrevCond || hasNotNextButHasPrevCond || hasNotPrevButHasNextCond || singleCond;
-
-      return (isClosest ? coord : x);
-    };
-
-    onChange(A.mapWithIndex(setNearestCurrent)(currents) as V.Currents);
-  };
-
-  private clickListener: (e: MouseEvent) => void = (event) => {
-    const {range, orientation} = this.props;
-
-    const min = pipe(range, NEA.head);
-
-    const coordKey = orientation === 'horizontal' ? 'x' : 'y';
-
-    pipe(event[coordKey], H.sub(this.base.getBoundingClientRect()[coordKey]), this.pxToNum, H.add(min), this.onClick);
-  };
-
-  private setClickListener: (t: 'add' | 'remove') => (n: HTMLElement) => void = (type) => (node) => {
-    type === 'add'
-      ? H.addEventListener('click', this.clickListener)(node)
-      : H.removeEventListener('click', this.clickListener)(node);
-  };
-
-  // on drag listener logic
-
-  private onDrag: (i: number) => (x: number) => void = (id) => (coord) => {
-    const {currents, onChange} = this.props;
-
-    const setCorrespondingCurrent: (i: number, x: number) => number = (i, x) => i === id ? coord : x;
-
-    onChange(A.mapWithIndex(setCorrespondingCurrent)(currents) as V.Currents);
-  };
-
-  private getDragListener: (o: V.NodeMap) => (e: MouseEvent) => void = ({id, node}) => (event) => {
-    const {currents, orientation} = this.props;
-
-    const coordKey = orientation === 'horizontal' ? 'x' : 'y';
-
-    const offset = pipe(node, this.nodeSize, H.half);
-
-    const delta = pipe(event[coordKey], H.sub(node.getBoundingClientRect()[coordKey]), H.sub(offset), this.pxToNum);
-
-    pipe(currents, H.nthOrNone(id, NaN), H.add(delta), this.onDrag(id));
-  };
-
-  private setDragListener: (t: 'add' | 'remove') => (o: V.NodeMap) => void = (type) => ({id, node}) => {
-    const {startDragListener, stopDragListener} = this.eventListenersStore;
-
-    const hasStartDragListener = pipe(startDragListener, A.lookup(id)) !== O.none;
-
-    const hasStopDragListener = pipe(stopDragListener, A.lookup(id)) !== O.none;
-
-    if (!(hasStartDragListener || hasStopDragListener)) {
-      const listener = this.getDragListener({id, node});
-
-      this.eventListenersStore.startDragListener = [...this.eventListenersStore.startDragListener,
-        () => H.addEventListener('mousemove', listener)(window)];
-
-      this.eventListenersStore.stopDragListener = [...this.eventListenersStore.stopDragListener,
-        () => H.removeEventListener('mousemove', listener)(window)];
-    }
-
-    type === 'add'
-      ? H.addEventListener('mousedown', this.eventListenersStore.startDragListener[id])(node)
-      : H.removeEventListener('mousedown', this.eventListenersStore.startDragListener[id])(node);
-
-    type === 'add'
-      ? H.addEventListener('mouseup', this.eventListenersStore.stopDragListener[id])(window)
-      : H.removeEventListener('mouseup', this.eventListenersStore.stopDragListener[id])(window);
-  };
-
-  // set listeners logic
-
-  private addEventListeners: () => void = () => {
-    A.map(this.setDragListener('add'))(this.handlersMap);
-
-    this.setClickListener('add')(this.base);
-  };
-
-  private removeEventListeners: () => void = () => {
-    A.map(this.setDragListener('remove'))(this.handlersMap);
-
-    this.setClickListener('remove')(this.base);
-  };
-
-  // clear logic
-
-  private clearContainer: () => void = () => {
-    const {container, bemBlockClassName} = this.props;
-
-    container.innerHTML = '';
-
-    H.removeClassList(['pure-slider', `${bemBlockClassName}`])(container);
-  };
-
-  private clearListenersStore: () => void = () => {
-    this.eventListenersStore = {startDragListener: [], stopDragListener: []};
-  };
-
-  private clearNodeMaps: () => void = () => {
-    this.handlersMap = [];
-
-    this.connectsMap = [];
-  };
-
-  // re-render
-
-  private reRender: () => void = () => {
-    this.destroy();
-
-    this.render();
+    pipe(this.tooltips, A.map(this.moveElementTo(currents)));
   };
 }
+
+export default View;
 
 
 

@@ -1,16 +1,29 @@
-import M from '../model/namespace';
+namespace Controller {
+  export type Currents = [number] | [number, number];
 
-import V from '../view/namespace';
+  export interface MoveElements {type: 'MOVE_ELEMENTS', currents: Currents}
 
-namespace C {
-  export type Action = V.SetHandlers | V.SetOrientation;
+  export type ViewAction = MoveElements;
+
+  export interface UpdateCurrents {type: 'UPDATE_CURRENTS', currents: Currents}
+
+  export type ModelAction = UpdateCurrents;
+
+  export type Of = (view: View, model: Model) => Interface;
+
+  export type Dispatch = (action: ViewAction) => void;
+
+  export interface View {
+    update: (a: ViewAction) => void
+  }
+
+  export interface Model {
+    update: (a: ModelAction) => void
+  }
 
   export interface Interface {
-    initListener: () => void,
-    setView: (view: V.Interface) => void,
-    setModel: (model: M.Interface) => void,
-    dispatch: (action: Action) => void;
+    dispatch: Dispatch;
   }
 }
 
-export default C;
+export default Controller;

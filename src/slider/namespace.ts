@@ -1,13 +1,23 @@
-namespace S {
-  export type Range = [number, number]
+import View from '../components/view/namespace';
+import Model from '../components/model/namespace';
+import Controller from '../components/controller/namespace';
 
-  export type Currents = [number] | [number, number]
+namespace Slider {
+  export type Range = [number, number];
 
-  export type Intervals = [boolean, boolean] | [boolean, boolean, boolean]
+  export type Currents = [number] | [number, number];
 
-  export type Orientation = 'horizontal' | 'vertical'
+  export type Intervals = [boolean, boolean] | [boolean, boolean, boolean];
 
-  export type TooltipOptions = {enabled: boolean, alwaysShown?: boolean}
+  export type Orientation = 'horizontal' | 'vertical';
+
+  export type TooltipOptions = {enabled: boolean, alwaysShown?: boolean};
+
+  export type View = View.Interface
+
+  export type Model = Model.Interface;
+
+  export type Controller = Controller.Interface;
 
   export interface Props {
     container: HTMLElement,
@@ -18,14 +28,12 @@ namespace S {
     intervals: Intervals,
     orientation: Orientation,
     tooltipOptions: TooltipOptions,
-    bemBlockClassName?: string,
-    onChangeCurrents?: (currents: Currents) => void
+    themeBemBlockClassName?: string
   }
 
   export interface Interface {
-    setOrientation: (orientation: Orientation) => void,
     setHandlers: (currents: Currents) => void
   }
 }
 
-export default S;
+export default Slider;
