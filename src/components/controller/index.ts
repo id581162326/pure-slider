@@ -14,7 +14,7 @@ class Controller implements Namespace.Interface {
     }
   };
 
-  private constructor(protected readonly view: Namespace.View, protected readonly model: Namespace.Model) {
+  private constructor(private readonly view: Namespace.View, private readonly model: Namespace.Model) {
     this.model.attachListener(this.listener);
   }
 

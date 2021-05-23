@@ -35,7 +35,7 @@ class Model implements Namespace.Interface {
     }
   }
 
-  private constructor(protected state: Namespace.State) {
+  private constructor(private state: Namespace.State) {
     this.validateState(state);
 
     this.state = {...state, currents: this.correctCurrents('init')(state.currents)};
