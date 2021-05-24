@@ -13,18 +13,19 @@ const options = {
 }
 
 const exampleConfig: Namespace.Props = {
-  range: [0, 10],
+  range: [10, 30],
   step: 3,
-  margin: 1,
-  currents: [-6, 6],
+  margin: 3,
+  currents: [10, 30],
   container: pipe(document, H.querySelector('.js-example-slider'))[0],
   intervals: [true, false, true],
   orientation: 'horizontal',
   tooltipOptions: {
-    enabled: true
+    enabled: true,
+    alwaysShown: true
   }
 };
 
 const exampleSlider = new Slider(exampleConfig);
 
-H.addEventListener('click', () => exampleSlider.moveHandlers([10000010, 754551]))(options.addHandlerBtn);
+H.addEventListener('click', () => exampleSlider.moveHandlers([-1000001000000000000, 754551000000]))(options.addHandlerBtn);

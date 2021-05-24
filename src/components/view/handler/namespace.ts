@@ -21,9 +21,9 @@ namespace Handler {
 
   export type EndDrag = () => void;
 
-  export type OnDrag = (type: Type) => (coord: number) => void
+  export type OnDrag = (t: Type) => (x: number) => void
 
-  export interface Props extends AbstractElement.Props{
+  export interface Props extends AbstractElement.Props {
     type: Type,
     onDrag: OnDrag
   }

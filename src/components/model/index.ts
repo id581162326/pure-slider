@@ -14,8 +14,8 @@ class Model implements Namespace.Interface {
 
     this.listeners.push(listener);
 
-    this.update({type: 'UPDATE_CURRENTS', currents})
-  }
+    listener.update({type: 'UPDATE_CURRENTS', currents: H.trace(currents)});
+  };
 
   public update(action: Namespace.Action) {
     switch (action.type) {
@@ -26,7 +26,7 @@ class Model implements Namespace.Interface {
 
         this.state = {...this.state, currents: correctedCurrents};
 
-        const updateListeners = (listener: Namespace.Listener) => listener.update({type: 'UPDATE_CURRENTS', currents: correctedCurrents})
+        const updateListeners = (listener: Namespace.Listener) => listener.update({type: 'UPDATE_CURRENTS', currents: correctedCurrents});
 
         A.map(updateListeners)(this.listeners);
 
@@ -60,50 +60,44 @@ class Model implements Namespace.Interface {
   private readonly correctCurrents: Namespace.CorrectCurrents = (type) => (newCurrents) => {
     const {currents} = this.state;
 
-    const changed: (i: number, x: number) => boolean = (i, current) => pipe(currents, H.nthOrNone(i, NaN)) !== current;
+    const changed = (idx: number, current: number): boolean => pipe(currents, H.nthOrNone(idx, NaN)) !== current;
 
-    const correct: (i: number, x: number) => number = (i, current) => pipe(
-      current,
-      this.correctToStep,
-      this.correctToRange,
-      this.correctToMargin(i)
-    );
-
-    const setCurrent: (i: number, x: number) => number = (i, current) => type === 'init'
-      ? correct(i, current)
-      : type === 'change' && changed(i, current)
-        ? correct(i, current)
+    const correctBy = (correct: (x: number, i: number) => number) => (idx: number, current: number): number => type === 'init'
+      ? correct(current, idx)
+      : type === 'change' && changed(idx, current)
+        ? correct(current, idx)
         : current;
 
-    return (A.mapWithIndex(setCurrent)(newCurrents) as Namespace.Currents);
+    return (pipe(
+      newCurrents,
+      A.mapWithIndex(correctBy(this.correctToStep)),
+      A.mapWithIndex(correctBy(this.correctToRange)),
+      (currents) => A.mapWithIndex(correctBy(this.correctToMargin(currents)))(currents)
+    ));
   };
 
   private readonly correctToStep: Namespace.CorrectByStep = (current) => {
-    const {step} = this.state;
+    const {step, range} = this.state;
 
-    return (pipe(current, H.div(step), Math.round, H.mult(step)));
+    const min = pipe(range, NEA.head);
+
+    return (pipe(current, H.sub(min), H.div(step), Math.round, H.mult(step), H.add(min)));
   };
 
-  private readonly correctToMargin: Namespace.CorrectToMargin = (i) => (current) => {
-    const {currents, margin} = this.state;
+  private readonly correctToMargin: Namespace.CorrectToMargin = (newCurrents) => (current, idx) => {
+    const {margin, range} = this.state;
 
-    const prev = H.nthOrNone(H.dec(i), NaN)(currents);
+    const min = pipe(range, NEA.head);
 
-    const next = H.nthOrNone(H.inc(i), NaN)(currents);
+    const prev = H.nthOrNone(H.dec(idx), NaN)(newCurrents);
+
+    const next = H.nthOrNone(H.inc(idx), NaN)(newCurrents);
 
     const hasPrevCond = !isNaN(prev) && H.sub(prev)(current) < margin;
 
-    const hasNextCond = !isNaN(next) && H.sub(current)(next) < margin;
+    const hasNextCond = current !== min && !isNaN(next) && H.sub(current)(next) < margin;
 
-    if (hasPrevCond) {
-      return (H.add(margin)(prev));
-    }
-
-    if (hasNextCond) {
-      return (H.sub(margin)(next));
-    }
-
-    return (current);
+    return (hasPrevCond ? H.add(margin)(prev) : hasNextCond ? H.sub(margin)(next) : current);
   };
 
   private readonly correctToRange: Namespace.CorrectToRange = (current) => {
@@ -122,8 +116,7 @@ class Model implements Namespace.Interface {
     state,
     this.validateByRange,
     this.validateByStep,
-    this.validateByMargin,
-    this.validateByCurrents
+    this.validateByMargin
   );
 
   private readonly validateByRange: Namespace.ValidateByRange = (state) => {
@@ -167,18 +160,6 @@ class Model implements Namespace.Interface {
 
     if (margin < 0) {
       this.invalidStateError('Margin value must not be less than zero');
-    }
-
-    return (state);
-  };
-
-  private readonly validateByCurrents: Namespace.ValidateByCurrents = (state) => {
-    const {currents} = state;
-
-    const hasDescending = A.reduceWithIndex(false, (i, bool) => i > 0 && H.subAdjacent(i)(currents) < 0 ? true : bool);
-
-    if (pipe(currents, hasDescending)) {
-      this.invalidStateError('Currents must not contain descending values');
     }
 
     return (state);

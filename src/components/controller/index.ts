@@ -1,5 +1,4 @@
 import Namespace from './namespace';
-import {trace} from '../../helpers';
 
 class Controller implements Namespace.Interface {
   static of: Namespace.Of = (view, model) => new Controller(view, model);
@@ -22,7 +21,7 @@ class Controller implements Namespace.Interface {
     update: (action) => {
       switch (action.type) {
         case 'UPDATE_CURRENTS': {
-          this.view.update({type: 'MOVE_HANDLERS', currents: trace(action.currents) as Namespace.Currents<'View'>});
+          this.view.update({type: 'MOVE_HANDLERS', currents: action.currents as Namespace.Currents<'View'>});
         }
       }
     }

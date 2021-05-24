@@ -24,7 +24,7 @@ namespace Model {
 
   export type CorrectByStep = (x: number) => number;
 
-  export type CorrectToMargin = (i: number) => (x: number) => number;
+  export type CorrectToMargin = (xs: Currents) => (x: number, i: number) => number;
 
   export type CorrectToRange = (x: number) => number;
 
