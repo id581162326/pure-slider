@@ -12,7 +12,7 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
   static readonly of: Namespace.Of = (props) => new Handler(props);
 
   public readonly moveTo: Namespace.MoveTo = (currents) => {
-    const {orientation, showTooltip, type} = this.props;
+    const {orientation, type} = this.props;
 
     const pos = this.getPos(currents);
 
@@ -22,11 +22,9 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
       ? `left: calc(${pos}% - ${offset}px);`
       : `bottom: calc(${pos}% - ${offset}px);`;
 
-    if (showTooltip && this.tooltip) {
-      const value = pipe(currents, type === 'start' || type === 'single' ? NEA.head : NEA.last);
+    const value = pipe(currents, type === 'start' || type === 'single' ? NEA.head : NEA.last);
 
-      this.tooltip.setValue(value);
-    }
+    this.tooltip.setValue(value);
 
     pipe(this.node, H.setInlineStyle(style));
   };
@@ -34,31 +32,23 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
   public readonly getTooltip: Namespace.GetTooltip = () => this.tooltip;
 
   public readonly toggleTooltip: Namespace.ToggleTooltip = () => {
-    if (this.tooltip) {
-      const tooltipNode = this.tooltip.getNode();
+    const tooltipNode = this.tooltip.getNode();
 
-      tooltipNode.parentNode ? this.tooltip.destroy() : H.appendTo(this.node)(tooltipNode);
-    }
+    tooltipNode.parentNode ? this.tooltip.destroy() : this.appendTooltip();
   };
 
   private constructor(props: Namespace.Props) {
     super(props, H.node('div'), 'handler');
 
-    if (props.showTooltip) {
-      this.tooltip = this.renderTooltip();
-    }
+    this.tooltip = this.renderTooltip();
 
-    if (this.tooltip) {
-      const tooltipNode = this.tooltip.getNode();
-
-      pipe(tooltipNode, H.appendTo(this.node));
-    }
+    props.showTooltip ? this.appendTooltip() : this.tooltip.destroy();
 
     this.setEventListeners();
     this.setTabIndex();
   }
 
-  private readonly tooltip: Namespace.Tooltip = null;
+  private readonly tooltip: Namespace.Tooltip;
 
   private readonly renderTooltip: Namespace.RenderTooltip = () => {
     const {range, container, orientation, bemBlockClassName, tooltipAlwaysShown} = this.props;
@@ -75,6 +65,12 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
 
     return (pipe(tooltipProps, ofTooltip));
   };
+
+  private appendTooltip: Namespace.AppendTooltip = () => {
+    const tooltipNode = this.tooltip.getNode();
+
+    pipe(tooltipNode, H.appendTo(this.node));
+  }
 
   private readonly setTabIndex: () => void = () => {
     this.node.tabIndex = 0;

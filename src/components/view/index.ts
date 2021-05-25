@@ -64,7 +64,11 @@ class View implements Namespace.Interface {
 
     this.connects = this.renderConnects();
 
-    this.scale = props.scaleOptions.enabled ? this.renderScale() : null;
+    this.scale = this.renderScale();
+
+    if (!props.scaleOptions.enabled) {
+      this.scale.destroy();
+    }
   }
 
   private readonly container: Namespace.Container;
@@ -260,9 +264,9 @@ class View implements Namespace.Interface {
 
     A.map(flow(handler, this.toggleElementOrientation, this.moveElementTo(currents)))(this.handlers);
 
-    const tooltip = (x: Namespace.Handler): Namespace.Tooltip | null => x.getTooltip();
+    const tooltip = (x: Namespace.Handler): Namespace.Tooltip => x.getTooltip();
 
-    A.map(flow(tooltip, O.fromNullable, O.map((x) => O.some(x) ? x.toggleOrientation() : false)))(this.handlers);
+    A.map(flow(tooltip, (x) => x.toggleOrientation()))(this.handlers);
   }
 
   private readonly toggleConnectsOrientation: Namespace.ToggleConnectsOrientation = () => {

@@ -22,11 +22,11 @@ const exampleConfig: Namespace.Props = {
   connectType: 'inner-range',
   orientation: 'horizontal',
   handlerOptions: {
-    showTooltip: true,
+    showTooltip: false,
     tooltipAlwaysShown: true
   },
   scaleOptions: {
-    enabled: true,
+    enabled: false,
     showUnitEach: 10,
     withValue: true,
     showValueEach: 50
