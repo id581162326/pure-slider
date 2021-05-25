@@ -4,18 +4,14 @@ import {pipe} from 'fp-ts/function';
 
 import * as H from '../../helpers';
 
+import Observer from '../observer';
+
 import Namespace from './namespace';
 
 class Model implements Namespace.Interface {
   static of: Namespace.Of = (state) => new Model(state);
 
-  public attachListener: Namespace.AttachListener = (listener) => {
-    const {currents} = this.state;
-
-    this.listeners.push(listener);
-
-    listener.update({type: 'UPDATE_CURRENTS', currents: H.trace(currents)});
-  };
+  public readonly observer = new Observer();
 
   public update(action: Namespace.Action) {
     switch (action.type) {
@@ -26,22 +22,24 @@ class Model implements Namespace.Interface {
 
         this.state = {...this.state, currents: correctedCurrents};
 
-        const updateListeners = (listener: Namespace.Listener) => listener.update({type: 'UPDATE_CURRENTS', currents: correctedCurrents});
-
-        A.map(updateListeners)(this.listeners);
+        pipe(
+          this.observer,
+          H.prop('listeners'),
+          A.map((listener) => listener.update({type: 'CURRENTS_UPDATED', currents: correctedCurrents}))
+        );
 
         break;
       }
     }
   }
 
+  public getState: Namespace.GetState = () => this.state;
+
   private constructor(private state: Namespace.State) {
     this.validateState(state);
 
     this.state = {...state, currents: this.correctCurrents('init')(state.currents)};
   }
-
-  private readonly listeners: Namespace.Listener[] = [];
 
   private readonly validateCurrents: Namespace.ValidateCurrents = (currents) => pipe(currents, this.validateByLength);
 

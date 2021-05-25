@@ -1,42 +1,23 @@
+import Model from '../model/namespace';
+import View from '../view/namespace';
+import Observer from '../observer/namespace';
+
 namespace Controller {
-  export type Currents<Type extends 'Model' | 'View'> = Type extends 'Model'
-    ? number[]
-    : Type extends 'View'
-      ? [number] | [number, number]
-      : never;
+  export type Currents = View.Currents;
 
-  export interface MoveHandlers {type: 'MOVE_HANDLERS', currents: Currents<'View'>}
-
-  export type ViewAction = MoveHandlers;
-
-  export interface UpdateCurrents {type: 'UPDATE_CURRENTS', currents: Currents<'Model'>}
-
-  export type ModelAction = UpdateCurrents;
-
-  export type Listener = {
-    update: Update<'Model'>
-  }
+  export type ViewAction = View.Action;
 
   export type Of = (v: View, m: Model) => Interface;
 
-  export type Update<Type extends 'Model' | 'View'> = (a: Type extends 'Model'
-    ? ModelAction
-    : Type extends 'View'
-      ? ViewAction
-      : never) => void;
-
-  export type AttachListener = (o: Listener) => void;
-
   export type Dispatch = (a: ViewAction) => void;
 
-  export interface View {
-    update: Update<'View'>
-  }
+  export interface Listener extends Observer.Listener {}
 
-  export interface Model {
-    attachListener: AttachListener,
-    update: Update<'Model'>
-  }
+  export interface Observer extends Observer.Interface {}
+
+  export interface View extends View.Interface {}
+
+  export interface Model extends Model.Interface {}
 
   export interface Interface {
     dispatch: Dispatch;

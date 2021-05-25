@@ -7,11 +7,18 @@ namespace Slider {
 
   export type Currents = [number] | [number, number];
 
-  export type Intervals = [boolean, boolean] | [boolean, boolean, boolean];
+  export type ConnectType = 'outer-range' | 'inner-range' | 'from-start' | 'to-end' | 'none';
 
   export type Orientation = 'horizontal' | 'vertical';
 
-  export type TooltipOptions = {enabled: boolean, alwaysShown?: boolean};
+  export type HandlerOptions = {showTooltip: boolean, tooltipAlwaysShown?: boolean};
+
+  export type ScaleOptions = {
+    enabled: boolean,
+    showUnitEach: number,
+    withValue?: boolean,
+    showValueEach?: number
+  }
 
   export type View = View.Interface
 
@@ -19,20 +26,32 @@ namespace Slider {
 
   export type Controller = Controller.Interface;
 
+  export type MoveHandlers = (currents: Currents) => void;
+
+  export type ToggleScale = () => void;
+
+  export type ToggleOrientation = () => void;
+
+  export type ToggleTooltips = () => void;
+
   export interface Props {
     container: HTMLElement,
     range: Range,
     step: number,
     margin: number,
     currents: Currents,
-    intervals: Intervals,
+    connectType: ConnectType,
     orientation: Orientation,
-    tooltipOptions: TooltipOptions,
+    handlerOptions: HandlerOptions,
+    scaleOptions: ScaleOptions,
     themeBemBlockClassName?: string
   }
 
   export interface Interface {
-    moveHandlers: (currents: Currents) => void
+    moveHandlers: MoveHandlers,
+    toggleScale: ToggleScale,
+    toggleOrientation: ToggleOrientation,
+    toggleTooltips: ToggleTooltips
   }
 }
 

@@ -1,14 +1,14 @@
 import * as O from 'fp-ts/Option';
 import * as A from 'fp-ts/Array';
 import * as NEA from 'fp-ts/NonEmptyArray';
-import {constant, pipe} from 'fp-ts/function';
+import {constant, flow, pipe} from 'fp-ts/function';
 
 import * as H from '../../helpers';
 
 import Connect from './connect';
 import Handler from './handler';
-import Tooltip from './tooltip';
 import Base from './base';
+import Scale from './scale';
 import Container from './container';
 import Namespace from './namespace';
 import './styles.css';
@@ -28,6 +28,30 @@ class View implements Namespace.Interface {
 
         break;
       }
+
+      case 'TOGGLE_TOOLTIPS': {
+        this.toggleTooltipElements();
+
+        break;
+      }
+
+      case 'TOGGLE_ORIENTATION': {
+        this.toggleBaseAndContainerOrientation();
+
+        this.toggleConnectsOrientation();
+
+        this.toggleHandlersOrientation();
+
+        this.toggleScaleOrientation();
+
+        break;
+      }
+
+      case 'TOGGLE_SCALE': {
+        this.toggleScaleElement();
+
+        break;
+      }
     }
   };
 
@@ -40,9 +64,7 @@ class View implements Namespace.Interface {
 
     this.connects = this.renderConnects();
 
-    const tooltipsEnabled = pipe(props, H.prop('tooltipOptions'), H.prop('enabled'));
-
-    this.tooltips = tooltipsEnabled ? this.renderTooltips() : [];
+    this.scale = props.scaleOptions.enabled ? this.renderScale() : null;
   }
 
   private readonly container: Namespace.Container;
@@ -53,7 +75,7 @@ class View implements Namespace.Interface {
 
   private readonly handlers: Namespace.Handler[];
 
-  private readonly tooltips: Namespace.Tooltip[];
+  private readonly scale: Namespace.Scale | null;
 
   private readonly getBemBlockClassName: Namespace.GetBemBlockClassName = () => ({
     base: 'pure-slider',
@@ -61,23 +83,31 @@ class View implements Namespace.Interface {
   });
 
   private readonly appendElementTo: Namespace.AppendElementTo = (parent) => (element) => {
-    const node = pipe(element, H.prop('getNode'))();
+    const node = element.getNode();
 
-    const parentNode = pipe(parent, H.prop('getNode'))();
+    const parentNode = parent.getNode();
 
     pipe(node, H.appendTo(parentNode));
 
     return (element);
   };
 
+  private readonly toggleElementOrientation: Namespace.ToggleElementOrientation = (element) => {
+    element.toggleOrientation();
+
+    return (element);
+  };
+
   private readonly moveElementTo: Namespace.MoveElementTo = (currents) => (element) => {
-    pipe(element, H.prop('moveTo'))(currents);
+    element.moveTo(currents);
 
     return (element);
   };
 
   private readonly renderContainer: Namespace.RenderContainer = () => {
-    const {orientation, range, container} = this.props;
+    const {range, container} = this.props;
+
+    const {orientation} = this.state;
 
     const containerProps: Namespace.ContainerProps = {bemBlockClassName: this.getBemBlockClassName(), orientation, range, container};
 
@@ -87,7 +117,9 @@ class View implements Namespace.Interface {
   };
 
   private readonly renderBase: Namespace.RenderBase = () => {
-    const {orientation, range, container} = this.props;
+    const {range, container} = this.props;
+
+    const {orientation} = this.state;
 
     const baseProps: Namespace.BaseProps = {bemBlockClassName: this.getBemBlockClassName(), orientation, range, container, onClick: H.trace};
 
@@ -97,20 +129,22 @@ class View implements Namespace.Interface {
   };
 
   private readonly renderConnects: Namespace.RenderConnects = () => {
-    const {intervals, orientation, range, container} = this.props;
+    const {connectType, range, container} = this.props;
 
-    const {currents} = this.state;
+    const {orientation, currents} = this.state;
 
-    const hasIntervalReducer = (i: number, xs: number[], x: boolean): number[] => x ? [...xs, i] : xs;
-
-    const intervalsIndexes = A.reduceWithIndex([] as number[], hasIntervalReducer)(intervals);
+    const connectMap = connectType === 'outer-range'
+      ? [0, 2] : connectType === 'inner-range'
+        ? [1] : connectType === 'from-start'
+          ? [0] : connectType === 'to-end'
+            ? [1] : [];
 
     const getConnectProps = (idx: number): Namespace.ConnectProps => ({
       container,
       bemBlockClassName: this.getBemBlockClassName(),
       orientation,
       range,
-      type: A.size(intervals) === 3
+      type: connectType === 'outer-range' || connectType === 'inner-range'
         ? idx === 0 ? 'from-start' : idx === 2 ? 'to-end' : 'inner'
         : idx === 0 ? 'from-start' : 'to-end'
     });
@@ -125,21 +159,26 @@ class View implements Namespace.Interface {
       this.moveElementTo(currents)
     );
 
-    return (A.map(initConnect)(intervalsIndexes));
+    return (A.map(initConnect)(connectMap));
   };
 
   private readonly renderHandlers: Namespace.RenderHandlers = () => {
-    const {orientation, range, container, onChange} = this.props;
+    const {range, container, handlerOptions, onChange, step} = this.props;
 
-    const {currents} = this.state;
+    const {tooltipAlwaysShown, showTooltip} = handlerOptions;
+
+    const {currents, orientation} = this.state;
 
     const getHandlerProps = (idx: number): Namespace.HandlerProps => ({
       container,
       bemBlockClassName: this.getBemBlockClassName(),
       orientation,
       range,
-      type: A.size(currents) === 2 ? H.trace(idx) === 0 ? 'start' : 'end' : 'single',
-      onDrag: (type) => (coord) => pipe(type === 'start'
+      showTooltip,
+      step,
+      tooltipAlwaysShown,
+      type: A.size(currents) === 2 ? idx === 0 ? 'start' : 'end' : 'single',
+      onChange: (type) => (coord) => pipe(type === 'start'
         ? [pipe(this.state, H.prop('currents'), NEA.head, H.add(coord)), pipe(this.state, H.prop('currents'), NEA.last)]
         : type === 'single'
           ? [pipe(this.state, H.prop('currents'), NEA.head, H.add(coord))]
@@ -161,40 +200,92 @@ class View implements Namespace.Interface {
     return (A.mapWithIndex(initHandler)(currents));
   };
 
-  private readonly renderTooltips: Namespace.RenderTooltips = () => {
-    const {container, orientation, range, tooltipOptions} = this.props;
+  private readonly renderScale: Namespace.RenderScale = () => {
+    const {container, range, scaleOptions, connectType, step} = this.props;
 
-    const {currents} = this.state;
+    const {currents, orientation} = this.state;
 
-    const ofTooltip = pipe(Tooltip, H.prop('of'));
+    const ofScale = pipe(Scale, H.prop('of'));
 
-    const getTooltipProps = (idx: number): Namespace.TooltipProps => ({
+    const scaleProps: Namespace.ScaleProps = {
       container,
-      bemBlockClassName: this.getBemBlockClassName(),
       orientation,
       range,
-      alwaysShown: pipe(tooltipOptions, H.prop('alwaysShown')),
-      type: A.size(currents) === 2 ? idx === 0 ? 'start' : 'end' : 'single'
-    });
+      connectType,
+      step,
+      showUnitEach: scaleOptions.showUnitEach,
+      withValue: scaleOptions.withValue,
+      showValueEach: scaleOptions.showValueEach,
+      bemBlockClassName: this.getBemBlockClassName(),
+      onClick: () => {}
+    };
 
-    const initTooltip = (idx: number, handler: Namespace.Handler): Namespace.Tooltip => pipe(
-      idx,
-      getTooltipProps,
-      ofTooltip,
-      this.appendElementTo(handler),
-      this.moveElementTo(currents)
-    );
-
-    return (A.mapWithIndex(initTooltip)(this.handlers));
+    return (pipe(scaleProps, ofScale, this.moveElementTo(currents), this.appendElementTo(this.base)));
   };
 
-  private readonly moveHandlersTo: Namespace.MoveAllElementsTo = (currents) => {
+  private readonly moveHandlersTo: Namespace.MoveHandlersTo = (currents) => {
     pipe(this.connects, A.map(this.moveElementTo(currents)));
 
     pipe(this.handlers, A.map(this.moveElementTo(currents)));
 
-    pipe(this.tooltips, A.map(this.moveElementTo(currents)));
+    if (this.scale) {
+      pipe(this.scale, this.moveElementTo(currents));
+    }
   };
+
+  private readonly toggleBaseAndContainerOrientation: Namespace.ToggleBaseAndContainerOrientation = () => {
+    this.toggleElementOrientation(this.base);
+
+    this.toggleElementOrientation(this.container);
+  }
+
+  private readonly toggleScaleOrientation: Namespace.ToggleScaleOrientation = () => {
+    const {currents} = this.state;
+
+    if (this.scale) {
+      const units = this.scale.getUnits();
+
+      const toggleUnitOrientationAndUpdatePosition = (x: Namespace.Unit) => pipe(x, this.toggleElementOrientation, H.prop('updatePosition'))()
+
+      A.map(toggleUnitOrientationAndUpdatePosition)(units);
+
+      pipe(this.scale, this.toggleElementOrientation, this.moveElementTo(currents));
+    }
+  }
+
+  private readonly toggleHandlersOrientation: Namespace.ToggleHandlersOrientation = () => {
+    const {currents} = this.state;
+
+    const handler = (x: Namespace.Handler): Namespace.Handler => x;
+
+    A.map(flow(handler, this.toggleElementOrientation, this.moveElementTo(currents)))(this.handlers);
+
+    const tooltip = (x: Namespace.Handler): Namespace.Tooltip | null => x.getTooltip();
+
+    A.map(flow(tooltip, O.fromNullable, O.map((x) => O.some(x) ? x.toggleOrientation() : false)))(this.handlers);
+  }
+
+  private readonly toggleConnectsOrientation: Namespace.ToggleConnectsOrientation = () => {
+    const {currents} = this.state;
+
+    const connect = (x: Namespace.Connect): Namespace.Connect => x;
+
+    A.map(flow(connect, this.toggleElementOrientation, this.moveElementTo(currents)))(this.connects);
+  }
+
+  private readonly toggleScaleElement: Namespace.ToggleScaleElement = () => {
+    if (this.scale) {
+      this.scale.getNode().parentNode ? this.scale.destroy() : this.appendElementTo(this.base)(this.scale)
+    }
+  }
+
+  private readonly toggleTooltipElements: Namespace.ToggleTooltipElements = () => {
+    const handler = (x: Namespace.Handler): Namespace.Handler => x;
+
+    const toggleTooltip = (x: Namespace.Handler): void => x.toggleTooltip();
+
+    A.map(flow(handler, toggleTooltip))(this.handlers)
+  }
 }
 
 export default View;

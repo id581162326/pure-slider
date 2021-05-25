@@ -55,6 +55,9 @@ export const div: divSignature = (x) => (y) => y / x;
 type multSignature = (x: number) => (y: number) => number;
 export const mult: multSignature = (x) => (y) => x * y;
 
+type negateSignature = (x: number) => number;
+export const negate: negateSignature = (x) => mult(x)(-1);
+
 type halfSignature = (x: number) => number;
 export const half: halfSignature = (x) => div(2)(x);
 
@@ -103,6 +106,13 @@ export const addClassList: addClassListSignature = (xs) => (n) => {
 type removeClassListSignature = <T extends HTMLElement>(xs: string[]) => (n: T) => T;
 export const removeClassList: removeClassListSignature = (xs) => (n) => {
   n.classList.remove(...xs);
+
+  return (n);
+};
+
+type toggleClassListSignature = <T extends HTMLElement>(xs: string[]) => (n: T) => T;
+export const toggleClassList: toggleClassListSignature = (xs) => (n) => {
+  A.map((x: string) => n.classList.contains(x) ? n.classList.remove(x) : n.classList.add(x))(xs)
 
   return (n);
 };

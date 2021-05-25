@@ -1,3 +1,5 @@
+import Observer from '../observer/namespace';
+
 namespace Model {
   export type Range = [number, number];
 
@@ -12,9 +14,9 @@ namespace Model {
 
   export type Of = (o: State) => Interface;
 
-  export type AttachListener = (o: Listener) => void;
-
   export type Update = (action: Action) => void;
+
+  export type GetState = () => State;
 
   export type ValidateCurrents = (xs: Currents) => Currents;
 
@@ -36,12 +38,6 @@ namespace Model {
 
   export type ValidateByMargin = (o: State) => State;
 
-  export type ValidateByCurrents = (o: State) => State;
-
-  export interface Listener {
-    update: Update
-  }
-
   export interface State {
     range: Range,
     currents: Currents,
@@ -50,8 +46,9 @@ namespace Model {
   }
 
   export interface Interface {
-    attachListener: AttachListener
-    update: Update
+    observer: Observer.Interface,
+    update: Update,
+    getState: GetState
   }
 }
 

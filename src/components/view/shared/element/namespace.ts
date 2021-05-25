@@ -1,5 +1,7 @@
-namespace AbstractElement {
+namespace Element {
   export type Node = HTMLElement;
+
+  export type NodeKeys = 'base' | 'connect' | 'container' | 'handler' | 'tooltip' | 'scale' | 'unit';
 
   export type Orientation = 'horizontal' | 'vertical';
 
@@ -7,9 +9,9 @@ namespace AbstractElement {
 
   export type Range = [number, number];
 
-  export type Of = (o: Props) => Interface;
-
   export type GetNode<Node> = () => Node;
+
+  export type Destroy = () => void;
 
   export type SetClassList = () => void;
 
@@ -20,6 +22,8 @@ namespace AbstractElement {
   export type PercentOfRange = (x: number) => number;
 
   export type NodeSize = <Node extends HTMLElement>(n: Node) => number;
+
+  export type ToggleOrientation = () => void
 
   export type BemBlockClassName = {
     base: string,
@@ -34,8 +38,10 @@ namespace AbstractElement {
   }
 
   export interface Interface {
-    getNode: GetNode<Node>
+    getNode: GetNode<Node>,
+    destroy: Destroy
+    toggleOrientation: ToggleOrientation
   }
 }
 
-export default AbstractElement;
+export default Element;

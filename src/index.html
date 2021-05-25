@@ -8,17 +8,32 @@
 <body class="demo-page">
 <h1 class="demo-page__heading">Demo page</h1>
 <div class="demo-page__content">
-  <div class="example">
-    <span class="example__label">Example</span>
-    <span class="example__description">Set options on the left to see changes</span>
+  <div class="block">
+    <span class="block__label">Example No 1</span>
+    <span class="block__description">Set options on the left to see changes</span>
     <div class="js-example-slider"></div>
-  </div>
-  <div class="options">
-    <div class="options__column">
-      <label class="options__text-field js-text-field"> 1st handler
-        <input type="text" class="text-field__input js-text-field__input">
+    
+    <div class="options js-options">
+      <div class="options__row">
+        <label class="text-field"> 1st handler
+          <input type="text" class="text-field__input js-options__first-handler">
+        </label>
+        <label class="text-field"> 2nd handler
+          <input type="text" class="text-field__input js-options__second-handler">
+        </label>
+      </div>
+      <label class="checkbox">
+        Show tooltips
+        <input class="checkbox__input js-options__toggle-tooltip" type="checkbox" checked>
       </label>
-      <button class="options__button js-add-handler" type="button">Set handlers</button>
+      <label class="checkbox">
+        Show orientation
+        <input class="checkbox__input js-options__toggle-orientation" type="checkbox" checked>
+      </label>
+      <label class="checkbox">
+        Show scale
+        <input class="checkbox__input js-options__toggle-scale" type="checkbox" checked>
+      </label>
     </div>
   </div>
 </div>

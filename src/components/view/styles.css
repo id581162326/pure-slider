@@ -2,6 +2,14 @@
     display: flex;
 }
 
+.pure-slider_orientation_horizontal {
+    width: 100%;
+}
+
+.pure-slider_orientation_vertical {
+    height: 100%;
+}
+
 /* base */
 
 .pure-slider__base {
@@ -52,10 +60,39 @@
 .pure-slider__tooltip {
     display: none;
     position: absolute;
-    user-select: none
+    user-select: none;
 }
 
 .pure-slider__handler:active .pure-slider__tooltip,
 .pure-slider__tooltip_shown {
     display: block;
 }
+
+/* scale */
+
+.pure-slider__scale {
+    position: absolute;
+    cursor: pointer;
+}
+
+.pure-slider__scale_orientation_horizontal {
+    width: 100%;
+}
+
+.pure-slider__scale_orientation_vertical {
+    height: 100%;
+}
+
+/* unit */
+
+.pure-slider__unit {
+    position: absolute;
+    display: grid;
+    place-items: center;
+}
+
+.pure-slider__unit-value {
+    position: absolute;
+}
+
+

@@ -8,24 +8,35 @@ import Namespace from './slider/namespace';
 import './styles.css';
 
 const options = {
-  handlers: pipe(document, H.querySelector('.js-text-field__input')) as HTMLInputElement[],
-  addHandlerBtn: pipe(document, H.querySelector('.js-add-handler'))[0] as HTMLButtonElement
+  toggleOrientation: pipe(document, H.querySelector('.js-options__toggle-orientation'))[0] as HTMLButtonElement,
+  toggleScale: pipe(document, H.querySelector('.js-options__toggle-scale'))[0] as HTMLButtonElement,
+  toggleTooltip: pipe(document, H.querySelector('.js-options__toggle-tooltip'))[0] as HTMLButtonElement
 }
 
 const exampleConfig: Namespace.Props = {
-  range: [10, 30],
-  step: 3,
-  margin: 3,
-  currents: [10, 30],
+  range: [-1000000, 1000000],
+  step: 10000,
+  margin: 100000,
+  currents: [-340000, 30000],
   container: pipe(document, H.querySelector('.js-example-slider'))[0],
-  intervals: [true, false, true],
+  connectType: 'inner-range',
   orientation: 'horizontal',
-  tooltipOptions: {
+  handlerOptions: {
+    showTooltip: true,
+    tooltipAlwaysShown: true
+  },
+  scaleOptions: {
     enabled: true,
-    alwaysShown: true
+    showUnitEach: 10,
+    withValue: true,
+    showValueEach: 50
   }
 };
 
 const exampleSlider = new Slider(exampleConfig);
 
-H.addEventListener('click', () => exampleSlider.moveHandlers([-1000001000000000000, 754551000000]))(options.addHandlerBtn);
+H.addEventListener('click', () => exampleSlider.toggleOrientation())(options.toggleOrientation);
+
+H.addEventListener('click', () => exampleSlider.toggleScale())(options.toggleScale);
+
+H.addEventListener('click', () => exampleSlider.toggleTooltips())(options.toggleTooltip);

@@ -1,4 +1,4 @@
-import AbstractElement from '../abstract-element/namespace';
+import Element from '../shared/element/namespace';
 
 namespace Base {
   export type Node = HTMLDivElement;
@@ -7,11 +7,11 @@ namespace Base {
 
   export type OnClick = (coord: number) => void;
 
-  export interface Props extends AbstractElement.Props{
+  export interface Props extends Element.Props{
     onClick: OnClick
   }
 
-  export interface Interface extends AbstractElement.Interface {}
+  export interface Interface extends Element.Interface {}
 }
 
 export default Base;

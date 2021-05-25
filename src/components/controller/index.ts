@@ -10,18 +10,36 @@ class Controller implements Namespace.Interface {
 
         break;
       }
+
+      case 'TOGGLE_SCALE': {
+        this.view.update(action);
+
+        break;
+      }
+
+      case 'TOGGLE_ORIENTATION': {
+        this.view.update(action);
+
+        break;
+      }
+
+      case 'TOGGLE_TOOLTIPS': {
+        this.view.update(action);
+
+        break;
+      }
     }
   };
 
   private constructor(private readonly view: Namespace.View, private readonly model: Namespace.Model) {
-    this.model.attachListener(this.listener);
+    this.model.observer.attach(this.listener);
   }
 
   private listener: Namespace.Listener = {
     update: (action) => {
       switch (action.type) {
-        case 'UPDATE_CURRENTS': {
-          this.view.update({type: 'MOVE_HANDLERS', currents: action.currents as Namespace.Currents<'View'>});
+        case 'CURRENTS_UPDATED': {
+          this.view.update({type: 'MOVE_HANDLERS', currents: action.currents as Namespace.Currents});
         }
       }
     }
