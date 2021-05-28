@@ -2,6 +2,7 @@ import * as O from 'fp-ts/Option';
 import * as A from 'fp-ts/Array';
 import {constant, pipe} from 'fp-ts/function';
 
+
 // debug helpers
 
 type throwErrorSignature = (name: string) => (message: string) => void;
@@ -31,6 +32,9 @@ export const prop: propSignature = (k) => (o) => o[k];
 
 type identSignature = <T>(x: T) => T;
 export const ident: identSignature = (x) => x;
+
+type callSignature = <T extends unknown>(args: unknown[]) => (fn: Function) => T;
+export const call: callSignature = (args)  => (fn) => fn(...args);
 
 // math helpers
 
@@ -64,16 +68,13 @@ export const half: halfSignature = (x) => div(2)(x);
 type percentSignature = (x: number) => (y: number) => number;
 export const percent: percentSignature = (x) => (y) => pipe(y, div(x), mult(100));
 
+type decimalSignature = (x: number) => (y: number) => number;
+export const decimal: decimalSignature = (x) => (y) => Math.ceil(y % x);
+
 // array helpers
 
 type nthOrNoneSignature = <T>(n: number, none: T) => (xs: T[]) => T;
 export const nthOrNone: nthOrNoneSignature = (n, none) => (xs) => pipe(xs, A.lookup(n), O.getOrElse(constant(none)));
-
-type lastOrNoneSignature = <T>(none: T) => (xs: T[]) => T;
-export const lastOrNone: lastOrNoneSignature = (none) => (xs) => pipe(xs, A.last, O.getOrElse(constant(none)));
-
-type headOrNoneSignature = <T>(none: T) => (xs: T[]) => T;
-export const headOrNone: headOrNoneSignature = (none) => (xs) => pipe(xs, A.head, O.getOrElse(constant(none)));
 
 type subAdjacentSignature = (i: number) => (xs: number[]) => number;
 export const subAdjacent: subAdjacentSignature = (i) => (xs) => {
@@ -81,19 +82,28 @@ export const subAdjacent: subAdjacentSignature = (i) => (xs) => {
 
   const prev = nthOrNone(dec(i), NaN)(xs);
 
-  return (sub(prev)(current))
-}
+  return (sub(prev)(current));
+};
 
 // DOM helpers
 
 type nodeSignature = <T extends keyof HTMLElementTagNameMap>(n: T) => HTMLElementTagNameMap[T];
 export const node: nodeSignature = (n) => document.createElement(n);
 
-type appendToSignature = <T extends HTMLElement, K extends HTMLElement>(p: T) => (c: K) => K
+type appendToSignature = <T extends HTMLElement, K extends HTMLElement | DocumentFragment>(p: T) => (c: K) => K
 export const appendTo: appendToSignature = (p) => (c) => {
   p.appendChild(c);
 
   return (c);
+};
+
+type importFragmentSignature = (x: HTMLTemplateElement) => DocumentFragment;
+export const importFragment: importFragmentSignature = (x) => {
+  const content = x.content;
+
+  const fragment = document.importNode(content, true);
+
+  return (fragment);
 };
 
 type addClassListSignature = <T extends HTMLElement>(xs: string[]) => (n: T) => T;
@@ -110,12 +120,9 @@ export const removeClassList: removeClassListSignature = (xs) => (n) => {
   return (n);
 };
 
-type toggleClassListSignature = <T extends HTMLElement>(xs: string[]) => (n: T) => T;
-export const toggleClassList: toggleClassListSignature = (xs) => (n) => {
-  A.map((x: string) => n.classList.contains(x) ? n.classList.remove(x) : n.classList.add(x))(xs)
 
-  return (n);
-};
+type containsClass = <T extends HTMLElement>(x: string) => (n: T) => boolean;
+export const containsClass: containsClass = (x) => (n) => n.classList.contains(x);
 
 type setInlineStyleSignature = <T extends HTMLElement>(x: string) => (n: T) => T;
 export const setInlineStyle: setInlineStyleSignature = (x) => (n) => {
@@ -153,5 +160,8 @@ export const removeEventListener: removeEventListenerSignature = (t, fn) => (n) 
   return (n);
 };
 
-type querySelectorSignature = <T extends HTMLElement | Document, K extends HTMLElement>(s: string) => (n: T) => K[];
-export const querySelector: querySelectorSignature = (s) => (n) => Array.from(n.querySelectorAll(s));
+type querySelectorSignature = <T extends HTMLElement | Document | DocumentFragment>(s: string) => (n: T) => O.Option<HTMLElement>;
+export const querySelector: querySelectorSignature = (s) => (n) => pipe(n.querySelector(s), O.fromNullable) as O.Option<HTMLElement>;
+
+type querySelectorAllSignature = <T extends HTMLElement | Document | DocumentFragment, K extends HTMLElement>(s: string) => (n: T) => K[];
+export const querySelectorAll: querySelectorAllSignature = (s) => (n) => Array.from(n.querySelectorAll(s));

@@ -1,0 +1,33 @@
+.switcher {
+    --base-color: #D1D1D1;
+    --handler-color: #6F6F6F;
+
+    display: grid;
+    grid-row-gap: 15px;
+}
+
+.switcher__input {
+    width: 200px;
+    height: 4px;
+    padding-left: 8px;
+}
+
+.switcher__base {
+    background: var(--base-color);
+}
+
+.switcher__handler {
+    width: 20px;
+    height: 20px;
+    background: var(--handler-color);
+    border-radius: 4px;
+}
+.switcher__unit_active {
+    z-index: 3;
+    pointer-events: none;
+}
+
+.switcher__unit_active > .switcher__unit-value {
+    z-index: 1;
+    color: white;
+}

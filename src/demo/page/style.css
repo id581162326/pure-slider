@@ -1,0 +1,38 @@
+* {
+    box-sizing: border-box;
+}
+
+:root {
+    --font-color: #261201;
+    --background-color: #F1F1F1
+}
+
+body {
+    margin: 0;
+}
+
+.demo-page {
+    padding: 40px 0;
+    background: var(--background-color);
+    color: var(--font-color);
+}
+
+.demo-page__content {
+    width: 90%;
+    margin: 0 auto;
+}
+
+.demo-page__title {
+    margin: 0;
+    padding: 0 0 100px;
+}
+
+.demo-page__example-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-auto-rows: max-content;
+    grid-gap: 30px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}

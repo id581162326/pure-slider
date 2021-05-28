@@ -15,7 +15,7 @@ const getTypeDependingPlugins: (type: BuildType) => webpack.WebpackPluginInstanc
       return ([
         new webpack.HotModuleReplacementPlugin(),
         new HtmlWebpackPlugin({
-          template: './index.html',
+          template: './demo/page/index.html',
           filename: 'index.html',
           inject: 'body',
         })
@@ -23,7 +23,7 @@ const getTypeDependingPlugins: (type: BuildType) => webpack.WebpackPluginInstanc
     case 'demo':
       return ([
         new HtmlWebpackPlugin({
-          template: './index.html',
+          template: './demo/page/index.html',
           filename: 'index.html',
           inject: 'body',
           alwaysWriteToDisk: true
@@ -43,10 +43,10 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
     case 'dev':
       return ({
         mode: 'development',
-        entry: './index.ts',
+        entry: './demo/page/index.ts',
         output: {
           publicPath: '',
-          filename: 'bundle.js',
+          filename: 'index.js',
           path: path.resolve(__dirname, '..', 'dev')
         },
         devtool: 'source-map',
@@ -61,10 +61,10 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
     case 'demo':
       return ({
         mode: 'production',
-        entry: './index.ts',
+        entry: './demo/page/index.ts',
         output: {
           publicPath: './',
-          filename: 'bundle.js',
+          filename: 'index.js',
           path: path.resolve(__dirname, '..', 'demo')
         },
         optimization: {
@@ -75,10 +75,10 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
     case 'prod':
       return ({
         mode: 'production',
-        entry: './slider/index.ts',
+        entry: './plugin/index/index.ts',
         output: {
           publicPath: '',
-          filename: 'slider.js',
+          filename: 'index.js',
           path: path.resolve(__dirname, '..', 'dist')
         },
         optimization: {
@@ -95,6 +95,11 @@ export const getPlugins: (type: BuildType) => webpack.WebpackPluginInstance[] = 
   ([new CleanWebpackPlugin(), ...getTypeDependingPlugins(type)]);
 
 export const getRules: (type: BuildType) => webpack.RuleSetRule[] = (type) => ([
+  {
+    test: /\.html$/i,
+    use: 'html-loader',
+    exclude: /node_modules/
+  },
   {
     test: /\.js$/,
     use: 'babel-loader',

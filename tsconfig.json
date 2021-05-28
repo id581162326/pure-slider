@@ -9,8 +9,8 @@
     "preserveConstEnums": true,
     "sourceMap": true,
     "esModuleInterop": true,
-    "moduleResolution": "Node"
+    "moduleResolution": "Node",
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "@types/*"],
   "exclude": ["node_modules"]
 }
