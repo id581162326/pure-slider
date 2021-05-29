@@ -18,6 +18,7 @@
     display: grid;
     place-items: center;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .pure-slider__base_orientation_horizontal {
@@ -54,6 +55,7 @@
     place-items: center;
     user-select: none;
     -webkit-user-drag: none;
+    touch-action: none;
 }
 
 /* tooltip */

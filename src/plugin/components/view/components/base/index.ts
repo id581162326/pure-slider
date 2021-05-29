@@ -1,5 +1,5 @@
 import * as NEA from 'fp-ts/NonEmptyArray';
-import {pipe} from 'fp-ts/function';
+import {flow, pipe} from 'fp-ts/function';
 
 import * as H from '../../../../../helpers';
 
@@ -18,10 +18,10 @@ class Base extends Element<Namespace.Props, Namespace.Node> {
 
   private readonly setEventListeners: Namespace.SetEventListeners = () => {
     H.addEventListener('click', this.clickListener)(this.node);
-  }
+  };
 
   private readonly clickListener: Namespace.ClickListener = (event) => {
-    const {orientation, range, onClick} = this.props;
+    const {orientation, range, onClick, container} = this.props;
 
     const min = pipe(range, NEA.head);
 
@@ -29,8 +29,10 @@ class Base extends Element<Namespace.Props, Namespace.Node> {
 
     const bouncingClientRect = pipe(this.node.getBoundingClientRect(), H.prop(coordKey));
 
-    pipe(event, H.prop(coordKey), H.sub(bouncingClientRect), this.pxToNum, H.add(min), onClick);
-  }
+    pipe(event, H.prop(coordKey), H.sub(bouncingClientRect), orientation === 'horizontal'
+      ? H.ident
+      : flow(pipe(container, this.nodeSize, H.sub), H.abs), this.pxToNum, H.add(min), onClick);
+  };
 }
 
 export default Base;
