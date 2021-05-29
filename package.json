@@ -5,9 +5,9 @@
   "main": "main.js",
   "scripts": {
     "build:dev": "better-npm-run build:dev",
-    "build:demo": "better-npm-run build:demo",
     "build:prod": "better-npm-run build:prod",
-    "deploy": "gh-pages -d demo"
+    "build:demo": "better-npm-run build:demo",
+    "postbuild:demo": "gh-pages -d demo"
   },
   "betterScripts": {
     "build:dev": {
