@@ -24,9 +24,9 @@ namespace Handler {
 
   export type AppendTooltip = () => void;
 
-  export type DragListener = (e: MouseEvent) => void;
+  export type DragListener = (e: MouseEvent | TouchEvent) => void;
 
-  export type StartDrag = () => void;
+  export type StartDrag = (e: MouseEvent | TouchEvent) => void;
 
   export type EndDrag = () => void;
 

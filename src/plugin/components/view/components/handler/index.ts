@@ -69,7 +69,9 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
   };
 
   private readonly setEventListeners: Namespace.SetEventListeners = () => {
+    H.addEventListener('pointerdown', this.startDrag)(this.node);
     H.addEventListener('mousedown', this.startDrag)(this.node);
+    H.addEventListener('pointerup', this.endDrag)(window);
     H.addEventListener('mouseup', this.endDrag)(window);
     H.addEventListener('keydown', this.keyDownListener)(this.node);
   };
@@ -87,22 +89,30 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
   private readonly dragListener: Namespace.DragListener = (event) => {
     const {onDrag, orientation, type} = this.props;
 
-    const coordKey = orientation === 'horizontal' ? 'x' : 'y';
+    const xOrY = orientation === 'horizontal' ? 'x' : 'y';
+
+    const clientXorY = orientation === 'horizontal' ? 'clientX' : 'clientY';
 
     const offset = pipe(this.node, this.nodeSize, H.half);
 
-    const bouncingClientRect = pipe(this.node.getBoundingClientRect(), H.prop(coordKey));
+    const bouncingClientRect = pipe(this.node.getBoundingClientRect(), H.prop(xOrY));
 
-    pipe(event, H.prop(coordKey), H.sub(bouncingClientRect), orientation === 'horizontal'
+    const location = event.type === 'touchmove'
+      ? pipe(event as TouchEvent, H.prop('targetTouches'))[0][clientXorY]
+      : pipe(event as MouseEvent, H.prop(xOrY));
+
+    pipe(location, H.sub(bouncingClientRect), orientation === 'horizontal'
       ? H.ident
       : H.negate, H.sub(offset), this.pxToNum, onDrag(type));
   };
 
   private readonly startDrag: Namespace.StartDrag = () => {
+    H.addEventListener('touchmove', this.dragListener)(window);
     H.addEventListener('mousemove', this.dragListener)(window);
   };
 
   private readonly endDrag: Namespace.EndDrag = () => {
+    H.removeEventListener('touchmove', this.dragListener)(window);
     H.removeEventListener('mousemove', this.dragListener)(window);
   };
 
