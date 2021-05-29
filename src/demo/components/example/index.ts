@@ -66,7 +66,7 @@ class Example extends Fragment implements Namespace.Interface {
     this.slider,
     O.some,
     O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value')).toggleOrientation()
+      ? pipe(x, H.prop('value'), H.prop('toggleOrientation'), H.call([]))
       : O.none)
   );
 
@@ -74,7 +74,7 @@ class Example extends Fragment implements Namespace.Interface {
     this.slider,
     O.some,
     O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value')).toggleTooltips()
+      ? pipe(x, H.prop('value'), H.prop('toggleTooltips'), H.call([]))
       : O.none)
   );
 
@@ -82,7 +82,7 @@ class Example extends Fragment implements Namespace.Interface {
     this.slider,
     O.some,
     O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value')).toggleScale()
+      ? pipe(x, H.prop('value'), H.prop('toggleScale'), H.call([]))
       : O.none)
   );
 
@@ -90,7 +90,7 @@ class Example extends Fragment implements Namespace.Interface {
     this.slider,
     O.some,
     O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value')).toggleRange()
+      ? pipe(x, H.prop('value'), H.prop('toggleRange'), H.call([]))
       : O.none)
   );
 
@@ -98,7 +98,7 @@ class Example extends Fragment implements Namespace.Interface {
     this.slider,
     O.some,
     O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value')).setConnectType(type)
+      ? pipe(x, H.prop('value'), H.prop('setConnectType'), H.call([type]))
       : O.none)
   );
 
@@ -106,7 +106,7 @@ class Example extends Fragment implements Namespace.Interface {
     this.slider,
     O.some,
     O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value')).updateCurrents(currents)
+      ? pipe(x, H.prop('value'), H.prop('updateCurrents'), H.call([currents]))
       : O.none)
   );
 
@@ -114,7 +114,7 @@ class Example extends Fragment implements Namespace.Interface {
     this.slider,
     O.some,
     O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value')).updateRange(range)
+      ? pipe(x, H.prop('value'), H.prop('updateRange'), H.call([range]))
       : O.none)
   );
 
@@ -122,7 +122,7 @@ class Example extends Fragment implements Namespace.Interface {
     this.slider,
     O.some,
     O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value')).updateStep(step)
+      ? pipe(x, H.prop('value'), H.prop('updateStep'), H.call([step]))
       : O.none)
   );
 
@@ -130,7 +130,7 @@ class Example extends Fragment implements Namespace.Interface {
     this.slider,
     O.some,
     O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value')).updateMargin(margin)
+      ? pipe(x, H.prop('value'), H.prop('updateMargin'), H.call([margin]))
       : O.none)
   );
 

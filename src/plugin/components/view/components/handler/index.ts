@@ -29,6 +29,12 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
     pipe(this.node, H.setInlineStyle(style));
   };
 
+  public readonly destroy = () => {
+    this.node.remove();
+
+    this.removeEventListeners();
+  }
+
   private constructor(props: Namespace.Props) {
     super(props, H.node('div'), 'handler');
 
@@ -76,6 +82,11 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
     H.addEventListener('keydown', this.keyDownListener)(this.node);
   };
 
+  private readonly removeEventListeners = () => {
+    H.removeEventListener('pointerup', this.endDrag)(window);
+    H.removeEventListener('mouseup', this.endDrag)(window);
+  }
+
   private readonly getPos: Namespace.GetPos = (currents) => {
     const {type} = this.props;
 
@@ -106,12 +117,16 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
       : H.negate, H.sub(offset), this.pxToNum, onDrag(type));
   };
 
-  private readonly startDrag: Namespace.StartDrag = () => {
+  private readonly startDrag: Namespace.StartDrag = (event) => {
+    event.stopPropagation();
+
     H.addEventListener('touchmove', this.dragListener)(window);
     H.addEventListener('mousemove', this.dragListener)(window);
   };
 
-  private readonly endDrag: Namespace.EndDrag = () => {
+  private readonly endDrag: Namespace.EndDrag = (event) => {
+    event.stopPropagation();
+
     H.removeEventListener('touchmove', this.dragListener)(window);
     H.removeEventListener('mousemove', this.dragListener)(window);
   };

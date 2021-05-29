@@ -30,25 +30,31 @@ class View implements Namespace.Interface {
       }
 
       case 'UPDATE_RANGE': {
-        this.state = {...this.state, range: action.range};
+        if (this.state.range !== action.range) {
+          this.state = {...this.state, range: action.range};
 
-        this.reRender();
+          this.reRender();
+        }
 
         break;
       }
 
       case 'UPDATE_STEP': {
-        this.state = {...this.state, step: action.step};
+        if (this.state.step !== action.step) {
+          this.state = {...this.state, step: action.step};
 
-        this.reRender();
+          this.reRender();
+        }
 
         break;
       }
 
       case 'SET_CONNECT_TYPE': {
-        this.state = {...this.state, connectType: action.connectType};
+        if (this.state.connectType !== action.connectType) {
+          this.state = {...this.state, connectType: action.connectType};
 
-        this.reRender();
+          this.reRender();
+        }
 
         break;
       }
@@ -93,6 +99,10 @@ class View implements Namespace.Interface {
     if (!state.showScale) {
       this.scale.destroy();
     }
+
+    // move handlers on load for correct handler's offset calculation
+
+    H.addEventListener('load', () => this.moveHandlersTo(state.currents))(document);
   }
 
   private container: Namespace.Container;

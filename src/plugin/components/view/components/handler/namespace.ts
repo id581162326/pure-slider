@@ -28,7 +28,7 @@ namespace Handler {
 
   export type StartDrag = (e: MouseEvent | TouchEvent) => void;
 
-  export type EndDrag = () => void;
+  export type EndDrag = (e: MouseEvent | TouchEvent) => void;
 
   export type OnDrag = (t: Type) => (x: number) => void
 
