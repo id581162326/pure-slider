@@ -1,6 +1,4 @@
 import TextField from '../text-field/namespace';
-import Button from '../button/namespace';
-import Checkbox from '../checkbox/namespace';
 
 namespace Options {
   export type Parent = HTMLElement;
@@ -8,10 +6,6 @@ namespace Options {
   export type Of = (o: Props) => (p: HTMLElement) => Interface;
 
   export type TextField = TextField.Interface;
-
-  export type Button = Button.Interface;
-
-  export type Checkbox = Checkbox.Interface;
 
   export type Currents = [number, number];
 
