@@ -60,26 +60,14 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
 
   private readonly units: Namespace.Unit[];
 
-  private readonly getUnitsCount = (stepMult: number) => {
-    const {step, range} = this.props;
-
-    return (pipe(range, H.subAdjacent(1), H.div(H.mult(step)(stepMult)), Math.ceil));
-  };
-
-  private readonly correctUnitsCount = (stepMult: number) => (unitsCount: number): number => {
-    const correctedUnitCount = this.getUnitsCount(stepMult);
-
-    return (correctedUnitCount > 20 ? pipe(stepMult, H.inc, this.correctUnitsCount)(correctedUnitCount) : unitsCount);
-  };
-
   private readonly renderUnits: Namespace.RenderSteps = () => {
     const {step, range, container, orientation, bemBlockClassName, withValue, showValueEach, onClick} = this.props;
 
     const ofUnit = pipe(Unit, H.prop('of'));
 
-    const originalUnitCount = this.getUnitsCount(1);
+    const unitsCount = pipe(range, H.subAdjacent(1), H.div(step), Math.ceil);
 
-    const correctedUnitCount = this.correctUnitsCount(1)(originalUnitCount);
+    const unitCountLimit = 20;
 
     const min = pipe(range, NEA.head);
 
@@ -89,9 +77,9 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
 
     const units: Namespace.Unit[] = [];
 
-    const unitMult = pipe(originalUnitCount, H.div(correctedUnitCount), Math.ceil);
+    const unitMult = pipe(unitsCount, H.div(unitCountLimit), Math.ceil);
 
-    const arrayToFill: null[] = new Array(H.inc(correctedUnitCount)).fill(null);
+    const arrayToFill: null[] = new Array(pipe(unitsCount > unitCountLimit ? unitCountLimit : unitsCount, H.inc)).fill(null);
 
     const getUnitProps = (idx: number): Namespace.UnitProps => ({
       range,
@@ -107,7 +95,8 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
         idx,
         H.add(showValueEach),
         H.mult(unitMult),
-        valueFrom
+        valueFrom,
+        H.sub(max)
       ) <= max) || pipe(
         idx,
         H.mult(unitMult),
