@@ -9,19 +9,16 @@ import Fragment from '../fragment';
 import Options from '../options';
 
 import Namespace from './namespace';
-import exampleTemplate from './index.html';
+import template from './index.html';
 import './style.css';
 
-pipe(document, H.querySelector('html'), O.some, O.map((x) => O.isSome(x)
-  ? x.value.insertAdjacentHTML('afterbegin', exampleTemplate)
-  : O.none)
-);
+Fragment.injectTemplate(template);
 
 class Example extends Fragment implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new Example(props, parent);
 
   private constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
-    super(parent, 'js-example');
+    super(parent, '#js-example', '.js-example');
 
     this.slider = this.renderSlider();
 
@@ -34,12 +31,10 @@ class Example extends Fragment implements Namespace.Interface {
 
   private options: O.Option<Namespace.Options> = O.none;
 
-  private readonly exampleMap = (x: O.Some<HTMLElement>) => pipe(
-    x as O.Some<HTMLElement>,
-    H.prop('value'),
+  private readonly exampleMap = (x: HTMLElement) => pipe(
+    x,
     this.setInnerText,
-    this.renderOptions,
-    O.some
+    this.renderOptions
   );
 
   private readonly renderOptions: Namespace.RenderOptions = (x) => pipe(

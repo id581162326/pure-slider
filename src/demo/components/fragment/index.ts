@@ -6,24 +6,33 @@ import * as H from '../../../helpers';
 import Namespace from './namespace';
 
 class Fragment implements Namespace.Interface {
-  protected constructor(protected readonly parent: Namespace.Parent, private readonly selector: string) {
+  static readonly injectTemplate = (template: string) => pipe(document, H.querySelector('body'), O.some, O.map((x) => O.isSome(x)
+    ? x.value.insertAdjacentHTML('afterbegin', template)
+    : O.none)
+  );
+
+  protected constructor(
+    protected readonly parent: Namespace.Parent,
+    private readonly templateSelector: string,
+    private readonly componentSelector: string
+  ) {
     this.fragment = this.renderFragment();
   }
 
   protected readonly fragment: O.Option<DocumentFragment>;
 
-  protected readonly render = (fn: (x: O.Some<HTMLElement>) => O.Option<HTMLElement>) => pipe(
+  protected readonly render = (fn: (x: HTMLElement) => HTMLElement) => pipe(
     this.parent,
-    H.querySelector(`.${this.selector}`),
+    H.querySelector(this.componentSelector),
     O.some,
     O.map((x) => O.isSome(x)
-      ? fn(x)
+      ? pipe(x, H.prop('value'), fn)
       : O.none)
   );
 
   private readonly renderFragment: Namespace.RenderFragment = () => pipe(
     document,
-    H.querySelector(`.${this.selector}-template`),
+    H.querySelector(this.templateSelector),
     O.some,
     O.map((x) => O.isSome(x)
       ? pipe(x as O.Some<HTMLTemplateElement>, H.prop('value'), H.importFragment, H.appendTo(this.parent))

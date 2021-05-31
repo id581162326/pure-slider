@@ -10,13 +10,10 @@ import TextField from '../text-field';
 import Switcher from '../switcher';
 
 import Namespace from './namespace';
-import exampleTemplate from './index.html';
+import template from './index.html';
 import './style.css';
 
-pipe(document, H.querySelector('html'), O.some, O.map((x) => O.isSome(x)
-  ? x.value.insertAdjacentHTML('afterbegin', exampleTemplate)
-  : O.none)
-);
+Fragment.injectTemplate(template);
 
 class Options extends Fragment implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new Options(props, parent);
@@ -42,7 +39,8 @@ class Options extends Fragment implements Namespace.Interface {
   };
 
   private constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
-    super(parent, 'js-options');
+    super(parent, '#js-options','.js-options');
+
 
     pipe(this.optionsMap, this.render);
   }
@@ -55,9 +53,8 @@ class Options extends Fragment implements Namespace.Interface {
 
   private readonly marginField: Namespace.TextField[] = [];
 
-  private optionsMap = (x: O.Some<HTMLElement>) => pipe(
+  private optionsMap = (x: HTMLElement) => pipe(
     x,
-    H.prop('value'),
     this.renderCurrentsFields,
     this.renderRangeFields,
     this.renderStepField,
@@ -66,8 +63,7 @@ class Options extends Fragment implements Namespace.Interface {
     this.renderRangeToggle,
     this.renderTooltipsToggle,
     this.renderScaleToggle,
-    this.renderSwitcher,
-    O.some
+    this.renderSwitcher
   );
 
   private renderCurrentsFields: (x: HTMLElement) => HTMLElement = (x) => pipe(

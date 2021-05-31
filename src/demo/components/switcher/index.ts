@@ -9,19 +9,17 @@ import Slider from '../../../plugin/slider';
 import Fragment from '../fragment';
 
 import Namespace from './namespace';
-import exampleTemplate from './index.html';
+import template from './index.html';
 import './style.css';
 
-pipe(document, H.querySelector('html'), O.some, O.map((x) => O.isSome(x)
-  ? x.value.insertAdjacentHTML('afterbegin', exampleTemplate)
-  : O.none)
-);
+Fragment.injectTemplate(template);
 
 class Switcher extends Fragment implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new Switcher(props, parent);
 
   private constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
-    super(parent, 'js-switcher');
+    super(parent, '#js-switcher', '.js-switcher');
+
 
     pipe(this.switcherMap, this.render);
 
@@ -33,9 +31,8 @@ class Switcher extends Fragment implements Namespace.Interface {
 
   private slider: O.Option<Namespace.Slider> = O.none;
 
-  private readonly switcherMap = (x: O.Some<HTMLElement>) => pipe(
+  private readonly switcherMap = (x: HTMLElement) => pipe(
     x,
-    H.prop('value'),
     this.setLabel,
     this.renderInput,
     () => x

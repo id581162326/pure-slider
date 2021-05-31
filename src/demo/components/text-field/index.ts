@@ -6,13 +6,10 @@ import * as H from '../../../helpers';
 import Fragment from '../fragment';
 
 import Namespace from './namespace';
-import exampleTemplate from './index.html';
+import template from './index.html';
 import './style.css';
 
-pipe(document, H.querySelector('html'), O.some, O.map((x) => O.isSome(x)
-  ? x.value.insertAdjacentHTML('afterbegin', exampleTemplate)
-  : O.none)
-);
+Fragment.injectTemplate(template);
 
 class TextField extends Fragment implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new TextField(props, parent);
@@ -33,17 +30,15 @@ class TextField extends Fragment implements Namespace.Interface {
   ));
 
   constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
-    super(parent, 'js-text-field');
+    super(parent,'#js-text-field', '.js-text-field');
 
     pipe(this.textFieldMap, this.render);
   }
 
-  private readonly textFieldMap = (x: O.Some<HTMLElement>) => pipe(
+  private readonly textFieldMap = (x: HTMLElement) => pipe(
     x,
-    H.prop('value'),
     this.renderInput,
-    this.setLabel,
-    O.some
+    this.setLabel
   );
 
   private input: O.Option<HTMLInputElement> = O.none;
