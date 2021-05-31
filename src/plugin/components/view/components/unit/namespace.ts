@@ -3,15 +3,15 @@ import Element from '../element/namespace';
 namespace Unit {
   export type Node = HTMLDivElement;
 
-  export type Of = (o: Props) => Interface;
+  export type Of = (props: Props) => Interface;
 
   export type GetValue = () => number;
 
-  export type SetActive = (bool: boolean) => void;
+  export type SetActive = (active: boolean) => void;
 
   export type PlaceNode = () => void;
 
-  export type OnClick = (x: number) => void
+  export type OnClick = (coord: number) => void
 
   export interface Props extends Element.Props {
     value: number,

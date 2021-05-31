@@ -8,39 +8,41 @@ import Unit from '../components/unit/namespace';
 import Element from '../components/element/namespace';
 
 namespace View {
-  export type Connect = Connect.Interface;
+  export type ElementInterface = Element.Interface;
+
+  export type ConnectInterface = Connect.Interface;
 
   export type ConnectProps = Connect.Props;
 
-  export type Handler = Handler.Interface;
+  export type HandlerInterface = Handler.Interface;
 
   export type HandlerProps = Handler.Props;
 
-  export type Tooltip = Tooltip.Interface;
+  export type TooltipInterface = Tooltip.Interface;
 
-  export type Scale = Scale.Interface;
+  export type ScaleInterface = Scale.Interface;
 
   export type ScaleProps = Scale.Props;
 
-  export type Unit = Unit.Interface;
+  export type UnitInterface = Unit.Interface;
 
-  export type Base = Base.Interface;
+  export type BaseInterface = Base.Interface;
 
   export type BaseProps = Base.Props;
 
-  export type Container = Container.Interface;
+  export type ContainerInterface = Container.Interface;
 
   export type ContainerProps = Container.Props;
 
-  export type Elements = Handler | Connect | Base | Container | Scale | Unit | Tooltip;
+  export type Elements = HandlerInterface | ConnectInterface | BaseInterface | ContainerInterface | ScaleInterface | UnitInterface | TooltipInterface;
 
-  export type MovableElement = Connect | Handler | Scale;
+  export type MovableElement = ConnectInterface | HandlerInterface | ScaleInterface;
 
   export type Range = [number, number];
 
   export type Currents = [number, number] | [number];
 
-  export type DragType = 'start' | 'end' | 'single';
+  export type HandleType = Handler.HandleType;
 
   export type ConnectType = 'inner-range' | 'outer-range' | 'from-start' | 'to-end' | 'none';
 
@@ -93,31 +95,31 @@ namespace View {
 
   export type Action = UpdateCurrents | ToggleScale | ToggleTooltips | ToggleOrientation | UpdateStep | UpdateRange | SetConnectType | ToggleRange;
 
-  export type Of = (o: Props, s: State) => Interface;
+  export type Of = (props: Props, state: State) => Interface;
 
-  export type Update = (a: Action) => void;
+  export type Update = (action: Action) => void;
 
-  export type MoveElementTo = <Element extends MovableElement>(xs: Currents) => (e: Element) => Element;
+  export type MoveElementTo = <Element extends MovableElement>(currents: Currents) => (e: Element) => Element;
 
-  export type AppendElementTo = <Parent extends Element.Interface, Element extends Elements>(p: Parent) => (e: Element) => Element;
+  export type AppendElementTo = <Parent extends ElementInterface, Element extends Elements>(p: Parent) => (e: Element) => Element;
 
   export type GetBemBlockClassName = () => Element.BemBlockClassName;
 
-  export type RenderContainer = () => Container;
+  export type RenderContainer = () => ContainerInterface;
 
-  export type RenderBase = () => Base;
+  export type RenderBase = () => BaseInterface;
 
-  export type RenderConnects = () => Connect[];
+  export type RenderConnects = () => ConnectInterface[];
 
-  export type RenderHandlers = () => [Handler] | [Handler, Handler];
+  export type RenderHandlers = () => [HandlerInterface] | [HandlerInterface, HandlerInterface];
 
-  export type RenderScale = () => Scale;
+  export type RenderScale = () => ScaleInterface;
 
-  export type MoveHandlersTo = (xs: Currents) => void;
+  export type MoveHandlersTo = (currents: Currents) => void;
 
-  export type HandleDrag = (t: DragType) => (d: number) => void;
+  export type HandleDrag = (handleType: HandleType) => (delta: number) => void;
 
-  export type HandleClick = (x: number) => void;
+  export type HandleClick = (coord: number) => void;
 
   export type OnChange = (currents: Currents) => void;
 

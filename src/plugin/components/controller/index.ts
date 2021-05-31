@@ -31,7 +31,9 @@ class Controller implements Namespace.Interface {
     }
   };
 
-  private constructor(private readonly view: Namespace.View, private readonly model: Namespace.Model) {}
+  private constructor(private readonly view: Namespace.View, private readonly model: Namespace.Model) {
+    this.addListener(this.viewListener);
+  }
 
   private addListener: Namespace.AddListener = (listener) => {
     this.model.observer.attach(listener);
@@ -44,6 +46,28 @@ class Controller implements Namespace.Interface {
 
     listener.update({type: 'MARGIN_UPDATED', margin: this.model.getState().margin});
   }
+
+  private readonly viewListener: Namespace.Listener = {
+    update: (action) => {
+      switch (action.type) {
+        case 'CURRENTS_UPDATED': {
+          this.view.update({type: 'UPDATE_CURRENTS', currents: action.currents});
+
+          break;
+        }
+
+        case 'RANGE_UPDATED': {
+          this.view.update({type: 'UPDATE_RANGE', range: action.range});
+
+          break;
+        }
+
+        case 'STEP_UPDATED': {
+          this.view.update({type: 'UPDATE_STEP', step: action.step});
+        }
+      }
+    }
+  };
 }
 
 export default Controller;

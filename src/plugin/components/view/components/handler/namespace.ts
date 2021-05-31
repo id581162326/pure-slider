@@ -8,32 +8,32 @@ namespace Handler {
 
   export type TooltipProps = Tooltip.Props;
 
-  export type Type = 'start' | 'end' | 'single';
+  export type HandleType = 'start' | 'end' | 'single';
 
   export type Currents = Element.Currents;
 
-  export type Of = (o: Props) => Interface;
+  export type Of = (props: Props) => Interface;
 
-  export type MoveTo = (xs: Currents) => void;
+  export type MoveTo = (currents: Currents) => void;
 
   export type RenderTooltip = () => Tooltip;
 
   export type SetEventListeners = () => void;
 
-  export type GetPos = (xs: Currents) => number;
+  export type GetPos = (currents: Currents) => number;
 
   export type AppendTooltip = () => void;
 
-  export type DragListener = (e: MouseEvent | TouchEvent) => void;
+  export type DragListener = (event: MouseEvent | TouchEvent) => void;
 
-  export type StartDrag = (e: MouseEvent | TouchEvent) => void;
+  export type StartDrag = (event: MouseEvent | TouchEvent) => void;
 
-  export type EndDrag = (e: MouseEvent | TouchEvent) => void;
+  export type EndDrag = (event: MouseEvent | TouchEvent) => void;
 
-  export type OnDrag = (t: Type) => (x: number) => void
+  export type OnDrag = (handleType: HandleType) => (delta: number) => void
 
   export interface Props extends Element.Props {
-    type: Type,
+    type: HandleType,
     showTooltip: boolean,
     tooltipAlwaysShown: boolean,
     step: number,

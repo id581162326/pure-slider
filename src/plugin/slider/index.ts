@@ -91,8 +91,6 @@ class Slider implements Namespace.Interface {
     });
 
     this.controller = Controller.of(this.view, this.model);
-
-    this.attachListener(this.viewListener);
   }
 
   private readonly controller: Namespace.Controller;
@@ -100,28 +98,6 @@ class Slider implements Namespace.Interface {
   private readonly view: Namespace.View;
 
   private readonly model: Namespace.Model;
-
-  private readonly viewListener: Namespace.Listener = {
-    update: (action) => {
-      switch (action.type) {
-        case 'CURRENTS_UPDATED': {
-          this.view.update({type: 'UPDATE_CURRENTS', currents: action.currents});
-
-          break;
-        }
-
-        case 'RANGE_UPDATED': {
-          this.view.update({type: 'UPDATE_RANGE', range: action.range});
-
-          break;
-        }
-
-        case 'STEP_UPDATED': {
-          this.view.update({type: 'UPDATE_STEP', step: action.step});
-        }
-      }
-    }
-  };
 }
 
 export default Slider;

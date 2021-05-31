@@ -5,13 +5,13 @@ namespace Base {
 
   export type ClickType = 'start' | 'end' | 'single';
 
-  export type Of = (o: Props) => Interface;
+  export type Of = (props: Props) => Interface;
 
   export type SetEventListeners = () => void;
 
   export type ClickListener = (event: MouseEvent) => void;
 
-  export type OnClick = (coord: number) => void;
+  export type OnClick = (coordinate: number) => void;
 
   export interface Props extends Element.Props {
     onClick: OnClick,

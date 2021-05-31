@@ -1,7 +1,7 @@
 import Element from '../element/namespace';
 
 namespace Container {
-  export type Of = (o: Props) => Interface;
+  export type Of = (props: Props) => Interface;
 
   export type Node = Element.Node;
 

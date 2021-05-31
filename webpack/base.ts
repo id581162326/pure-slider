@@ -9,9 +9,9 @@ import HtmlWebpackHardDiskPlugin from 'html-webpack-harddisk-plugin';
 
 type BuildType = 'dev' | 'prod' | 'demo' | 'test';
 
-const getTypeDependingPlugins: (type: BuildType) => webpack.WebpackPluginInstance[] = (type) => {
-  switch (type) {
-    case 'dev':
+const getTypeDependingPlugins: (buildType: BuildType) => webpack.WebpackPluginInstance[] = (buildType) => {
+  switch (buildType) {
+    case 'dev': {
       return ([
         new webpack.HotModuleReplacementPlugin(),
         new HtmlWebpackPlugin({
@@ -20,7 +20,9 @@ const getTypeDependingPlugins: (type: BuildType) => webpack.WebpackPluginInstanc
           inject: 'body',
         })
       ]);
-    case 'demo':
+    }
+
+    case 'demo': {
       return ([
         new HtmlWebpackPlugin({
           template: './demo/page/index.html',
@@ -31,16 +33,21 @@ const getTypeDependingPlugins: (type: BuildType) => webpack.WebpackPluginInstanc
         new HtmlWebpackHardDiskPlugin(),
         new MiniCssExtractPlugin({filename: 'css/[name].css'})
       ]);
-    case 'prod':
+    }
+
+    case 'prod': {
       return ([new MiniCssExtractPlugin({filename: 'css/[name].css'})]);
-    case 'test':
+    }
+
+    case 'test': {
       return ([]);
+    }
   }
 };
 
-const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = (type) => {
-  switch (type) {
-    case 'dev':
+const getTypeDependingConfigProps: (buildType: BuildType) => webpack.Configuration = (buildType) => {
+  switch (buildType) {
+    case 'dev': {
       return ({
         mode: 'development',
         entry: './demo/page/index.ts',
@@ -58,7 +65,9 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
           clientLogLevel: 'silent'
         }
       });
-    case 'demo':
+    }
+
+    case 'demo': {
       return ({
         mode: 'production',
         entry: './demo/page/index.ts',
@@ -72,10 +81,12 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
           minimizer: [new TerserJSPlugin({extractComments: false}), new CssMinimizerWebpackPlugin()]
         }
       });
-    case 'prod':
+    }
+
+    case 'prod': {
       return ({
         mode: 'production',
-        entry: './plugin/index/index.ts',
+        entry: './plugin/slider/index.ts',
         output: {
           publicPath: '',
           filename: 'index.js',
@@ -86,15 +97,18 @@ const getTypeDependingConfigProps: (type: BuildType) => webpack.Configuration = 
           minimizer: [new TerserJSPlugin({extractComments: false}), new CssMinimizerWebpackPlugin()]
         }
       });
-    case 'test':
+    }
+
+    case 'test': {
       return ({});
+    }
   }
 };
 
-export const getPlugins: (type: BuildType) => webpack.WebpackPluginInstance[] = (type) =>
-  ([new CleanWebpackPlugin(), ...getTypeDependingPlugins(type)]);
+export const getPlugins: (buildType: BuildType) => webpack.WebpackPluginInstance[] = (buildType) =>
+  ([new CleanWebpackPlugin(), ...getTypeDependingPlugins(buildType)]);
 
-export const getRules: (type: BuildType) => webpack.RuleSetRule[] = (type) => ([
+export const getRules: (type: BuildType) => webpack.RuleSetRule[] = (buildType) => ([
   {
     test: /\.html$/i,
     use: 'html-loader',
@@ -113,7 +127,7 @@ export const getRules: (type: BuildType) => webpack.RuleSetRule[] = (type) => ([
   {
     test: /\.css$/,
     use: [
-      ...(type === 'prod' || type ==='demo' ? [{
+      ...(buildType === 'prod' || buildType ==='demo' ? [{
         loader: MiniCssExtractPlugin.loader
       }]: ['style-loader']),
       'css-loader',
@@ -131,7 +145,7 @@ export const getRules: (type: BuildType) => webpack.RuleSetRule[] = (type) => ([
                   'not-pseudo-class': true
                 },
                 ...(
-                  (type === 'prod' || type === 'demo') ? {
+                  (buildType === 'prod' || buildType === 'demo') ? {
                     browsers: 'last 2 versions'
                   } : {}
                 )
@@ -144,8 +158,8 @@ export const getRules: (type: BuildType) => webpack.RuleSetRule[] = (type) => ([
   }
 ]);
 
-export const getConfig: (type: BuildType) => webpack.Configuration = (type) => ({
-  ...getTypeDependingConfigProps(type),
+export const getConfig: (buildType: BuildType) => webpack.Configuration = (buildType) => ({
+  ...getTypeDependingConfigProps(buildType),
   context: path.resolve(__dirname, '..', 'src'),
   resolve: {
     modules: ['node_modules', 'src'],

@@ -105,15 +105,15 @@ class View implements Namespace.Interface {
     H.addEventListener('load', () => this.moveHandlersTo(state.currents))(document);
   }
 
-  private container: Namespace.Container;
+  private container: Namespace.ContainerInterface;
 
-  private base: Namespace.Base;
+  private base: Namespace.BaseInterface;
 
-  private connects: Namespace.Connect[];
+  private connects: Namespace.ConnectInterface[];
 
-  private handlers: [Namespace.Handler, Namespace.Handler] | [Namespace.Handler];
+  private handlers: [Namespace.HandlerInterface, Namespace.HandlerInterface] | [Namespace.HandlerInterface];
 
-  private scale: Namespace.Scale;
+  private scale: Namespace.ScaleInterface;
 
   private readonly getBemBlockClassName: Namespace.GetBemBlockClassName = () => ({
     base: 'pure-slider',
@@ -226,7 +226,7 @@ class View implements Namespace.Interface {
 
     const ofConnect = Connect.of;
 
-    const initConnect = (idx: number): Namespace.Connect => pipe(
+    const initConnect = (idx: number): Namespace.ConnectInterface => pipe(
       idx,
       getConnectProps,
       ofConnect,
@@ -258,7 +258,7 @@ class View implements Namespace.Interface {
 
     const ofHandler = Handler.of;
 
-    const initHandler = (idx: number): Namespace.Handler => pipe(
+    const initHandler = (idx: number): Namespace.HandlerInterface => pipe(
       idx,
       getHandlerProps,
       ofHandler,
@@ -266,7 +266,7 @@ class View implements Namespace.Interface {
       this.moveElementTo(currents)
     );
 
-    return (A.mapWithIndex(initHandler)(currents) as [Namespace.Handler, Namespace.Handler] | [Namespace.Handler]);
+    return (A.mapWithIndex(initHandler)(currents) as [Namespace.HandlerInterface, Namespace.HandlerInterface] | [Namespace.HandlerInterface]);
   };
 
   private readonly renderScale: Namespace.RenderScale = () => {

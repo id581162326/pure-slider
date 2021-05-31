@@ -28,31 +28,27 @@ namespace Model {
 
   export type Action = UpdateCurrents | UpdateStep | UpdateRange | UpdateMargin;
 
-  export type Of = (o: State) => Interface;
+  export type Of = (state: State) => Interface;
 
   export type Update = (action: Action) => void;
 
   export type GetState = () => State;
 
-  export type ValidateCurrents = (xs: Currents) => Currents;
+  export type CorrectCurrents = (correctType: 'init' | 'change') => (currents: Currents) => Currents;
 
-  export type ValidateByLength = (xs: Currents) => Currents;
+  export type CorrectByStep = (coord: number) => number;
 
-  export type CorrectCurrents = (t: 'init' | 'change') => (xs: Currents) => Currents;
+  export type CorrectToMargin = (currents: Currents) => (coord: number, idx: number) => number;
 
-  export type CorrectByStep = (x: number) => number;
+  export type CorrectToRange = (coord: number) => number;
 
-  export type CorrectToMargin = (xs: Currents) => (x: number, i: number) => number;
+  export type ValidateState = (state: State) => State;
 
-  export type CorrectToRange = (x: number) => number;
+  export type ValidateByRange = (state: State) => State;
 
-  export type ValidateState = (o: State) => State;
+  export type ValidateByStep = (state: State) => State;
 
-  export type ValidateByRange = (o: State) => State;
-
-  export type ValidateByStep = (o: State) => State;
-
-  export type ValidateByMargin = (o: State) => State;
+  export type ValidateByMargin = (state: State) => State;
 
   export interface State {
     range: Range,

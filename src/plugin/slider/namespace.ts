@@ -27,7 +27,7 @@ namespace Slider {
 
   export type Listener = Observer.Listener;
 
-  export type Of = (n: HTMLElement) => (o: Props) => Interface;
+  export type Of = (container: HTMLElement) => (props: Props) => Interface;
 
   export type UpdateCurrents = (currents: Currents) => void;
 
@@ -39,15 +39,15 @@ namespace Slider {
 
   export type ToggleRange = () => void;
 
-  export type AttachListener = (o: Listener) => void;
+  export type AttachListener = (listener: Listener) => void;
 
-  export type UpdateStep = (x: number) => void;
+  export type UpdateStep = (step: number) => void;
 
-  export type UpdateRange = (xs: Range) => void;
+  export type UpdateRange = (range: Range) => void;
 
-  export type UpdateMargin = (x: number) => void;
+  export type UpdateMargin = (margin: number) => void;
 
-  export type SetConnectType = (t: ConnectType) => void;
+  export type SetConnectType = (connectType: ConnectType) => void;
 
   export interface Props {
     range: Range,

@@ -10,11 +10,11 @@ namespace Controller {
 
   export type Action = View.Action | Model.Action | AttachListener;
 
-  export type Of = (v: View, m: Model) => Interface;
+  export type Of = (view: View, model: Model) => Interface;
 
-  export type Dispatch = (a: Action) => void;
+  export type Dispatch = (action: Action) => void;
 
-  export type AddListener = (o: Listener) => void;
+  export type AddListener = (listener: Listener) => void;
 
   export interface Listener extends Observer.Listener {
   }

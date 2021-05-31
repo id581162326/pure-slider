@@ -15,13 +15,13 @@ namespace Element {
 
   export type SetClassList = () => void;
 
-  export type PxToNum = (x: number) => number;
+  export type PxToNum = (px: number) => number;
 
-  export type CorrectToMin = (x: number) => number;
+  export type CorrectToMin = (coord: number) => number;
 
-  export type PercentOfRange = (x: number) => number;
+  export type PercentOfRange = (coord: number) => number;
 
-  export type NodeSize = <Node extends HTMLElement>(n: Node) => number;
+  export type NodeSize = <Node extends HTMLElement>(node: Node) => number;
 
   export type BemBlockClassName = {
     base: string,

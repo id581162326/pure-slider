@@ -10,19 +10,21 @@ namespace Scale {
 
   export type Currents = Element.Currents;
 
-  export type Of = (o: Props) => Interface;
+  export type ConnectType = 'outer-range' | 'inner-range' | 'from-start' | 'to-end' | 'none';
+
+  export type Of = (props: Props) => Interface;
 
   export type RenderSteps = () => Unit[];
 
   export type AppendUnits = () => void;
 
-  export type MoveTo = (xs: Currents) => void;
+  export type MoveTo = (currents: Currents) => void;
 
-  export type OnClick = (x: number) => void;
+  export type OnClick = (coord: number) => void;
 
   export interface Props extends Element.Props {
     step: number,
-    connectType: 'outer-range' | 'inner-range' | 'from-start' | 'to-end' | 'none',
+    connectType: ConnectType,
     withValue: boolean,
     showValueEach: number,
     onClick: OnClick;

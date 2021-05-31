@@ -4,9 +4,9 @@ namespace Tooltip {
 
   export type Currents = Element.Currents;
 
-  export type Of = (o: Props) => Interface;
+  export type Of = (props: Props) => Interface;
 
-  export type SetValue = (x: number) => void;
+  export type SetValue = (value: number) => void;
 
   export interface Props extends Element.Props {
     alwaysShown: boolean

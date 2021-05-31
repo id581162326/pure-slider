@@ -8,7 +8,6 @@ import Element from '../element';
 import Unit from '../unit';
 
 import Namespace from './namespace';
-import {div} from '../../../../../helpers';
 
 class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespace.Interface {
   static of: Namespace.Of = (props) => new Scale(props);
@@ -61,16 +60,38 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
 
   private readonly units: Namespace.Unit[];
 
+  private readonly getUnitsCount = (stepMult: number) => {
+    const {step, range} = this.props;
+
+    return (pipe(range, H.subAdjacent(1), H.div(H.mult(step)(stepMult)), Math.ceil));
+  };
+
+  private readonly correctUnitsCount = (stepMult: number) => (unitsCount: number): number => {
+    const correctedUnitCount = this.getUnitsCount(stepMult);
+
+    return (correctedUnitCount > 20 ? pipe(stepMult, H.inc, this.correctUnitsCount)(correctedUnitCount) : unitsCount);
+  };
+
   private readonly renderUnits: Namespace.RenderSteps = () => {
     const {step, range, container, orientation, bemBlockClassName, withValue, showValueEach, onClick} = this.props;
 
-    const unitsCount = pipe(range, H.subAdjacent(1), H.div(step), Math.ceil, H.inc);
+    const ofUnit = pipe(Unit, H.prop('of'));
+
+    const originalUnitCount = this.getUnitsCount(1);
+
+    const correctedUnitCount = this.correctUnitsCount(1)(originalUnitCount);
 
     const min = pipe(range, NEA.head);
 
     const max = pipe(range, NEA.last);
 
-    const valueFrom = (x: number): number => pipe(step, H.mult(x), H.add(min));
+    const valueFrom = (idx: number): number => pipe(idx, H.mult(step), H.add(min));
+
+    const units: Namespace.Unit[] = [];
+
+    const unitMult = pipe(originalUnitCount, H.div(correctedUnitCount), Math.ceil);
+
+    const arrayToFill: null[] = new Array(H.inc(correctedUnitCount)).fill(null);
 
     const getUnitProps = (idx: number): Namespace.UnitProps => ({
       range,
@@ -78,21 +99,25 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
       orientation,
       bemBlockClassName,
       onClick,
-      withValue: withValue && pipe(idx, unitsCount > 20 ? H.div(unitMult) : H.ident, H.div(showValueEach), H.decimal(1)) === 0,
-      value: pipe(idx, valueFrom, (x) => x > max ? max : x)
+      withValue: withValue && ((pipe(
+        idx,
+        H.div(showValueEach),
+        H.decimal(1)
+      ) === 0 && pipe(
+        idx,
+        H.add(showValueEach),
+        H.mult(unitMult),
+        valueFrom
+      ) < max) || pipe(
+        idx,
+        H.mult(unitMult),
+        valueFrom
+      ) >= max),
+      value: pipe(idx, H.mult(unitMult), valueFrom, (x) => x >= max ? max : x)
     });
-
-    const ofUnit = pipe(Unit, H.prop('of'));
-
-    const units: Namespace.Unit[] = [];
-
-    const unitMult = pipe(unitsCount, div(20), Math.trunc);
-
-    const arrayToFill: null[] = new Array(unitsCount > 21 ? 21 : unitsCount).fill(null);
 
     const pushUnit = (idx: number) => units.push(pipe(
       idx,
-      unitsCount > 21 ? flow(H.mult(unitMult)) : H.ident,
       getUnitProps,
       ofUnit
     ));

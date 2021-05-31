@@ -23,12 +23,12 @@ namespace Observer {
     margin: number
   }
 
-  export type Action = CurrentsUpdated | StepUpdated | RangeUpdated | MarginUpdated;
+  export type Event = CurrentsUpdated | StepUpdated | RangeUpdated | MarginUpdated;
 
-  export type Attach = (o: Listener) => void;
+  export type Attach = (listener: Listener) => void;
 
   export interface Listener {
-    update: (a: Action) => void
+    update: (event: Event) => void
   }
 
   export interface Interface {
