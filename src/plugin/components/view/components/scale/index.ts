@@ -108,7 +108,7 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
         H.add(showValueEach),
         H.mult(unitMult),
         valueFrom
-      ) < max) || pipe(
+      ) <= max) || pipe(
         idx,
         H.mult(unitMult),
         valueFrom
