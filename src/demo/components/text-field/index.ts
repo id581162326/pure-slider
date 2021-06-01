@@ -56,12 +56,12 @@ class TextField extends Fragment implements Namespace.Interface {
       ? pipe(
         x,
         H.prop('value'),
-        H.addEventListener('keyup', ({code}) => code === 'Enter' && pipe(
+        H.addEventListener('change', () => pipe(
           x as O.Some<HTMLInputElement>,
           H.prop('value'),
           H.prop('value'),
           Number,
-          this.props.onEnter
+          this.props.onChange
         )))
       : O.none),
     () => x,

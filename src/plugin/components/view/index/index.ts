@@ -120,16 +120,6 @@ class View implements Namespace.Interface {
     theme: pipe(this.props, H.prop('themeBemBlockClassName'), O.fromNullable, O.getOrElse(constant('-slider')))
   });
 
-  private readonly appendElementTo: Namespace.AppendElementTo = (parent) => (element) => {
-    const node = element.getNode();
-
-    const parentNode = parent.getNode();
-
-    pipe(node, H.appendTo(parentNode));
-
-    return (element);
-  };
-
   private readonly moveElementTo: Namespace.MoveElementTo = (currents) => (element) => {
     element.moveTo(currents);
 
@@ -200,7 +190,11 @@ class View implements Namespace.Interface {
 
     const ofBase = Base.of;
 
-    return (pipe(baseProps, ofBase, this.appendElementTo(this.container)));
+    const base = pipe(baseProps, ofBase);
+
+    H.appendTo(container)(base.getNode());
+
+    return (base);
   };
 
   private readonly renderConnects: Namespace.RenderConnects = () => {
@@ -230,11 +224,14 @@ class View implements Namespace.Interface {
       idx,
       getConnectProps,
       ofConnect,
-      this.appendElementTo(this.base),
       this.moveElementTo(currents)
     );
 
-    return (A.map(initConnect)(connectMap));
+    const connects = A.map(initConnect)(connectMap);
+
+    pipe(connects, A.map((x) => x.getNode()), H.appendChildListTo(this.base.getNode()));
+
+    return (connects);
   };
 
   private readonly renderHandlers: Namespace.RenderHandlers = () => {
@@ -262,11 +259,14 @@ class View implements Namespace.Interface {
       idx,
       getHandlerProps,
       ofHandler,
-      this.appendElementTo(this.base),
       this.moveElementTo(currents)
     );
 
-    return (A.mapWithIndex(initHandler)(currents) as [Namespace.HandlerInterface, Namespace.HandlerInterface] | [Namespace.HandlerInterface]);
+    const handlers = A.mapWithIndex(initHandler)(currents) as [Namespace.HandlerInterface, Namespace.HandlerInterface] | [Namespace.HandlerInterface];
+
+    pipe(handlers, A.map((x) => x.getNode()), H.appendChildListTo(this.base.getNode()));
+
+    return (handlers);
   };
 
   private readonly renderScale: Namespace.RenderScale = () => {
@@ -288,7 +288,11 @@ class View implements Namespace.Interface {
       onClick: this.handleClick
     };
 
-    return (pipe(scaleProps, ofScale, this.moveElementTo(currents), this.appendElementTo(this.base)));
+    const scale = pipe(scaleProps, ofScale, this.moveElementTo(currents));
+
+    H.appendTo(this.base.getNode())(scale.getNode());
+
+    return (scale);
   };
 
   private handleDrag: Namespace.HandleDrag = (type) => (delta) => {

@@ -90,12 +90,21 @@ export const subAdjacent: subAdjacentSignature = (i) => (xs) => {
 type nodeSignature = <T extends keyof HTMLElementTagNameMap>(n: T) => HTMLElementTagNameMap[T];
 export const node: nodeSignature = (n) => document.createElement(n);
 
-type appendToSignature = <T extends HTMLElement, K extends HTMLElement | DocumentFragment>(p: T) => (c: K) => K
+type appendToSignature = <T extends HTMLElement | DocumentFragment, K extends HTMLElement | DocumentFragment>(p: T) => (c: K) => K;
 export const appendTo: appendToSignature = (p) => (c) => {
   p.appendChild(c);
 
   return (c);
 };
+
+type appendChildListToSignature = <T extends HTMLElement | DocumentFragment, K extends HTMLElement | DocumentFragment>(p: T) => (c: K[]) => void;
+export const appendChildListTo: appendChildListToSignature = (p) => (c) => {
+  const fragment = document.createDocumentFragment();
+
+  pipe(c, A.map(appendTo(fragment)));
+
+  pipe(fragment, appendTo(p));
+}
 
 type importFragmentSignature = (x: HTMLTemplateElement) => DocumentFragment;
 export const importFragment: importFragmentSignature = (x) => {

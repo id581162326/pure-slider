@@ -79,7 +79,9 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
 
     const unitMult = pipe(unitsCount, H.div(unitCountLimit), Math.ceil);
 
-    const arrayToFill: null[] = new Array(pipe(unitsCount > unitCountLimit ? unitCountLimit : unitsCount, H.inc)).fill(null);
+    const arrayToFill: null[] = new Array(pipe(unitsCount > unitCountLimit
+      ? unitCountLimit
+      : unitsCount, H.inc)).fill(null);
 
     const getUnitProps = (idx: number): Namespace.UnitProps => ({
       range,
@@ -87,21 +89,10 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
       orientation,
       bemBlockClassName,
       onClick,
-      withValue: withValue && ((pipe(
-        idx,
-        H.div(showValueEach),
-        H.decimal(1)
-      ) === 0 && pipe(
-        idx,
-        H.add(showValueEach),
-        H.mult(unitMult),
-        valueFrom,
-        H.sub(max)
-      ) <= max) || pipe(
-        idx,
-        H.mult(unitMult),
-        valueFrom
-      ) >= max),
+      withValue: withValue && ((
+        pipe(idx, H.div(showValueEach), H.decimal(1)) === 0 &&
+        pipe(idx, H.add(showValueEach), H.mult(unitMult), valueFrom, H.sub(max)) <= max
+      ) || pipe(idx, H.mult(unitMult), valueFrom) >= max),
       value: pipe(idx, H.mult(unitMult), valueFrom, (x) => x >= max ? max : x)
     });
 
@@ -117,7 +108,7 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
   };
 
   private readonly appendUnits: Namespace.AppendUnits = () => {
-    A.map((unit: Namespace.Unit) => pipe(unit.getNode(), H.appendTo(this.node)))(this.units);
+    pipe(this.units, A.map((x) => x.getNode()), H.appendChildListTo(this.node));
   };
 }
 

@@ -5,7 +5,7 @@ import Slider from '../../../plugin/slider/namespace';
 import Options from '../options/namespace';
 
 namespace Example {
-  export type Of = (o: Props) => <T extends HTMLElement>(p: T) => Interface;
+  export type Of = (o: Props) => <T extends HTMLElement | DocumentFragment>(p: T) => Interface;
 
   export type SetInnerText = (x: HTMLElement) => HTMLElement;
 

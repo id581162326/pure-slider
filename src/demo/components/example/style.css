@@ -2,8 +2,8 @@
     position: relative;
     display: grid;
     grid-auto-rows: max-content 1fr max-content;
-    row-gap: 30px;
-    place-items: center;
+    grid-row-gap: 30px;
+    justify-items: stretch;
     width: 100%;
     height: 800px;
     padding: 30px 20px 30px;
@@ -31,5 +31,6 @@
 
 .example__slider {
     display: grid;
+    place-self: center;
     place-items: center;
 }

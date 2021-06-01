@@ -5,9 +5,7 @@ namespace Button {
 
   export type Node = O.Option<HTMLElement>;
 
-  export type Of = (o: Props) => (p: Parent) => Interface;
-
-  export type RenderButton = () => O.Option<HTMLElement>;
+  export type Of = (o: Props) => <T extends HTMLElement | DocumentFragment>(p: T) => Interface;
 
   export type OnClick = (e: MouseEvent) => void
 

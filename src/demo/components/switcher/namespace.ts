@@ -5,7 +5,7 @@ namespace Switcher {
 
   export type Slider = Slider.Interface;
 
-  export type Of = (o: Props) => (p: HTMLElement) => Interface;
+  export type Of = (o: Props) => <T extends HTMLElement | DocumentFragment>(p: T) => Interface;
 
   export type ConnectTypeChangedListener = Slider.Listener;
 

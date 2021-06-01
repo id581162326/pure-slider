@@ -3,7 +3,7 @@ import TextField from '../text-field/namespace';
 namespace Options {
   export type Parent = HTMLElement;
 
-  export type Of = (o: Props) => (p: HTMLElement) => Interface;
+  export type Of = (o: Props) => <T extends HTMLElement | DocumentFragment>(p: T) => Interface;
 
   export type TextField = TextField.Interface;
 

@@ -41,7 +41,6 @@ class Options extends Fragment implements Namespace.Interface {
   private constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
     super(parent, '#js-options','.js-options');
 
-
     pipe(this.optionsMap, this.render);
   }
 
@@ -73,7 +72,7 @@ class Options extends Fragment implements Namespace.Interface {
       node,
       TextField.of({
         label: idx === 0 ? '1st handler' : '2nd handler',
-        onEnter: (x) => this.props.onCurrentsChange([
+        onChange: (x) => this.props.onCurrentsChange([
           idx === 0 ? x : pipe(this.currentsFields, H.nthOrNone(0, {getValue: () => 0}), H.prop('getValue'))(),
           idx === 1 ? x : pipe(this.currentsFields, H.nthOrNone(1, {getValue: () => 0}), H.prop('getValue'))()
         ])
@@ -88,7 +87,7 @@ class Options extends Fragment implements Namespace.Interface {
       node,
       TextField.of({
         label: idx === 0 ? 'Min' : 'Max',
-        onEnter: (x) => this.props.onRangeChange([
+        onChange: (x) => this.props.onRangeChange([
           idx === 0 ? x : pipe(this.rangeFields, H.nthOrNone(0, {getValue: () => 0}), H.prop('getValue'))(),
           idx === 1 ? x : pipe(this.rangeFields, H.nthOrNone(1, {getValue: () => 0}), H.prop('getValue'))()
         ])
@@ -100,7 +99,7 @@ class Options extends Fragment implements Namespace.Interface {
     x,
     H.querySelector('.js-options__text-field_with_step'),
     O.some,
-    O.map((x) => O.isSome(x) ? pipe(x, H.prop('value'), TextField.of({label: 'Step', onEnter: this.props.onStepChange}), (x) => this.stepField.push(x)) : O.none),
+    O.map((x) => O.isSome(x) ? pipe(x, H.prop('value'), TextField.of({label: 'Step', onChange: this.props.onStepChange}), (x) => this.stepField.push(x)) : O.none),
     () => x
   );
 
@@ -108,7 +107,7 @@ class Options extends Fragment implements Namespace.Interface {
     x,
     H.querySelector('.js-options__text-field_with_margin'),
     O.some,
-    O.map((x) => O.isSome(x) ? pipe(x, H.prop('value'), TextField.of({label: 'Margin', onEnter: this.props.onMarginChange}), (x) => this.marginField.push(x)) : O.none),
+    O.map((x) => O.isSome(x) ? pipe(x, H.prop('value'), TextField.of({label: 'Margin', onChange: this.props.onMarginChange}), (x) => this.marginField.push(x)) : O.none),
     () => x
   );
 

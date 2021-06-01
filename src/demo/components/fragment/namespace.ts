@@ -1,7 +1,7 @@
 import * as O from 'fp-ts/Option';
 
 namespace Fragment {
-  export type Parent = HTMLElement;
+  export type Parent = HTMLElement | DocumentFragment;
 
   export type Of = (o: Props) => (p: Parent) => Interface;
 
