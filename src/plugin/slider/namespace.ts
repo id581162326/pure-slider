@@ -29,25 +29,9 @@ namespace Slider {
 
   export type Of = (container: HTMLElement) => (props: Props) => Interface;
 
-  export type UpdateCurrents = (currents: Currents) => void;
+  export type Dispatch = (action: Controller.Action) => void;
 
-  export type ToggleScale = () => void;
-
-  export type ToggleOrientation = () => void;
-
-  export type ToggleTooltips = () => void;
-
-  export type ToggleRange = () => void;
-
-  export type AttachListener = (listener: Listener) => void;
-
-  export type UpdateStep = (step: number) => void;
-
-  export type UpdateRange = (range: Range) => void;
-
-  export type UpdateMargin = (margin: number) => void;
-
-  export type SetConnectType = (connectType: ConnectType) => void;
+  export type HandleUpdateCurrents = (currents: Currents) => void;
 
   export interface Props {
     range: Range,
@@ -62,16 +46,7 @@ namespace Slider {
   }
 
   export interface Interface {
-    attachListener: AttachListener,
-    updateCurrents: UpdateCurrents,
-    toggleScale: ToggleScale,
-    toggleOrientation: ToggleOrientation,
-    toggleTooltips: ToggleTooltips,
-    toggleRange: ToggleRange,
-    updateStep: UpdateStep,
-    setConnectType: SetConnectType,
-    updateRange: UpdateRange,
-    updateMargin: UpdateMargin
+    dispatch: Dispatch
   }
 }
 

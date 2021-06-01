@@ -5,9 +5,11 @@ namespace Switcher {
 
   export type Slider = Slider.Interface;
 
-  export type Of = (o: Props) => <T extends Parent>(p: T) => Interface;
+  export type Of = (props: Props) => <T extends Parent>(parent: T) => Interface;
 
   export type ConnectTypeChangedListener = Slider.Listener;
+
+  export type MapSwitcher = (switcherNode: HTMLDivElement) => HTMLDivElement;
 
   export type OnChange = (x: number) => void;
 

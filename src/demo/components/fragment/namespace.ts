@@ -3,15 +3,16 @@ import * as O from 'fp-ts/Option';
 namespace Fragment {
   export type Parent = HTMLElement | DocumentFragment;
 
-  export type Of = (o: Props) => (p: Parent) => Interface;
+  export type Of = (props: Props) => (parent: Parent) => Interface;
+
+  export type MapNode <Node extends HTMLElement> = (node: Node) => Node;
+
+  export type Render<Node extends HTMLElement> = (map: MapNode<Node>) => void;
 
   export type RenderFragment = () => O.Option<DocumentFragment>;
 
-  export type OnClick = (e: MouseEvent) => void
-
   export interface Props {
-    label: string,
-    onClick: OnClick
+    label: string
   }
 
   export interface Interface {

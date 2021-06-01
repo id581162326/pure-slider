@@ -29,7 +29,7 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
     pipe(this.node, H.setInlineStyle(style));
   };
 
-  public readonly destroy = () => {
+  public readonly destroy: Namespace.Destroy = () => {
     this.node.remove();
 
     this.removeEventListeners();
@@ -70,7 +70,7 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
     pipe(tooltipNode, H.appendTo(this.node));
   }
 
-  private readonly setTabIndex: () => void = () => {
+  private readonly setTabIndex: Namespace.SetTabIndex = () => {
     this.node.tabIndex = 0;
   };
 
@@ -82,7 +82,7 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
     H.addEventListener('keydown', this.keyDownListener)(this.node);
   };
 
-  private readonly removeEventListeners = () => {
+  private readonly removeEventListeners: Namespace.RemoveEventListeners = () => {
     H.removeEventListener('pointerup', this.endDrag)(window);
     H.removeEventListener('mouseup', this.endDrag)(window);
   }
@@ -131,7 +131,7 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
     H.removeEventListener('mousemove', this.dragListener)(window);
   };
 
-  private readonly keyDownListener: (e: KeyboardEvent) => void = ({code}) => {
+  private readonly keyDownListener: Namespace.KeyDownListener = ({code}) => {
     const {type, step, orientation, onDrag} = this.props;
 
     const decCond = (orientation === 'horizontal' && code === 'ArrowLeft')

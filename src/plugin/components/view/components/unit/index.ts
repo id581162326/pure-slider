@@ -45,7 +45,7 @@ class Unit extends Element<Namespace.Props, Namespace.Node> implements Namespace
     this.initEventListeners();
   }
 
-  private readonly renderValue = () => {
+  private readonly renderValue: Namespace.RenderValue = () => {
     const {value, bemBlockClassName} = this.props;
 
     const {base, theme} = bemBlockClassName;
@@ -57,8 +57,8 @@ class Unit extends Element<Namespace.Props, Namespace.Node> implements Namespace
     this.node.appendChild(valueNode);
   }
 
-  private readonly clickListener = (e: MouseEvent) => {
-    e.stopPropagation();
+  private readonly clickListener: Namespace.ClickListener = (event: MouseEvent) => {
+    event.stopPropagation();
 
     const {onClick} = this.props;
 

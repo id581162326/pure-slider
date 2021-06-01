@@ -10,17 +10,17 @@ import './style.css';
 
 Fragment.injectTemplate(template);
 
-class Button extends Fragment implements Namespace.Interface {
+class Button extends Fragment <HTMLButtonElement> implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new Button(props, parent);
 
   private constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
     super(parent, '#js-button', '.js-button');
 
-    pipe(this.buttonMap, this.render);
+    pipe(this.mapButton, this.render);
   }
 
-  private readonly buttonMap = (x: HTMLElement) => pipe(
-    x,
+  private readonly mapButton: Namespace.MapButton = (buttonNode) => pipe(
+    buttonNode,
     H.addEventListener('click', this.props.onClick),
     H.setInnerText(this.props.label)
   );

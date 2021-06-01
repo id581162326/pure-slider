@@ -11,6 +11,10 @@ namespace Unit {
 
   export type PlaceNode = () => void;
 
+  export type RenderValue = () => void;
+
+  export type ClickListener = (event: MouseEvent) => void;
+
   export type OnClick = (coord: number) => void
 
   export interface Props extends Element.Props {

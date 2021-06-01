@@ -3,7 +3,7 @@ import TextField from '../text-field/namespace';
 namespace Options {
   export type Parent = HTMLElement | DocumentFragment;
 
-  export type Of = (o: Props) => <T extends Parent>(p: T) => Interface;
+  export type Of = (props: Props) => <T extends Parent>(parent: T) => Interface;
 
   export type TextField = TextField.Interface;
 
@@ -13,15 +13,17 @@ namespace Options {
 
   export type ConnectType = 'outer-range' | 'inner-range' | 'from-start' | 'to-end' | 'none';
 
-  export type OnConnectTypeChange = (t: ConnectType) => void;
+  export type MapOptions = (optionsNode: HTMLDivElement) => HTMLDivElement;
 
-  export type OnCurrentsChange = (xs: Currents) => void;
+  export type OnConnectTypeChange = (connectType: ConnectType) => void;
 
-  export type OnRangeChange = (xs: Range) => void;
+  export type OnCurrentsChange = (currents: Currents) => void;
 
-  export type OnStepChange = (x: number) => void;
+  export type OnRangeChange = (range: Range) => void;
 
-  export type OnMarginChange = (x: number) => void;
+  export type OnStepChange = (step: number) => void;
+
+  export type OnMarginChange = (margin: number) => void;
 
   export type OnOrientationToggle = () => void;
 
@@ -44,10 +46,10 @@ namespace Options {
   }
 
   export interface Interface {
-    updateCurrents: (xs: Currents) => void,
-    updateRange: (xs: Range) => void,
-    updateStep: (x: number) => void,
-    updateMargin: (x: number) => void
+    updateCurrents: (currents: Currents) => void,
+    updateRange: (range: Range) => void,
+    updateStep: (step: number) => void,
+    updateMargin: (margin: number) => void
   }
 }
 

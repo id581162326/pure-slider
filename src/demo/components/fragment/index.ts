@@ -5,7 +5,7 @@ import * as H from '../../../helpers';
 
 import Namespace from './namespace';
 
-class Fragment implements Namespace.Interface {
+class Fragment<Node extends HTMLElement> implements Namespace.Interface {
   static readonly injectTemplate = (template: string) => pipe(document, H.querySelector('body'), O.some, O.map((x) => O.isSome(x)
     ? x.value.insertAdjacentHTML('afterbegin', template)
     : O.none)
@@ -21,12 +21,12 @@ class Fragment implements Namespace.Interface {
 
   protected readonly fragment: O.Option<DocumentFragment>;
 
-  protected readonly render = (fn: (x: HTMLElement) => HTMLElement) => pipe(
+  protected readonly render: Namespace.Render<Node> = (mapNode) => pipe(
     this.parent,
     H.querySelector(this.componentSelector),
     O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), fn)
+    O.map((node) => O.isSome(node)
+      ? pipe(node as O.Some<Node>, H.prop('value'), mapNode)
       : O.none)
   );
 

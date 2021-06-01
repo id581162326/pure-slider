@@ -101,9 +101,15 @@ namespace View {
 
   export type MoveElementTo = <Element extends MovableElement>(currents: Currents) => (e: Element) => Element;
 
-  export type AppendElementTo = <Parent extends ElementInterface, Element extends Elements>(p: Parent) => (e: Element) => Element;
+  export type DestroyElement = <Element extends Elements>(element: Element) => Element;
 
   export type GetBemBlockClassName = () => Element.BemBlockClassName;
+
+  export type Destroy = () => void;
+
+  export type Render = () => void;
+
+  export type ReRender = () => void;
 
   export type RenderContainer = () => ContainerInterface;
 

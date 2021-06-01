@@ -1,24 +1,29 @@
-import * as O from 'fp-ts/Option';
-
 namespace TextField {
   export type Parent = HTMLElement | DocumentFragment;
 
-  export type Of = (o: Props) => <T extends Parent>(p: T) => Interface;
+  export type Of = (props: Props) => <T extends Parent>(parent: T) => Interface;
 
-  export type RenderTextField = () => O.Option<HTMLElement>;
+  export type MapTextField = (textFieldNode: HTMLLabelElement) => HTMLLabelElement;
 
-  export type SetLabel = (x: HTMLElement) => HTMLElement;
+  export type OnChange = (value: number) => void;
+
+  export type SetValue = (value: number) => void;
+
+  export type SetStep = (step: number) => void;
+
+  export type GetValue = () => number;
 
   export interface Props {
     label: string,
-    onChange: (x: number) => void
+    onChange: OnChange
   }
 
   export interface Interface {
-    getValue: () => number,
-    setValue: (x: number) => void,
-    setStep: (x: number) => void
+    getValue: GetValue,
+    setValue: SetValue,
+    setStep: SetStep
   }
+
 }
 
 export default TextField;

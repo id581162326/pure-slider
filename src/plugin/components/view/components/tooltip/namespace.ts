@@ -8,6 +8,8 @@ namespace Tooltip {
 
   export type SetValue = (value: number) => void;
 
+  export type SetTooltipVisibility = () => void;
+
   export interface Props extends Element.Props {
     alwaysShown: boolean
   }

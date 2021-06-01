@@ -11,7 +11,7 @@ import './style.css';
 
 Fragment.injectTemplate(template);
 
-class TextField extends Fragment implements Namespace.Interface {
+class TextField extends Fragment <HTMLLabelElement> implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new TextField(props, parent);
 
   public readonly getValue = () => pipe(this.input, O.some, O.map((x) => O.isSome(x)
@@ -30,51 +30,47 @@ class TextField extends Fragment implements Namespace.Interface {
   ));
 
   constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
-    super(parent,'#js-text-field', '.js-text-field');
+    super(parent, '#js-text-field', '.js-text-field');
 
-    pipe(this.textFieldMap, this.render);
+    pipe(this.mapTextField, this.render);
   }
 
-  private readonly textFieldMap = (x: HTMLElement) => pipe(
-    x,
+  private readonly mapTextField: Namespace.MapTextField = (textFieldNode) => pipe(
+    textFieldNode,
     this.renderInput,
     this.setLabel
   );
 
   private input: O.Option<HTMLInputElement> = O.none;
 
-  private readonly renderInput = (x: HTMLElement) => pipe(
-    x,
+  private readonly renderInput: Namespace.MapTextField = (textFieldNode) => pipe(
+    textFieldNode,
     H.querySelector('.js-text-field__input'),
-    (x) => {
-      this.input = x as O.Option<HTMLInputElement>;
+    (inputNode) => {
+      this.input = inputNode as O.Option<HTMLInputElement>;
 
-      return (x);
+      return (inputNode);
     },
     O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(
-        x,
+    O.map((inputNode) => O.isSome(inputNode)
+      ? pipe(inputNode, H.prop('value'), H.addEventListener('change', () => pipe(
+        inputNode as O.Some<HTMLInputElement>,
         H.prop('value'),
-        H.addEventListener('change', () => pipe(
-          x as O.Some<HTMLInputElement>,
-          H.prop('value'),
-          H.prop('value'),
-          Number,
-          this.props.onChange
-        )))
-      : O.none),
-    () => x,
+        H.prop('value'),
+        Number,
+        this.props.onChange
+      ))) : O.none),
+    () => textFieldNode,
   );
 
-  private readonly setLabel: Namespace.SetLabel = (x) => {
+  private readonly setLabel: Namespace.MapTextField = (textFieldNode) => {
     const {label} = this.props;
 
-    pipe(x, H.querySelector('.js-text-field__label'), O.some, O.map((x) => O.isSome(x)
+    pipe(textFieldNode, H.querySelector('.js-text-field__label'), O.some, O.map((x) => O.isSome(x)
       ? pipe(x, H.prop('value'), (x) => x.innerText = label)
       : O.none));
 
-    return (x);
+    return (textFieldNode);
   };
 }
 

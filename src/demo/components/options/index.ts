@@ -15,7 +15,7 @@ import './style.css';
 
 Fragment.injectTemplate(template);
 
-class Options extends Fragment implements Namespace.Interface {
+class Options extends Fragment <HTMLDivElement> implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new Options(props, parent);
 
   public readonly updateCurrents = (currents: Namespace.Currents) => pipe(
@@ -39,9 +39,9 @@ class Options extends Fragment implements Namespace.Interface {
   };
 
   private constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
-    super(parent, '#js-options','.js-options');
+    super(parent, '#js-options', '.js-options');
 
-    pipe(this.optionsMap, this.render);
+    pipe(this.mapOptions, this.render);
   }
 
   private readonly currentsFields: Namespace.TextField[] = [];
@@ -52,8 +52,8 @@ class Options extends Fragment implements Namespace.Interface {
 
   private readonly marginField: Namespace.TextField[] = [];
 
-  private optionsMap = (x: HTMLElement) => pipe(
-    x,
+  private mapOptions: Namespace.MapOptions = (optionsNode) => pipe(
+    optionsNode,
     this.renderCurrentsFields,
     this.renderRangeFields,
     this.renderStepField,
@@ -65,113 +65,124 @@ class Options extends Fragment implements Namespace.Interface {
     this.renderSwitcher
   );
 
-  private renderCurrentsFields: (x: HTMLElement) => HTMLElement = (x) => pipe(
-    x,
+  private renderCurrentsFields: Namespace.MapOptions = (optionsNode) => pipe(
+    optionsNode,
     H.querySelectorAll('.js-options__text-field_with_handler'),
-    A.mapWithIndex((idx, node) => pipe(
-      node,
-      TextField.of({
-        label: idx === 0 ? '1st handler' : '2nd handler',
-        onChange: (x) => this.props.onCurrentsChange([
-          idx === 0 ? x : pipe(this.currentsFields, H.nthOrNone(0, {getValue: () => 0}), H.prop('getValue'))(),
-          idx === 1 ? x : pipe(this.currentsFields, H.nthOrNone(1, {getValue: () => 0}), H.prop('getValue'))()
-        ])
-      }), (x) => this.currentsFields.push(x))),
-    () => x
+    A.mapWithIndex((idx, node) => pipe(node, TextField.of({
+      label: idx === 0 ? '1st handler' : '2nd handler',
+      onChange: coord => this.props.onCurrentsChange([
+        idx === 0 ? coord : pipe(this.currentsFields, H.nthOrNone(0, {getValue: () => 0}), H.prop('getValue'))(),
+        idx === 1 ? coord : pipe(this.currentsFields, H.nthOrNone(1, {getValue: () => 0}), H.prop('getValue'))()
+      ])
+    }), (textField) => this.currentsFields.push(textField))),
+    () => optionsNode
   );
 
-  private renderRangeFields: (x: HTMLElement) => HTMLElement = (x) => pipe(
-    x,
+  private renderRangeFields: Namespace.MapOptions = (optionsNode) => pipe(
+    optionsNode,
     H.querySelectorAll('.js-options__text-field_with_range'),
-    A.mapWithIndex((idx, node) => pipe(
-      node,
-      TextField.of({
-        label: idx === 0 ? 'Min' : 'Max',
-        onChange: (x) => this.props.onRangeChange([
-          idx === 0 ? x : pipe(this.rangeFields, H.nthOrNone(0, {getValue: () => 0}), H.prop('getValue'))(),
-          idx === 1 ? x : pipe(this.rangeFields, H.nthOrNone(1, {getValue: () => 0}), H.prop('getValue'))()
-        ])
-      }), (x) => this.rangeFields.push(x))),
-    () => x
+    A.mapWithIndex((idx, node) => pipe(node, TextField.of({
+      label: idx === 0 ? 'Min' : 'Max',
+      onChange: (step) => this.props.onRangeChange([
+        idx === 0 ? step : pipe(this.rangeFields, H.nthOrNone(0, {getValue: () => 0}), H.prop('getValue'))(),
+        idx === 1 ? step : pipe(this.rangeFields, H.nthOrNone(1, {getValue: () => 0}), H.prop('getValue'))()
+      ])
+    }), (textField) => this.rangeFields.push(textField))),
+    () => optionsNode
   );
 
-  private renderStepField: (x: HTMLElement) => HTMLElement = (x) => pipe(
-    x,
+  private renderStepField: Namespace.MapOptions = (optionsNode) => pipe(
+    optionsNode,
     H.querySelector('.js-options__text-field_with_step'),
     O.some,
-    O.map((x) => O.isSome(x) ? pipe(x, H.prop('value'), TextField.of({label: 'Step', onChange: this.props.onStepChange}), (x) => this.stepField.push(x)) : O.none),
-    () => x
+    O.map((fieldNode) => O.isSome(fieldNode)
+      ? pipe(fieldNode, H.prop('value'), TextField.of({
+        label: 'Step',
+        onChange: this.props.onStepChange
+      }), (textField) => this.stepField.push(textField))
+      : O.none),
+    () => optionsNode
   );
 
-  private renderMarginField: (x: HTMLElement) => HTMLElement = (x) => pipe(
-    x,
+  private renderMarginField: Namespace.MapOptions = (optionsNode) => pipe(
+    optionsNode,
     H.querySelector('.js-options__text-field_with_margin'),
     O.some,
-    O.map((x) => O.isSome(x) ? pipe(x, H.prop('value'), TextField.of({label: 'Margin', onChange: this.props.onMarginChange}), (x) => this.marginField.push(x)) : O.none),
-    () => x
+    O.map((fieldNode) => O.isSome(fieldNode)
+      ? pipe(fieldNode, H.prop('value'), TextField.of({
+        label: 'Margin',
+        onChange: this.props.onMarginChange
+      }), (textField) => this.marginField.push(textField))
+      : O.none),
+    () => optionsNode
   );
 
-  private renderOrientationToggle: (x: HTMLElement) => HTMLElement = (x) => pipe(
-    x,
+  private renderOrientationToggle: Namespace.MapOptions = (optionsNode) => pipe(
+    optionsNode,
     H.querySelector('.js-options__button_toggle_orientation'),
     O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), Button.of({label: 'Toggle orientation', onClick: this.props.onOrientationToggle}))
-      : O.none
-    ),
-    () => x
+    O.map((toggleNode) => O.isSome(toggleNode)
+      ? pipe(toggleNode, H.prop('value'), Button.of({
+        label: 'Toggle orientation',
+        onClick: this.props.onOrientationToggle
+      })) : O.none),
+    () => optionsNode
   );
 
-  private renderScaleToggle: (x: HTMLElement) => HTMLElement = (x) => pipe(
-    x,
+  private renderScaleToggle: Namespace.MapOptions = (optionsNode) => pipe(
+    optionsNode,
     H.querySelector('.js-options__button_toggle_scale'),
     O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), Button.of({label: 'Toggle scale', onClick: this.props.onScaleToggle}))
-      : O.none
-    ),
-    () => x
+    O.map((toggleNode) => O.isSome(toggleNode)
+      ? pipe(toggleNode, H.prop('value'), Button.of({
+        label: 'Toggle scale',
+        onClick: this.props.onScaleToggle
+      })) : O.none),
+    () => optionsNode
   );
 
-  private renderTooltipsToggle: (x: HTMLElement) => HTMLElement = (x) => pipe(
-    x,
+  private renderTooltipsToggle: Namespace.MapOptions = (optionsNode) => pipe(
+    optionsNode,
     H.querySelector('.js-options__button_toggle_tooltips'),
     O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), Button.of({label: 'Toggle tooltips', onClick: this.props.onTooltipsToggle}))
-      : O.none
+    O.map((toggleNode) => O.isSome(toggleNode)
+      ? pipe(toggleNode, H.prop('value'), Button.of({
+        label: 'Toggle tooltips',
+        onClick: this.props.onTooltipsToggle
+      })) : O.none
     ),
-    () => x
+    () => optionsNode
   );
 
-  private renderRangeToggle: (x: HTMLElement) => HTMLElement = (x) => pipe(
-    x,
+  private renderRangeToggle: Namespace.MapOptions = (optionsNode) => pipe(
+    optionsNode,
     H.querySelector('.js-options__button_toggle_range'),
     O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), Button.of({label: 'Toggle range', onClick: this.props.onRangeToggle}))
-      : O.none
+    O.map((toggleNode) => O.isSome(toggleNode)
+      ? pipe(toggleNode, H.prop('value'), Button.of({
+        label: 'Toggle range',
+        onClick: this.props.onRangeToggle
+      })) : O.none
     ),
-    () => x
+    () => optionsNode
   );
 
-  private renderSwitcher: (x: HTMLElement) => HTMLElement = (x) => pipe(
-    x,
+  private renderSwitcher: Namespace.MapOptions = (optionsNode) => pipe(
+    optionsNode,
     H.querySelector('.js-options__switcher'),
     O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), Switcher.of({
+    O.map((switcherNode) => O.isSome(switcherNode)
+      ? pipe(switcherNode, H.prop('value'), Switcher.of({
         label: 'Interval type switcher',
         onChange: this.handleConnectSwitcherChange
-      }))
-      : O.none),
-    () => x
+      })) : O.none),
+    () => optionsNode
   );
 
-  private handleConnectSwitcherChange = (x: number) => this.props.onConnectTypeChange(x === 1
-    ? 'from-start' : x === 2
-      ? 'to-end' : x === 3
-        ? 'inner-range' : x === 4
+  private handleConnectSwitcherChange = (connectType: number) => this.props.onConnectTypeChange(connectType === 1
+    ? 'from-start' : connectType === 2
+      ? 'to-end' : connectType === 3
+        ? 'inner-range' : connectType === 4
           ? 'outer-range' : 'none');
 }
 

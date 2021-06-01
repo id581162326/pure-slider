@@ -14,7 +14,7 @@ import './style.css';
 
 Fragment.injectTemplate(template);
 
-class Example extends Fragment implements Namespace.Interface {
+class Example extends Fragment <HTMLElement> implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new Example(props, parent);
 
   private constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
@@ -22,144 +22,137 @@ class Example extends Fragment implements Namespace.Interface {
 
     this.slider = this.renderSlider();
 
-    pipe(this.exampleMap, this.render);
-
-    this.attachOptionListener();
+    pipe(this.mapExample, this.render);
   }
 
-  private readonly slider: O.Option<Namespace.Slider>;
+  private readonly slider: O.Option<Namespace.SliderInterface>;
 
   private options: O.Option<Namespace.Options> = O.none;
 
-  private readonly exampleMap = (x: HTMLElement) => pipe(
-    x,
-    this.setInnerText,
-    this.renderOptions
-  );
+  private readonly mapExample: Namespace.MapExample = (exampleNode) => pipe(exampleNode, this.setInnerText, this.renderOptions);
 
-  private readonly renderOptions: Namespace.RenderOptions = (x) => pipe(
-    x,
+  private readonly renderOptions: Namespace.MapExample = (exampleNode) => pipe(
+    exampleNode,
     H.querySelector('.js-example__options'),
     O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), Options.of({
-        onConnectTypeChange: this.handleConnectTypeChanged,
+    O.map((optionsNode) => O.isSome(optionsNode)
+      ? pipe(optionsNode, H.prop('value'), Options.of({
+        onConnectTypeChange: this.handleConnectTypeChange,
         onCurrentsChange: this.handleCurrentsChange,
         onStepChange: this.handleStepChange,
         onMarginChange: this.handleMarginChange,
         onRangeChange: this.handleRangeChange,
         onOrientationToggle: this.handleOrientationToggle,
         onScaleToggle: this.handleScaleToggle,
-        onTooltipsToggle: this.handleTooltipToggle,
+        onTooltipsToggle: this.handleTooltipsToggle,
         onRangeToggle: this.handleRangeToggle
-      }), (x) => this.options = O.some(x))
+      }), (options) => this.options = O.some(options))
       : O.none),
-    () => x
+    () => exampleNode
   );
 
-  private readonly handleOrientationToggle = () => pipe(
-    this.slider,
-    O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.prop('toggleOrientation'), H.call([]))
-      : O.none)
-  );
-
-  private readonly handleTooltipToggle = () => pipe(
-    this.slider,
-    O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.prop('toggleTooltips'), H.call([]))
-      : O.none)
-  );
-
-  private readonly handleScaleToggle = () => pipe(
-    this.slider,
-    O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.prop('toggleScale'), H.call([]))
-      : O.none)
-  );
-
-  private readonly handleRangeToggle = () => pipe(
-    this.slider,
-    O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.prop('toggleRange'), H.call([]))
-      : O.none)
-  );
-
-  private readonly handleConnectTypeChanged: Namespace.HandleConnectTypeChanged = (type) => pipe(
-    this.slider,
-    O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.prop('setConnectType'), H.call([type]))
-      : O.none)
-  );
-
-  private readonly handleCurrentsChange = (currents: [number, number]) => pipe(
-    this.slider,
-    O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.prop('updateCurrents'), H.call([currents]))
-      : O.none)
-  );
-
-  private readonly handleRangeChange = (range: [number, number]) => pipe(
-    this.slider,
-    O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.prop('updateRange'), H.call([range]))
-      : O.none)
-  );
-
-  private readonly handleStepChange = (step: number) => pipe(
-    this.slider,
-    O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.prop('updateStep'), H.call([step]))
-      : O.none)
-  );
-
-  private readonly handleMarginChange = (margin: number) => pipe(
-    this.slider,
-    O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.prop('updateMargin'), H.call([margin]))
-      : O.none)
-  );
-
-  private readonly setInnerText: Namespace.SetInnerText = (x) => {
+  private readonly setInnerText: Namespace.MapExample = (exampleNode) => {
     const {title, description} = this.props;
 
-    pipe(x, H.querySelector('.js-example__title'), O.some, O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.setInnerText(title))
+    pipe(exampleNode, H.querySelector('.js-example__title'), O.some, O.map((titleNode) => O.isSome(titleNode)
+      ? pipe(titleNode, H.prop('value'), H.setInnerText(title))
       : O.none)
     );
 
-    pipe(x, H.querySelector('.js-example__description'), O.some, O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.setInnerText(description))
+    pipe(exampleNode, H.querySelector('.js-example__description'), O.some, O.map((descriptionNode) => O.isSome(descriptionNode)
+      ? pipe(descriptionNode, H.prop('value'), H.setInnerText(description))
       : O.none)
     );
 
-    return (x);
+    return (exampleNode);
   };
+
+  private readonly handleOrientationToggle: Namespace.HandleOrientationToggle = () => pipe(
+    this.slider,
+    O.some,
+    O.map((slider) => O.isSome(slider)
+      ? pipe(slider, H.prop('value'), H.prop('dispatch'), H.call([{type: 'TOGGLE_ORIENTATION'}]))
+      : O.none)
+  );
+
+  private readonly handleTooltipsToggle: Namespace.HandleTooltipsToggle = () => pipe(
+    this.slider,
+    O.some,
+    O.map((slider) => O.isSome(slider)
+      ? pipe(slider, H.prop('value'), H.prop('dispatch'), H.call([{type: 'TOGGLE_TOOLTIPS'}]))
+      : O.none)
+  );
+
+  private readonly handleScaleToggle: Namespace.HandleScaleToggle = () => pipe(
+    this.slider,
+    O.some,
+    O.map((slider) => O.isSome(slider)
+      ? pipe(slider, H.prop('value'), H.prop('dispatch'), H.call([{type: 'TOGGLE_SCALE'}]))
+      : O.none)
+  );
+
+  private readonly handleRangeToggle: Namespace.HandleRangeToggle = () => pipe(
+    this.slider,
+    O.some,
+    O.map((slider) => O.isSome(slider)
+      ? pipe(slider, H.prop('value'), H.prop('dispatch'), H.call([{type: 'TOGGLE_RANGE'}]))
+      : O.none)
+  );
+
+  private readonly handleConnectTypeChange: Namespace.HandleConnectTypeChange = (connectType) => pipe(
+    this.slider,
+    O.some,
+    O.map((slider) => O.isSome(slider)
+      ? pipe(slider, H.prop('value'), H.prop('dispatch'), H.call([{type: 'SET_CONNECT_TYPE', connectType}]))
+      : O.none)
+  );
+
+  private readonly handleCurrentsChange: Namespace.HandleCurrentsChange = (currents) => pipe(
+    this.slider,
+    O.some,
+    O.map((slider) => O.isSome(slider)
+      ? pipe(slider, H.prop('value'), H.prop('dispatch'), H.call([{type: 'UPDATE_CURRENTS', currents}]))
+      : O.none)
+  );
+
+  private readonly handleRangeChange: Namespace.HandleRangeChange = (range) => pipe(
+    this.slider,
+    O.some,
+    O.map((slider) => O.isSome(slider)
+      ? pipe(slider, H.prop('value'), H.prop('dispatch'), H.call([{type: 'UPDATE_RANGE', range}]))
+      : O.none)
+  );
+
+  private readonly handleStepChange: Namespace.HandleStepChange = (step) => pipe(
+    this.slider,
+    O.some,
+    O.map((slider) => O.isSome(slider)
+      ? pipe(slider, H.prop('value'), H.prop('dispatch'), H.call([{type: 'UPDATE_STEP', step}]))
+      : O.none)
+  );
+
+  private readonly handleMarginChange: Namespace.HandleMarginChange = (margin) => pipe(
+    this.slider,
+    O.some,
+    O.map((slider) => O.isSome(slider)
+      ? pipe(slider, H.prop('value'), H.prop('dispatch'), H.call([{type: 'UPDATE_MARGIN', margin}]))
+      : O.none)
+  );
 
   private readonly renderSlider: Namespace.RenderSlider = () => pipe(
     this.parent,
     H.querySelector('.js-example__slider'),
     O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x as O.Some<HTMLDivElement>, H.prop('value'), Slider.of, H.call([this.props.sliderConfig]))
+    O.map((sliderNode) => O.isSome(sliderNode)
+      ? pipe(sliderNode as O.Some<HTMLDivElement>, H.prop('value'), Slider.of, H.call([this.props.sliderConfig]), this.attachOptionListener)
       : O.none)
-  ) as O.Option<Namespace.Slider>;
+  ) as O.Option<Namespace.SliderInterface>;
 
-  private attachOptionListener = () => pipe(
-    this.slider,
-    O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.prop('attachListener'), H.call([this.optionsListener]))
-      : O.none)
+  private attachOptionListener: Namespace.AttachOptionsListener = (slider) => pipe(
+    slider,
+    H.prop('dispatch'),
+    H.call([{type: 'ATTACH_LISTENER', listener: this.optionsListener}]),
+    () => slider
   );
 
   private optionsListener: Namespace.Listener = {

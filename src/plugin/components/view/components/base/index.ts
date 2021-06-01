@@ -29,9 +29,13 @@ class Base extends Element<Namespace.Props, Namespace.Node> {
 
     const bouncingClientRect = pipe(this.node.getBoundingClientRect(), H.prop(coordKey));
 
+    const containerSize = pipe(container, this.nodeSize);
+
+    const reverseCoord = flow(H.sub(containerSize), H.abs);
+
     pipe(event, H.prop(coordKey), H.sub(bouncingClientRect), orientation === 'horizontal'
       ? H.ident
-      : flow(pipe(container, this.nodeSize, H.sub), H.abs), this.pxToNum, H.add(min), onClick);
+      : reverseCoord, this.pxToNum, H.add(min), onClick);
   };
 }
 

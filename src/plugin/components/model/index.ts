@@ -11,9 +11,9 @@ import Namespace from './namespace';
 class Model implements Namespace.Interface {
   static of: Namespace.Of = (state) => new Model(state);
 
-  public readonly observer = new Observer();
+  public readonly observer: Namespace.ObserverInterface = new Observer();
 
-  public update(action: Namespace.Action) {
+  public readonly update: Namespace.Update = (action: Namespace.Action) => {
     switch (action.type) {
       case 'UPDATE_CURRENTS': {
         const correctedCurrents = this.correctCurrents('change')(action.currents);
@@ -86,6 +86,27 @@ class Model implements Namespace.Interface {
           A.map((listener) => {
             listener.update({type: 'CURRENTS_UPDATED', currents: correctedCurrents});
             listener.update({type: 'MARGIN_UPDATED', margin: action.margin})
+          })
+        );
+
+        break;
+      }
+
+      case 'TOGGLE_RANGE': {
+        const correctedCurrents = pipe(
+          A.size(this.state.currents) === 2
+            ? [pipe(this.state.currents, NEA.head)]
+            : [pipe(this.state.currents, NEA.head), pipe(this.state.currents, NEA.head)] as Namespace.Currents,
+          this.correctCurrents('change')
+        );
+
+        this.state = {...this.state, currents: correctedCurrents};
+
+        pipe(
+          this.observer,
+          H.prop('listeners'),
+          A.map((listener) => {
+            listener.update({type: 'CURRENTS_UPDATED', currents: correctedCurrents});
           })
         );
 

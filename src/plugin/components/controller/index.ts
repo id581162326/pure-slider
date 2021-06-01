@@ -8,7 +8,8 @@ class Controller implements Namespace.Interface {
       case 'UPDATE_CURRENTS':
       case 'UPDATE_STEP':
       case 'UPDATE_RANGE':
-      case 'UPDATE_MARGIN': {
+      case 'UPDATE_MARGIN':
+      case 'TOGGLE_RANGE': {
         this.model.update(action);
 
         break;

@@ -19,7 +19,7 @@ class Tooltip extends Element<Namespace.Props, Namespace.Node> {
     this.setTooltipVisibility();
   }
 
-  private readonly setTooltipVisibility = () => {
+  private readonly setTooltipVisibility: Namespace.SetTooltipVisibility = () => {
     const {bemBlockClassName, alwaysShown} = this.props;
 
     const {base, theme} = bemBlockClassName;

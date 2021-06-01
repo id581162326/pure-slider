@@ -1,6 +1,4 @@
 import * as O from 'fp-ts/Option';
-import * as A from 'fp-ts/Array';
-import * as NEA from 'fp-ts/NonEmptyArray';
 import {pipe} from 'fp-ts/function';
 
 import View from '../components/view/index';
@@ -12,51 +10,8 @@ import Namespace from './namespace';
 class Slider implements Namespace.Interface {
   static of: Namespace.Of = (container) => (props) => new Slider(container, props);
 
-  public readonly updateCurrents: Namespace.UpdateCurrents = (currents) => {
-    this.controller.dispatch({type: 'UPDATE_CURRENTS', currents});
-  };
-
-  public readonly toggleScale: Namespace.ToggleScale = () => {
-    this.controller.dispatch({type: 'TOGGLE_SCALE'});
-  };
-
-  public readonly toggleRange: Namespace.ToggleRange = () => {
-    const {currents} = this.model.getState();
-
-    this.controller.dispatch({
-      type: 'UPDATE_CURRENTS',
-      currents: A.size(currents) === 2
-        ? [pipe(currents, NEA.head)]
-        : [pipe(currents, NEA.head), pipe(currents, NEA.head)]
-    });
-  };
-
-  public readonly toggleOrientation: Namespace.ToggleOrientation = () => {
-    this.controller.dispatch({type: 'TOGGLE_ORIENTATION'});
-  };
-
-  public readonly toggleTooltips: Namespace.ToggleTooltips = () => {
-    this.controller.dispatch({type: 'TOGGLE_TOOLTIPS'});
-  };
-
-  public readonly attachListener: Namespace.AttachListener = (listener) => {
-    this.controller.dispatch({type: 'ATTACH_LISTENER', listener});
-  };
-
-  public readonly updateStep: Namespace.UpdateStep = (step) => {
-    this.controller.dispatch({type: 'UPDATE_STEP', step});
-  };
-
-  public readonly updateMargin: Namespace.UpdateMargin = (margin) => {
-    this.controller.dispatch({type: 'UPDATE_MARGIN', margin});
-  };
-
-  public readonly updateRange: Namespace.UpdateRange = (range) => {
-    this.controller.dispatch({type: 'UPDATE_RANGE', range});
-  };
-
-  public readonly setConnectType: Namespace.SetConnectType = (connectType) => {
-    this.controller.dispatch({type: 'SET_CONNECT_TYPE', connectType});
+  public readonly dispatch: Namespace.Dispatch = (action) => {
+    this.controller.dispatch(action);
   };
 
   constructor(container: HTMLElement, private readonly props: Namespace.Props) {
@@ -72,7 +27,7 @@ class Slider implements Namespace.Interface {
         showValueEach: scaleOptions ? scaleOptions.showValueEach ? scaleOptions.showValueEach : step : step,
       },
       themeBemBlockClassName,
-      onChange: this.updateCurrents
+      onChange: this.handleCurrentsChange
     }, {
       currents,
       range,
@@ -98,6 +53,10 @@ class Slider implements Namespace.Interface {
   private readonly view: Namespace.View;
 
   private readonly model: Namespace.Model;
+
+  private readonly handleCurrentsChange: Namespace.HandleUpdateCurrents = (currents) => {
+    this.dispatch({type: 'UPDATE_CURRENTS', currents});
+  };
 }
 
 export default Slider;

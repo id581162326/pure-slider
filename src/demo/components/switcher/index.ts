@@ -14,28 +14,27 @@ import './style.css';
 
 Fragment.injectTemplate(template);
 
-class Switcher extends Fragment implements Namespace.Interface {
+class Switcher extends Fragment <HTMLDivElement> implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new Switcher(props, parent);
 
   private constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
     super(parent, '#js-switcher', '.js-switcher');
 
-
-    pipe(this.switcherMap, this.render);
+    pipe(this.mapSwitcher, this.render);
 
     pipe(this.slider, O.some, O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value')).attachListener(this.connectTypeChangedListener)
+      ? pipe(x, H.prop('value')).dispatch({type: 'ATTACH_LISTENER', listener: this.connectTypeChangedListener})
       : O.none
     ));
   }
 
   private slider: O.Option<Namespace.Slider> = O.none;
 
-  private readonly switcherMap = (x: HTMLElement) => pipe(
-    x,
+  private readonly mapSwitcher: Namespace.MapSwitcher = (switcherNode) => pipe(
+    switcherNode,
     this.setLabel,
     this.renderInput,
-    () => x
+    () => switcherNode
   );
 
   private readonly connectTypeChangedListener: Namespace.ConnectTypeChangedListener = {
@@ -50,12 +49,12 @@ class Switcher extends Fragment implements Namespace.Interface {
     }
   };
 
-  private readonly renderInput = (x: HTMLElement) => pipe(
-    x,
+  private readonly renderInput: Namespace.MapSwitcher = (switcherNode) => pipe(
+    switcherNode,
     H.querySelector('.js-switcher__input'),
     O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x as O.Some<HTMLElement>, H.prop('value'), Slider.of, H.call([{
+    O.map((inputNode) => O.isSome(inputNode)
+      ? pipe(inputNode as O.Some<HTMLElement>, H.prop('value'), Slider.of, H.call([{
           range: [0, 4],
           step: 1,
           margin: 1,
@@ -68,18 +67,18 @@ class Switcher extends Fragment implements Namespace.Interface {
           themeBemBlockClassName: 'switcher'
         }]),
       ) : O.none),
-    (x) => this.slider = x as O.Option<Namespace.Slider>,
-    () => x
+    (slider) => this.slider = slider as O.Option<Namespace.Slider>,
+    () => switcherNode
   );
 
-  private readonly setLabel = (x: HTMLElement) => pipe(
-    x,
+  private readonly setLabel: Namespace.MapSwitcher = (switcherNode) => pipe(
+    switcherNode,
     H.querySelector('.js-switcher__label'),
     O.some,
-    O.map((x) => O.isSome(x)
-      ? pipe(x, H.prop('value'), H.setInnerText(this.props.label))
+    O.map((labelNode) => O.isSome(labelNode)
+      ? pipe(labelNode, H.prop('value'), H.setInnerText(this.props.label))
       : O.none),
-    () => x
+    () => switcherNode
   );
 }
 

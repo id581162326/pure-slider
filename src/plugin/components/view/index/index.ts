@@ -97,12 +97,8 @@ class View implements Namespace.Interface {
     this.scale = this.renderScale();
 
     if (!state.showScale) {
-      this.scale.destroy();
+      this.destroyElement(this.scale);
     }
-
-    // move handlers on load for correct handler's offset calculation
-
-    H.addEventListener('load', () => this.moveHandlersTo(state.currents))(document);
   }
 
   private container: Namespace.ContainerInterface;
@@ -126,21 +122,25 @@ class View implements Namespace.Interface {
     return (element);
   };
 
-  private readonly destroy = () => {
-    const destroyElement = (x: Namespace.Elements) => x.destroy();
+  private readonly destroyElement: Namespace.DestroyElement = (element) => {
+    element.destroy();
 
-    A.map(destroyElement)(this.handlers);
+    return (element);
+  };
 
-    A.map(destroyElement)(this.connects);
+  private readonly destroy: Namespace.Destroy = () => {
+    A.map(this.destroyElement)(this.handlers);
 
-    destroyElement(this.scale);
+    A.map(this.destroyElement)(this.connects);
 
-    destroyElement(this.base);
+    this.destroyElement(this.scale);
 
-    destroyElement(this.container);
+    this.destroyElement(this.base);
+
+    this.destroyElement(this.container);
   }
 
-  private readonly render = () => {
+  private readonly render: Namespace.Render = () => {
     this.container = this.renderContainer();
 
     this.base = this.renderBase();
@@ -152,11 +152,11 @@ class View implements Namespace.Interface {
     this.connects = this.renderConnects();
 
     if (!this.state.showScale) {
-      this.scale.destroy();
+      this.destroyElement(this.scale);
     }
   };
 
-  private readonly reRender = () => {
+  private readonly reRender: Namespace.ReRender = () => {
     this.destroy();
 
     this.render();
@@ -220,16 +220,13 @@ class View implements Namespace.Interface {
 
     const ofConnect = Connect.of;
 
-    const initConnect = (idx: number): Namespace.ConnectInterface => pipe(
-      idx,
-      getConnectProps,
-      ofConnect,
-      this.moveElementTo(currents)
-    );
+    const initConnect = (idx: number): Namespace.ConnectInterface => pipe(idx, getConnectProps, ofConnect);
 
     const connects = A.map(initConnect)(connectMap);
 
     pipe(connects, A.map((x) => x.getNode()), H.appendChildListTo(this.base.getNode()));
+
+    pipe(connects, A.map(this.moveElementTo(currents)));
 
     return (connects);
   };
@@ -255,16 +252,13 @@ class View implements Namespace.Interface {
 
     const ofHandler = Handler.of;
 
-    const initHandler = (idx: number): Namespace.HandlerInterface => pipe(
-      idx,
-      getHandlerProps,
-      ofHandler,
-      this.moveElementTo(currents)
-    );
+    const initHandler = (idx: number): Namespace.HandlerInterface => pipe(idx, getHandlerProps, ofHandler);
 
     const handlers = A.mapWithIndex(initHandler)(currents) as [Namespace.HandlerInterface, Namespace.HandlerInterface] | [Namespace.HandlerInterface];
 
     pipe(handlers, A.map((x) => x.getNode()), H.appendChildListTo(this.base.getNode()));
+
+    pipe(handlers, A.map(this.moveElementTo(currents)));
 
     return (handlers);
   };
@@ -288,9 +282,11 @@ class View implements Namespace.Interface {
       onClick: this.handleClick
     };
 
-    const scale = pipe(scaleProps, ofScale, this.moveElementTo(currents));
+    const scale = pipe(scaleProps, ofScale);
 
     H.appendTo(this.base.getNode())(scale.getNode());
+
+    this.moveElementTo(currents)(scale);
 
     return (scale);
   };

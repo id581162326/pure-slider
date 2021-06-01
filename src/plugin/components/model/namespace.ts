@@ -26,7 +26,13 @@ namespace Model {
     margin: number
   }
 
-  export type Action = UpdateCurrents | UpdateStep | UpdateRange | UpdateMargin;
+  export interface ToggleRange {
+    type: 'TOGGLE_RANGE'
+  }
+
+  export type Action = UpdateCurrents | UpdateStep | UpdateRange | UpdateMargin | ToggleRange;
+
+  export type ObserverInterface = Observer.Interface;
 
   export type Of = (state: State) => Interface;
 
@@ -58,7 +64,7 @@ namespace Model {
   }
 
   export interface Interface {
-    observer: Observer.Interface,
+    observer: ObserverInterface,
     update: Update,
     getState: GetState
   }

@@ -30,7 +30,15 @@ namespace Handler {
 
   export type EndDrag = (event: MouseEvent | TouchEvent) => void;
 
-  export type OnDrag = (handleType: HandleType) => (delta: number) => void
+  export type OnDrag = (handleType: HandleType) => (delta: number) => void;
+
+  export type Destroy = () => void;
+
+  export type SetTabIndex = () => void;
+
+  export type RemoveEventListeners = () => void;
+
+  export type KeyDownListener = (event: KeyboardEvent) => void;
 
   export interface Props extends Element.Props {
     type: HandleType,
