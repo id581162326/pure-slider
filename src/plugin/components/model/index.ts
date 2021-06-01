@@ -137,8 +137,8 @@ class Model implements Namespace.Interface {
     return (pipe(
       newCurrents,
       A.mapWithIndex(pipe(this.correctToStep, correctBy)),
-      (xs) => A.mapWithIndex(pipe(this.correctToMargin(xs as Namespace.Currents), correctBy))(xs),
-      A.mapWithIndex(pipe(this.correctToRange, correctBy))
+      A.mapWithIndex(pipe(this.correctToRange, correctBy)),
+      (xs) => A.mapWithIndex(pipe(this.correctToMargin(xs as Namespace.Currents), correctBy))(xs)
     ) as Namespace.Currents);
   };
 
@@ -155,11 +155,13 @@ class Model implements Namespace.Interface {
 
     const min = pipe(range, NEA.head);
 
+    const max = pipe(range, NEA.last);
+
     const prev = H.nthOrNone(H.dec(idx), NaN)(currents);
 
     const next = H.nthOrNone(H.inc(idx), NaN)(currents);
 
-    const hasPrevCond = !isNaN(prev) && H.sub(prev)(current) < margin;
+    const hasPrevCond = current !== max && !isNaN(prev) && H.sub(prev)(current) < margin;
 
     const hasNextCond = current !== min && !isNaN(next) && H.sub(current)(next) < margin;
 

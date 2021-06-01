@@ -13,7 +13,7 @@ namespace TextField {
 
   export type SetStep = (step: number) => void;
 
-  export type SetMin = (min: number) => void;
+  export type SetRange = (range: Range) => void;
 
   export type GetValue = () => number;
 
@@ -26,7 +26,7 @@ namespace TextField {
     getValue: GetValue,
     setValue: SetValue,
     setStep: SetStep,
-    setMin: SetMin
+    setRange: SetRange
   }
 
 }

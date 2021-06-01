@@ -19,23 +19,23 @@ Fragment.injectTemplate(template);
 class Options extends Fragment <HTMLDivElement> implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new Options(props, parent);
 
-  public readonly updateCurrents = (currents: Namespace.Currents) => {
+  public readonly updateCurrents: Namespace.UpdateCurrents = (currents) => {
     pipe(this.currentsFields, A.mapWithIndex((idx, textField) => textField.setValue(pipe(currents, H.nthOrNone(idx, 0)))));
   };
 
-  public readonly updateRange = (range: Namespace.Range) => {
+  public readonly updateRange: Namespace.UpdateRange = (range: Namespace.Range) => {
     pipe(this.rangeFields, A.mapWithIndex((idx, textField) => textField.setValue(pipe(range, H.nthOrNone(idx, 0)))));
 
-    pipe(this.currentsFields, A.map((textField) => pipe(range, NEA.head, textField.setMin)));
+    pipe(this.currentsFields, A.map((textField) => pipe(range, textField.setRange)));
   };
 
-  public readonly updateStep = (step: number) => {
+  public readonly updateStep: Namespace.UpdateStep = (step) => {
     pipe(this.currentsFields, A.map((textField) => textField.setStep(step)));
 
     pipe(this.stepField, A.map((textField) => textField.setValue(step)));
   };
 
-  public readonly updateMargin = (margin: number) => {
+  public readonly updateMargin: Namespace.UpdateMargin = (margin) => {
     pipe(this.marginField, A.map((textField) => textField.setValue(margin)));
   };
 

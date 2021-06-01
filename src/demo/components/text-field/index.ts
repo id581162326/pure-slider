@@ -1,4 +1,5 @@
 import * as O from 'fp-ts/Option';
+import * as NEA from 'fp-ts/NonEmptyArray';
 import {constant, pipe} from 'fp-ts/function';
 
 import * as H from '../../../helpers';
@@ -21,19 +22,35 @@ class TextField extends Fragment <HTMLLabelElement> implements Namespace.Interfa
 
   public readonly setValue = (value: number) => pipe(this.input, O.some, O.map((inputNode) => {
     if (O.isSome(inputNode)) {
-      inputNode.value.value = H.toString(value)
+      inputNode.value.value = H.toString(value);
     }
   }));
 
   public readonly setStep: Namespace.SetStep = (step: number) => pipe(this.input, O.some, O.map((inputNode) => {
     if (O.isSome(inputNode)) {
+      const min = pipe(inputNode.value.min, Number);
+
+      const max = pipe(inputNode.value.max, Number);
+
+      const range = pipe(max, H.sub(min), Math.abs);
+
+      const convertedMax = pipe(range, H.div(step), Math.ceil, H.mult(step), H.add(min), H.toString);
+
       inputNode.value.step = H.toString(step);
+
+      inputNode.value.max = convertedMax;
     }
   }));
 
-  public readonly setMin: Namespace.SetMin = (min) => pipe(this.input, O.some, O.map((inputNode) => {
+  public readonly setRange: Namespace.SetRange = (range) => pipe(this.input, O.some, O.map((inputNode) => {
     if (O.isSome(inputNode)) {
-      inputNode.value.min = H.toString(min);
+      const min = pipe(range, NEA.head, H.toString);
+
+      const max = pipe(range, NEA.last, H.toString);
+
+      inputNode.value.min = min;
+
+      inputNode.value.max = max;
     }
   }));
 
@@ -61,13 +78,14 @@ class TextField extends Fragment <HTMLLabelElement> implements Namespace.Interfa
     },
     O.some,
     O.map((inputNode) => O.isSome(inputNode)
-      ? pipe(inputNode, H.prop('value'), H.addEventListener('change', () => pipe(
-        inputNode as O.Some<HTMLInputElement>,
-        H.prop('value'),
-        H.prop('value'),
-        Number,
-        this.props.onChange
-      ))) : O.none),
+      ? pipe(inputNode, H.prop('value'),
+        H.addEventListener('change', () => pipe(
+          inputNode as O.Some<HTMLInputElement>,
+          H.prop('value'),
+          H.prop('value'),
+          Number,
+          this.props.onChange
+        ))) : O.none),
     () => textFieldNode,
   );
 

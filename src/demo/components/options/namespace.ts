@@ -33,6 +33,14 @@ namespace Options {
 
   export type OnRangeToggle = () => void;
 
+  export type UpdateRange = (range: Range) => void;
+
+  export type UpdateMargin = (margin: number) => void;
+
+  export type UpdateStep = (step: number) => void;
+
+  export type UpdateCurrents = (currents: Currents) => void;
+
   export interface Props {
     onConnectTypeChange: OnConnectTypeChange,
     onCurrentsChange: OnCurrentsChange,
@@ -46,10 +54,10 @@ namespace Options {
   }
 
   export interface Interface {
-    updateCurrents: (currents: Currents) => void,
-    updateRange: (range: Range) => void,
-    updateStep: (step: number) => void,
-    updateMargin: (margin: number) => void
+    updateCurrents: UpdateCurrents,
+    updateRange: UpdateRange,
+    updateStep: UpdateStep,
+    updateMargin: UpdateMargin
   }
 }
 
