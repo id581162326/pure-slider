@@ -7,6 +7,8 @@ namespace TextField {
 
   export type MapTextField = (textFieldNode: HTMLLabelElement) => HTMLLabelElement;
 
+  export type MapInput = (inputNode: HTMLInputElement) => HTMLInputElement;
+
   export type OnChange = (value: number) => void;
 
   export type SetValue = (value: number) => void;
@@ -19,7 +21,10 @@ namespace TextField {
 
   export interface Props {
     label: string,
-    onChange: OnChange
+    onChange: OnChange,
+    min?: number,
+    max?: number,
+    step?: number
   }
 
   export interface Interface {

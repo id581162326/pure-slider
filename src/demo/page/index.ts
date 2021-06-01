@@ -24,7 +24,7 @@ class Demo {
     description: 'Slider examples. Set options below to see changes',
     sliderConfig: {
       range: [-1000, -100],
-      step: 13,
+      step: 900,
       margin: 200,
       currents: [-50000, -5000],
       connectType: 'none',

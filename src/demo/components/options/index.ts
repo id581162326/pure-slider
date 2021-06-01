@@ -26,6 +26,10 @@ class Options extends Fragment <HTMLDivElement> implements Namespace.Interface {
     pipe(this.rangeFields, A.mapWithIndex((idx, textField) => textField.setValue(pipe(range, H.nthOrNone(idx, 0)))));
 
     pipe(this.currentsFields, A.map((textField) => pipe(range, textField.setRange)));
+
+    pipe(this.stepField, A.map((textField) => textField.setRange([1, pipe(range, H.subAdjacent(1))])));
+
+    pipe(this.marginField, A.map((textField) => textField.setRange([1, pipe(range, H.subAdjacent(1))])));
   };
 
   public readonly updateStep: Namespace.UpdateStep = (step) => {
@@ -98,7 +102,8 @@ class Options extends Fragment <HTMLDivElement> implements Namespace.Interface {
     O.map((fieldNode) => O.isSome(fieldNode)
       ? pipe(fieldNode, H.prop('value'), TextField.of({
         label: 'Step',
-        onChange: this.props.onStepChange
+        onChange: this.props.onStepChange,
+        min: 1
       }), (textField) => this.stepField.push(textField))
       : O.none),
     () => optionsNode
@@ -111,7 +116,8 @@ class Options extends Fragment <HTMLDivElement> implements Namespace.Interface {
     O.map((fieldNode) => O.isSome(fieldNode)
       ? pipe(fieldNode, H.prop('value'), TextField.of({
         label: 'Margin',
-        onChange: this.props.onMarginChange
+        onChange: this.props.onMarginChange,
+        min: 1
       }), (textField) => this.marginField.push(textField))
       : O.none),
     () => optionsNode

@@ -89,9 +89,9 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
       orientation,
       bemBlockClassName,
       onClick,
-      withValue: withValue && ((
+      withValue: withValue && (idx === 0 || (
         pipe(idx, H.div(showValueEach), H.decimal(1)) === 0 &&
-        pipe(idx, H.add(showValueEach), H.mult(unitMult), valueFrom, H.sub(max)) <= max
+        pipe(idx, H.add(1.5), H.mult(unitMult), valueFrom, H.sub(max)) <= max
       ) || pipe(idx, H.mult(unitMult), valueFrom) >= max),
       value: pipe(idx, H.mult(unitMult), valueFrom, (x) => x >= max ? max : x)
     });

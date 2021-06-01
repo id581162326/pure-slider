@@ -77,17 +77,38 @@ class TextField extends Fragment <HTMLLabelElement> implements Namespace.Interfa
       return (inputNode);
     },
     O.some,
-    O.map((inputNode) => O.isSome(inputNode)
-      ? pipe(inputNode, H.prop('value'),
-        H.addEventListener('change', () => pipe(
-          inputNode as O.Some<HTMLInputElement>,
-          H.prop('value'),
-          H.prop('value'),
-          Number,
-          this.props.onChange
-        ))) : O.none),
+    O.map((inputNode) => {
+      if (O.isSome(inputNode)) {
+        const node = pipe(inputNode, H.prop('value')) as HTMLInputElement;
+
+        pipe(node, this.setEventListeners, this.setAttributes);
+      }
+    }),
     () => textFieldNode,
   );
+
+  private readonly setEventListeners: Namespace.MapInput = (inputNode) => pipe(
+    inputNode,
+    H.addEventListener('change', () => pipe(inputNode, H.prop('value'), Number, this.props.onChange))
+  );
+
+  private readonly setAttributes: Namespace.MapInput = (inputNode) => {
+    const {min, max, step} = this.props;
+
+    if (min) {
+      inputNode.min = H.toString(min);
+    }
+
+    if (max) {
+      inputNode.max = H.toString(max);
+    }
+
+    if (step) {
+      inputNode.min = H.toString(step);
+    }
+
+    return (inputNode);
+  };
 
   private readonly setLabel: Namespace.MapTextField = (textFieldNode) => {
     const {label} = this.props;
