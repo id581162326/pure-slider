@@ -14,20 +14,28 @@ Fragment.injectTemplate(template);
 class TextField extends Fragment <HTMLLabelElement> implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new TextField(props, parent);
 
-  public readonly getValue = () => pipe(this.input, O.some, O.map((x) => O.isSome(x)
-    ? pipe(x, H.prop('value'), H.prop('value'), Number)
+  public readonly getValue = () => pipe(this.input, O.some, O.map((inputNode) => O.isSome(inputNode)
+    ? pipe(inputNode, H.prop('value'), H.prop('value'), Number)
     : NaN
-  ), O.getOrElse(constant(NaN)));
+  ), O.getOrElse(constant(0)));
 
-  public readonly setValue = (value: number) => pipe(this.input, O.some, O.map((x) => O.isSome(x)
-    ? pipe(x, H.prop('value')).value = pipe(value, H.toString)
-    : O.none
-  ));
+  public readonly setValue = (value: number) => pipe(this.input, O.some, O.map((inputNode) => {
+    if (O.isSome(inputNode)) {
+      inputNode.value.value = H.toString(value)
+    }
+  }));
 
-  public readonly setStep = (step: number) => pipe(this.input, O.some, O.map((x) => O.isSome(x)
-    ? pipe(x, H.prop('value')).step = pipe(step, H.toString)
-    : O.none
-  ));
+  public readonly setStep: Namespace.SetStep = (step: number) => pipe(this.input, O.some, O.map((inputNode) => {
+    if (O.isSome(inputNode)) {
+      inputNode.value.step = H.toString(step);
+    }
+  }));
+
+  public readonly setMin: Namespace.SetMin = (min) => pipe(this.input, O.some, O.map((inputNode) => {
+    if (O.isSome(inputNode)) {
+      inputNode.value.min = H.toString(min);
+    }
+  }));
 
   constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
     super(parent, '#js-text-field', '.js-text-field');

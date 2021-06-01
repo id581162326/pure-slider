@@ -1,6 +1,8 @@
 namespace TextField {
   export type Parent = HTMLElement | DocumentFragment;
 
+  export type Range = [number, number];
+
   export type Of = (props: Props) => <T extends Parent>(parent: T) => Interface;
 
   export type MapTextField = (textFieldNode: HTMLLabelElement) => HTMLLabelElement;
@@ -10,6 +12,8 @@ namespace TextField {
   export type SetValue = (value: number) => void;
 
   export type SetStep = (step: number) => void;
+
+  export type SetMin = (min: number) => void;
 
   export type GetValue = () => number;
 
@@ -21,7 +25,8 @@ namespace TextField {
   export interface Interface {
     getValue: GetValue,
     setValue: SetValue,
-    setStep: SetStep
+    setStep: SetStep,
+    setMin: SetMin
   }
 
 }

@@ -17,7 +17,7 @@ namespace Example {
 
   export type MapExample = (exampleNode: HTMLElement) => HTMLElement;
 
-  export type AttachOptionsListener = (slider: SliderInterface) => SliderInterface;
+  export type AttachOptionsListener = () => void;
 
   export type HandleOrientationToggle = () => void;
 

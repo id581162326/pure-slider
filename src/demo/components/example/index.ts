@@ -23,6 +23,8 @@ class Example extends Fragment <HTMLElement> implements Namespace.Interface {
     this.slider = this.renderSlider();
 
     pipe(this.mapExample, this.render);
+
+    this.attachOptionListener();
   }
 
   private readonly slider: O.Option<Namespace.SliderInterface>;
@@ -144,15 +146,16 @@ class Example extends Fragment <HTMLElement> implements Namespace.Interface {
     H.querySelector('.js-example__slider'),
     O.some,
     O.map((sliderNode) => O.isSome(sliderNode)
-      ? pipe(sliderNode as O.Some<HTMLDivElement>, H.prop('value'), Slider.of, H.call([this.props.sliderConfig]), this.attachOptionListener)
+      ? pipe(sliderNode as O.Some<HTMLDivElement>, H.prop('value'), Slider.of, H.call([this.props.sliderConfig]))
       : O.none)
   ) as O.Option<Namespace.SliderInterface>;
 
-  private attachOptionListener: Namespace.AttachOptionsListener = (slider) => pipe(
-    slider,
-    H.prop('dispatch'),
-    H.call([{type: 'ATTACH_LISTENER', listener: this.optionsListener}]),
-    () => slider
+  private attachOptionListener: Namespace.AttachOptionsListener = () => pipe(
+    this.slider,
+    O.some,
+    O.map((slider) => O.isSome(slider)
+      ? pipe(slider, H.prop('value'), H.prop('dispatch'), H.call([{type: 'ATTACH_LISTENER', listener: this.optionsListener}]))
+      : O.none)
   );
 
   private optionsListener: Namespace.Listener = {

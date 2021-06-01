@@ -1,5 +1,6 @@
 import * as O from 'fp-ts/Option';
 import * as A from 'fp-ts/Array';
+import * as NEA from 'fp-ts/NonEmptyArray';
 import {pipe} from 'fp-ts/function';
 
 import * as H from '../../../helpers';
@@ -18,15 +19,15 @@ Fragment.injectTemplate(template);
 class Options extends Fragment <HTMLDivElement> implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new Options(props, parent);
 
-  public readonly updateCurrents = (currents: Namespace.Currents) => pipe(
-    this.currentsFields,
-    A.mapWithIndex((idx, textField) => textField.setValue(pipe(currents, H.nthOrNone(idx, 0))))
-  );
+  public readonly updateCurrents = (currents: Namespace.Currents) => {
+    pipe(this.currentsFields, A.mapWithIndex((idx, textField) => textField.setValue(pipe(currents, H.nthOrNone(idx, 0)))));
+  };
 
-  public readonly updateRange = (range: Namespace.Range) => pipe(
-    this.rangeFields,
-    A.mapWithIndex((idx, textField) => textField.setValue(pipe(range, H.nthOrNone(idx, 0))))
-  );
+  public readonly updateRange = (range: Namespace.Range) => {
+    pipe(this.rangeFields, A.mapWithIndex((idx, textField) => textField.setValue(pipe(range, H.nthOrNone(idx, 0)))));
+
+    pipe(this.currentsFields, A.map((textField) => pipe(range, NEA.head, textField.setMin)));
+  };
 
   public readonly updateStep = (step: number) => {
     pipe(this.currentsFields, A.map((textField) => textField.setStep(step)));
