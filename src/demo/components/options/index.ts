@@ -1,6 +1,5 @@
 import * as O from 'fp-ts/Option';
 import * as A from 'fp-ts/Array';
-import * as NEA from 'fp-ts/NonEmptyArray';
 import {pipe} from 'fp-ts/function';
 
 import * as H from '../../../helpers';
