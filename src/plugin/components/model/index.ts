@@ -115,8 +115,8 @@ class Model implements Namespace.Interface {
 
     return (pipe(
       newCurrents,
-      (xs) => (A.mapWithIndex(pipe(this.correctToMargin(xs), correctBy))(xs)),
       A.mapWithIndex(pipe(this.correctToStep, correctBy)),
+      (xs) => A.mapWithIndex(pipe(this.correctToMargin(xs as Namespace.Currents), correctBy))(xs),
       A.mapWithIndex(pipe(this.correctToRange, correctBy))
     ) as Namespace.Currents);
   };
