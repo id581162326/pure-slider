@@ -36,7 +36,7 @@ class Connect extends Element<Namespace.Props, Namespace.Node> {
     const size = type === 'from-start'
       ? pipe(currents, NEA.head, this.correctToMin, this.percentOfRange)
       : type === 'to-end'
-        ? pipe(currents, NEA.last, H.sub(max), H.abs, this.percentOfRange)
+        ? pipe(currents, NEA.last, H.sub(max), Math.abs, this.percentOfRange)
         : pipe(currents, H.subAdjacent(1), this.percentOfRange);
 
     return (size);

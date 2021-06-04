@@ -320,9 +320,9 @@ class View implements Namespace.Interface {
 
     const last = pipe(this.state, H.prop('currents'), NEA.last);
 
-    const deltaHead = pipe(head, H.sub(coord), H.abs);
+    const deltaHead = pipe(head, H.sub(coord), Math.abs);
 
-    const deltaLast = pipe(last, H.sub(coord), H.abs);
+    const deltaLast = pipe(last, H.sub(coord), Math.abs);
 
     onChange(A.size(this.state.currents) === 2
       ? deltaHead <= deltaLast

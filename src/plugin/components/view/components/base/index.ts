@@ -31,7 +31,7 @@ class Base extends Element<Namespace.Props, Namespace.Node> {
 
     const containerSize = pipe(container, this.nodeSize);
 
-    const reverseCoord = flow(H.sub(containerSize), H.abs);
+    const reverseCoord = flow(H.sub(containerSize), Math.abs);
 
     pipe(event, H.prop(coordKey), H.sub(bouncingClientRect), orientation === 'horizontal'
       ? H.ident

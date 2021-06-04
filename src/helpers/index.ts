@@ -5,16 +5,6 @@ import {constant, pipe} from 'fp-ts/function';
 
 // debug helpers
 
-type throwErrorSignature = (name: string) => (message: string) => void;
-export const throwError: throwErrorSignature = (name) => (message) => {
-  const error = new Error();
-
-  error.name = name;
-  error.message = message;
-
-  throw error;
-};
-
 type traceSignature = <T>(x: T) => T;
 export const trace: traceSignature = (x) => {
   console.log(x);
@@ -37,9 +27,6 @@ type callSignature = <T extends unknown>(args: unknown[]) => (fn: Function) => T
 export const call: callSignature = (args)  => (fn) => fn(...args);
 
 // math helpers
-
-type absSignature = (x: number) => number;
-export const abs: absSignature = (x) => Math.abs(x);
 
 type subSignature = (x: number) => (y: number) => number;
 export const sub: subSignature = (x) => (y) => y - x;
@@ -147,14 +134,8 @@ export const setInnerText: setInnerTextSignature = (x) => (n) => {
   return (n);
 };
 
-type offsetWidthSignature = <T extends HTMLElement>(n: T) => number;
-export const offsetWidth: offsetWidthSignature = (n) => n.offsetWidth;
-
-type offsetHeightSignature = <T extends HTMLElement>(n: T) => number;
-export const offsetHeight: offsetHeightSignature = (n) => n.offsetHeight;
-
 type addEventListenerSignature = <T extends keyof HTMLElementEventMap,
-  K extends EventTarget>(t: T, fn: (e: HTMLElementEventMap[T]) => any) => (n: K) => K;
+  K extends HTMLElement | Window | Document>(t: T, fn: (e: HTMLElementEventMap[T]) => any) => (n: K) => K;
 export const addEventListener: addEventListenerSignature = (t, fn) => (n) => {
   n.addEventListener(t, fn as EventListener);
 
@@ -162,7 +143,7 @@ export const addEventListener: addEventListenerSignature = (t, fn) => (n) => {
 };
 
 type removeEventListenerSignature = <T extends keyof HTMLElementEventMap,
-  K extends EventTarget>(t: T, fn: (e: HTMLElementEventMap[T]) => any) => (n: K) => K;
+  K extends HTMLElement | Window | Document>(t: T, fn: (e: HTMLElementEventMap[T]) => any) => (n: K) => K;
 export const removeEventListener: removeEventListenerSignature = (t, fn) => (n) => {
   n.removeEventListener(t, fn as EventListener);
 

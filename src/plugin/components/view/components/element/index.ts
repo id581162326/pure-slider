@@ -71,7 +71,7 @@ class Element<Props extends Namespace.Props, Node extends Namespace.Node> implem
   protected readonly nodeSize: Namespace.NodeSize = (node) => {
     const {orientation} = this.props;
 
-    return (orientation === 'horizontal' ? H.offsetWidth(node) : H.offsetHeight(node));
+    return (orientation === 'horizontal' ? node.offsetWidth : node.offsetHeight);
   };
 }
 
