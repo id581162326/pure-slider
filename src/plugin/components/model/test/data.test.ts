@@ -137,8 +137,8 @@ export const updateTestMap: Namespace.UpdateTestMap[] = [
         action: {type: 'UPDATE_RANGE', range: [100, 100]},
         expected: {
           ...initState.expected,
-          range: [100, 101],
-          currents: [100, 101],
+          range: [99, 100],
+          currents: [99, 100],
           step: 1,
           margin: 1
         }

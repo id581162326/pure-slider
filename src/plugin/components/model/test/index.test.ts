@@ -2,7 +2,6 @@
 
 import * as A from 'fp-ts/Array';
 import {pipe} from 'fp-ts/function';
-import {assert} from 'chai';
 
 import * as H from '../../../../helpers';
 
@@ -16,11 +15,11 @@ describe('Model', () => {
     it('should init instance', () => {
       const model = Model.of(D.initState.state);
 
-      const actual = pipe(model, H.prop('getState'), H.call([]), H.ident);
+      const actual = model.getState();
 
       const expected = D.initState.expected;
 
-      assert.deepEqual(actual, expected, `Must be ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
+      expect(expected).toEqual(actual);
     });
   });
 
@@ -65,7 +64,7 @@ describe('Model', () => {
     it('should attach listener', () => {
       const actual = pipe(model.getListeners(), H.nthOrNone(0, {update: (_) => {}}));
 
-      assert.deepEqual(actual, listener, `Must be ${JSON.stringify(listener)}, but got ${JSON.stringify(actual)}`);
+      expect(listener).toEqual(actual);
     });
 
     it('should update listener', () => {
@@ -73,7 +72,7 @@ describe('Model', () => {
 
       const expected = model.getState();
 
-      assert.deepEqual(actual, expected, `Must be ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
+      expect(expected).toEqual(actual);
     });
   });
 
@@ -109,7 +108,6 @@ describe('Model', () => {
                 case 'MARGIN_UPDATED': {
                   mockView.update({margin: event.margin});
 
-
                   break;
                 }
               }
@@ -122,7 +120,11 @@ describe('Model', () => {
 
           const modelState = model.getState();
 
-          assert.deepEqual(modelState, expected, `Must be ${JSON.stringify(expected)}, but got ${JSON.stringify(modelState)}`);
+          const mockViewState = mockView.getState();
+
+          expect(expected).toEqual(modelState);
+
+          expect(expected).toEqual(mockViewState);
         })(tests);
       });
     })(D.updateTestMap);
@@ -136,7 +138,7 @@ describe('Model', () => {
 
       const expected = D.initState.expected;
 
-      assert.deepEqual(actual, expected, `Must be ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
+      expect(expected).toEqual(actual);
     });
   });
 
@@ -183,7 +185,7 @@ describe('Model', () => {
 
       const expected = [listener];
 
-      assert.deepEqual(actual, expected, `Must be ${JSON.stringify(expected)}, but got ${JSON.stringify(actual)}`);
+      expect(expected).toEqual(actual);
     });
   });
 });

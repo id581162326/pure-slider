@@ -55,11 +55,8 @@ class Model implements Namespace.Interface {
     this.observer.attach(listener);
 
     listener.update({type: 'CURRENTS_UPDATED', currents});
-
     listener.update({type: 'MARGIN_UPDATED', margin});
-
     listener.update({type: 'STEP_UPDATED', step});
-
     listener.update({type: 'RANGE_UPDATED', range});
   };
 
@@ -70,7 +67,7 @@ class Model implements Namespace.Interface {
   private constructor(private state: Namespace.State) {
     const stateWithCorrectedRange = {
       ...state,
-      range: pipe(state.range, this.correctRangeToAscending(), this.correctRangeToDifferent())
+      range: pipe(state.range, this.correctRangeToAscending, this.correctRangeToDifferent)
     };
 
     const stateWithCorrectedRangeMarginAndStep = {
@@ -159,17 +156,21 @@ class Model implements Namespace.Interface {
   private readonly setRange: Namespace.SetRange = (range) => {
     const stateWithCorrectedRange = {
       ...this.state,
-      range: pipe(range, this.correctRangeToAscending(), this.correctRangeToDifferent())
+      range: pipe(range, this.correctRangeToAscending, this.correctRangeToDifferent)
+    };
+
+    const stateWithCorrectedRangeStepAndMargin = {
+      ...stateWithCorrectedRange,
+      step: this.correctMarginOrStepToRange(stateWithCorrectedRange)(this.state.step),
+      margin: this.correctMarginOrStepToRange(stateWithCorrectedRange)(this.state.margin)
     };
 
     this.state = {
-      ...stateWithCorrectedRange,
-      step: this.correctMarginOrStepToRange(stateWithCorrectedRange)(this.state.step),
-      margin: this.correctMarginOrStepToRange(stateWithCorrectedRange)(this.state.margin),
+      ...stateWithCorrectedRangeStepAndMargin,
       currents: pipe(
         this.state.currents,
-        this.correctCurrentsToRange('init', stateWithCorrectedRange),
-        this.correctCurrentsToMargin('init', stateWithCorrectedRange))
+        this.correctCurrentsToRange('init', stateWithCorrectedRangeStepAndMargin),
+        this.correctCurrentsToMargin('init', stateWithCorrectedRangeStepAndMargin))
     };
 
     pipe(
@@ -247,27 +248,32 @@ class Model implements Namespace.Interface {
       currents,
       A.zip(oldCurrents),
       A.mapWithIndex((idx, coordTuple) => {
-        const changed = H.subAdjacent(1)(coordTuple) !== 0;
-
         const coord = pipe(coordTuple, NEA.head);
 
         const prev = pipe(currents, H.nthOrNone(H.dec(idx), NaN));
 
         const next = pipe(currents, H.nthOrNone(H.inc(idx), NaN));
 
-        const hasPrevCond = !isNaN(prev) && H.sub(prev)(coord) < margin && coord !== max;
-
-        const hasNextCond = !isNaN(next) && H.sub(coord)(next) < margin && coord !== min;
-
         const prevWithMargin = H.add(margin)(prev);
 
         const nextWithoutMargin = H.sub(margin)(next);
 
-        if (changed || correctType === 'init') {
-          return (hasPrevCond
+        const isInit = correctType === 'init';
+
+        const hasPrev = !isNaN(prev) && H.sub(prev)(coord) < margin && coord !== max;
+
+        const hasNext = (
+          correctType === 'init' && H.add(margin)(coord) >= max || correctType === 'change'
+        ) && (
+          !isNaN(next) && H.sub(coord)(next) < margin && coord !== min
+        );
+
+        const changed = H.subAdjacent(1)(coordTuple) !== 0;
+
+        if (changed || isInit) {
+          return (hasPrev
             ? prevWithMargin > max ? max : prevWithMargin
-            : hasNextCond && (correctType === 'init' && next >= max || H.add(margin)(coord) >= max)
-              ? nextWithoutMargin < min ? min : nextWithoutMargin
+            : hasNext ? nextWithoutMargin < min ? min : nextWithoutMargin
               : coord);
         }
 
@@ -276,7 +282,7 @@ class Model implements Namespace.Interface {
     ) as Namespace.Currents);
   };
 
-  private readonly correctRangeToAscending: Namespace.CorrectRange = (_) => (range) => {
+  private readonly correctRangeToAscending: Namespace.CorrectRange = (range) => {
     const min = pipe(range, NEA.head);
 
     const max = pipe(range, NEA.last);
@@ -288,13 +294,15 @@ class Model implements Namespace.Interface {
     return (range);
   };
 
-  private readonly correctRangeToDifferent: Namespace.CorrectRange = (_) => (range) => {
-    const rangeValue = H.subAdjacent(1)(range);
+  private readonly correctRangeToDifferent: Namespace.CorrectRange = (range) => {
+    const rangeValue = pipe(range, H.subAdjacent(1));
+
+    const oldMin = pipe(this.state.range, NEA.head);
 
     const min = pipe(range, NEA.head);
 
     if (rangeValue === 0) {
-      return ([min, H.inc(min)]);
+      return (min === 0 ? [0, 1] : min > oldMin ? [H.dec(min), min] : [min, H.inc(min)]);
     }
 
     return (range);
@@ -303,7 +311,7 @@ class Model implements Namespace.Interface {
   private readonly correctMarginOrStepToRange: Namespace.CorrectMargin = (state = this.state) => (marginOrStep) => {
     const {range} = state;
 
-    const rangeValue = H.subAdjacent(1)(range);
+    const rangeValue = pipe(range, H.subAdjacent(1));
 
     if (rangeValue < marginOrStep) {
       return (rangeValue);

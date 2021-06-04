@@ -50,9 +50,9 @@ namespace Model {
 
   export type CorrectCurrents = (correctType: CorrectType, state?: State) => (currents: Currents) => Currents;
 
-  export type CorrectRange = (state?: State) => (range: Range) => Range;
-
   export type CorrectMargin = (state?: State) => (marginOrStep: number) => number;
+
+  export type CorrectRange = (range: Range) => Range;
 
   export type SetCurrents = (currents: Currents) => void;
 
