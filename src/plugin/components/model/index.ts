@@ -11,226 +11,317 @@ import Namespace from './namespace';
 class Model implements Namespace.Interface {
   static of: Namespace.Of = (state) => new Model(state);
 
-  public readonly observer: Namespace.ObserverInterface = new Observer();
-
   public readonly update: Namespace.Update = (action: Namespace.Action) => {
     switch (action.type) {
       case 'UPDATE_CURRENTS': {
-        const correctedCurrents = this.correctCurrents('change')(action.currents);
-
-        this.state = {...this.state, currents: correctedCurrents};
-
-        pipe(
-          this.observer,
-          H.prop('listeners'),
-          A.map((listener) => listener.update({type: 'CURRENTS_UPDATED', currents: correctedCurrents}))
-        );
+        this.setCurrents(action.currents);
 
         break;
       }
 
       case 'UPDATE_STEP': {
-        const newState = {...this.state, step: action.step};
-
-        this.state = pipe(newState, this.validateState);
-
-        const correctedCurrents = this.correctCurrents('init')(this.state.currents);
-
-        this.state = {...this.state, currents: correctedCurrents};
-
-        pipe(
-          this.observer,
-          H.prop('listeners'),
-          A.map((listener) => {
-            listener.update({type: 'CURRENTS_UPDATED', currents: correctedCurrents});
-            listener.update({type: 'STEP_UPDATED', step: this.state.step});
-          })
-        );
+        this.setStep(action.step);
 
         break;
       }
 
       case 'UPDATE_RANGE': {
-        const newState = {...this.state, range: action.range};
-
-        this.state = pipe(newState, this.validateState);
-
-        const correctedCurrents = this.correctCurrents('init')(this.state.currents);
-
-        this.state = {...this.state, currents: correctedCurrents};
-
-        pipe(
-          this.observer,
-          H.prop('listeners'),
-          A.map((listener) => {
-            listener.update({type: 'CURRENTS_UPDATED', currents: correctedCurrents});
-            listener.update({type: 'RANGE_UPDATED', range: this.state.range});
-          })
-        );
+        this.setRange(action.range);
 
         break;
       }
 
       case 'UPDATE_MARGIN': {
-        const newState = {...this.state, margin: action.margin};
-
-        this.state = pipe(newState, this.validateState);
-
-        const correctedCurrents = this.correctCurrents('init')(this.state.currents);
-
-        this.state = {...this.state, currents: correctedCurrents};
-
-        pipe(
-          this.observer,
-          H.prop('listeners'),
-          A.map((listener) => {
-            listener.update({type: 'CURRENTS_UPDATED', currents: correctedCurrents});
-            listener.update({type: 'MARGIN_UPDATED', margin: action.margin})
-          })
-        );
+        this.setMargin(action.margin);
 
         break;
       }
 
       case 'TOGGLE_RANGE': {
-        const correctedCurrents = pipe(
-          A.size(this.state.currents) === 2
-            ? [pipe(this.state.currents, NEA.head)]
-            : [pipe(this.state.currents, NEA.head), pipe(this.state.currents, NEA.head)] as Namespace.Currents,
-          this.correctCurrents('change')
-        );
+        const {currents, margin} = this.state;
 
-        this.state = {...this.state, currents: correctedCurrents};
+        const first = pipe(currents, NEA.head);
 
-        pipe(
-          this.observer,
-          H.prop('listeners'),
-          A.map((listener) => {
-            listener.update({type: 'CURRENTS_UPDATED', currents: correctedCurrents});
-          })
-        );
+        this.setCurrents(A.size(currents) === 2 ? [first] : [first, H.add(margin)(first)]);
 
         break;
       }
     }
-  }
+  };
+
+  public attachListener: Namespace.AttachListener = (listener) => {
+    const {currents, step, range, margin} = this.state;
+
+    this.observer.attach(listener);
+
+    listener.update({type: 'CURRENTS_UPDATED', currents});
+
+    listener.update({type: 'MARGIN_UPDATED', margin});
+
+    listener.update({type: 'STEP_UPDATED', step});
+
+    listener.update({type: 'RANGE_UPDATED', range});
+  };
+
+  public getListeners: Namespace.GetListeners = () => this.observer.listeners;
 
   public getState: Namespace.GetState = () => this.state;
 
   private constructor(private state: Namespace.State) {
-    this.validateState(state);
+    const stateWithCorrectedRange = {
+      ...state,
+      range: pipe(state.range, this.correctRangeToAscending(), this.correctRangeToDifferent())
+    };
 
-    this.state = {...state, currents: this.correctCurrents('init')(state.currents)};
+    const stateWithCorrectedRangeMarginAndStep = {
+      ...stateWithCorrectedRange,
+      margin: pipe(state.margin, this.correctMarginOrStepToPositive(), this.correctMarginOrStepToRange(stateWithCorrectedRange)),
+      step: pipe(state.step, this.correctMarginOrStepToPositive(), this.correctMarginOrStepToRange(stateWithCorrectedRange))
+    };
+
+    this.state = {
+      ...stateWithCorrectedRangeMarginAndStep,
+      currents: pipe(
+        state.currents,
+        this.correctCurrentsToStep('init', stateWithCorrectedRangeMarginAndStep),
+        this.correctCurrentsToRange('init', stateWithCorrectedRangeMarginAndStep),
+        this.correctCurrentsToMargin('init', stateWithCorrectedRangeMarginAndStep)
+      )
+    };
   }
 
-  private readonly correctCurrents: Namespace.CorrectCurrents = (type) => (newCurrents) => {
-    const {currents} = this.state;
+  private readonly setCurrents: Namespace.SetCurrents = (currents) => {
+    this.state = {
+      ...this.state, currents: pipe(
+        currents,
+        this.correctCurrentsToStep('change'),
+        this.correctCurrentsToRange('change'),
+        this.correctCurrentsToMargin('change')
+      )
+    };
 
-    const changed = (idx: number, current: number): boolean => pipe(currents, H.nthOrNone(idx, NaN)) !== current;
+    pipe(
+      this.observer,
+      H.prop('listeners'),
+      A.map((listener) => listener.update({type: 'CURRENTS_UPDATED', currents: this.state.currents}))
+    );
+  };
 
-    const correctBy = (correct: (x: number, i: number) => number) => (idx: number, current: number): number => type === 'init'
-      ? correct(current, idx)
-      : type === 'change' && changed(idx, current)
-        ? correct(current, idx)
-        : current;
+  private readonly setMargin: Namespace.SetMargin = (margin) => {
+    const stateWithCorrectedMargin = {
+      ...this.state,
+      margin: pipe(margin, this.correctMarginOrStepToPositive(), this.correctMarginOrStepToRange())
+    };
+
+    this.state = {
+      ...stateWithCorrectedMargin,
+      currents: pipe(
+        this.state.currents,
+        this.correctCurrentsToMargin('init', stateWithCorrectedMargin)
+      )
+    };
+
+    pipe(
+      this.observer,
+      H.prop('listeners'),
+      A.map((listener) => {
+        listener.update({type: 'CURRENTS_UPDATED', currents: this.state.currents});
+        listener.update({type: 'MARGIN_UPDATED', margin: this.state.margin});
+      })
+    );
+  };
+
+  private readonly setStep: Namespace.SetStep = (step) => {
+    const stateWithCorrectedStep = {
+      ...this.state,
+      step: pipe(step, this.correctMarginOrStepToPositive(), this.correctMarginOrStepToRange())
+    };
+
+    this.state = {
+      ...stateWithCorrectedStep,
+      currents: pipe(
+        this.state.currents,
+        this.correctCurrentsToStep('init', stateWithCorrectedStep),
+        this.correctCurrentsToMargin('init', stateWithCorrectedStep)
+      )
+    };
+
+    pipe(
+      this.observer,
+      H.prop('listeners'),
+      A.map((listener) => {
+        listener.update({type: 'CURRENTS_UPDATED', currents: this.state.currents});
+        listener.update({type: 'STEP_UPDATED', step: this.state.step});
+      })
+    );
+  };
+
+  private readonly setRange: Namespace.SetRange = (range) => {
+    const stateWithCorrectedRange = {
+      ...this.state,
+      range: pipe(range, this.correctRangeToAscending(), this.correctRangeToDifferent())
+    };
+
+    this.state = {
+      ...stateWithCorrectedRange,
+      step: this.correctMarginOrStepToRange(stateWithCorrectedRange)(this.state.step),
+      margin: this.correctMarginOrStepToRange(stateWithCorrectedRange)(this.state.margin),
+      currents: pipe(
+        this.state.currents,
+        this.correctCurrentsToRange('init', stateWithCorrectedRange),
+        this.correctCurrentsToMargin('init', stateWithCorrectedRange))
+    };
+
+    pipe(
+      this.observer,
+      H.prop('listeners'),
+      A.map((listener) => {
+        listener.update({type: 'CURRENTS_UPDATED', currents: this.state.currents});
+        listener.update({type: 'RANGE_UPDATED', range: this.state.range});
+        listener.update({type: 'STEP_UPDATED', step: this.state.step});
+        listener.update({type: 'MARGIN_UPDATED', margin: this.state.margin});
+      })
+    );
+  };
+
+  private readonly observer: Namespace.ObserverInterface = new Observer();
+
+  private readonly correctCurrentsToStep: Namespace.CorrectCurrents = (correctType, state = this.state) => (currents) => {
+    const {range, step} = state;
+
+    const min = pipe(range, NEA.head);
+
+    const oldCurrents = A.mapWithIndex((idx) => H.nthOrNone(idx, NaN)(state.currents))(currents);
 
     return (pipe(
-      newCurrents,
-      A.mapWithIndex(pipe(this.correctToStep, correctBy)),
-      A.mapWithIndex(pipe(this.correctToRange, correctBy)),
-      (xs) => A.mapWithIndex(pipe(this.correctToMargin(xs as Namespace.Currents), correctBy))(xs)
+      currents,
+      A.zip(oldCurrents),
+      A.map((coordTuple) => {
+        const changed = H.subAdjacent(1)(coordTuple) !== 0;
+
+        if (changed || correctType === 'init') {
+          return (pipe(coordTuple, NEA.head, H.sub(min), H.div(step), Math.floor, H.mult(step), H.add(min)));
+        }
+
+        return (pipe(coordTuple, NEA.head));
+      })
     ) as Namespace.Currents);
   };
 
-  private readonly correctToStep: Namespace.CorrectByStep = (current) => {
-    const {step, range} = this.state;
-
-    const min = pipe(range, NEA.head);
-
-    return (pipe(current, H.sub(min), H.div(step), Math.round, H.mult(step), H.add(min)));
-  };
-
-  private readonly correctToMargin: Namespace.CorrectToMargin = (currents) => (current, idx) => {
-    const {margin, range} = this.state;
-
-    const min = pipe(range, NEA.head);
-
-    const max = pipe(range, NEA.last);
-
-    const prev = H.nthOrNone(H.dec(idx), NaN)(currents);
-
-    const next = H.nthOrNone(H.inc(idx), NaN)(currents);
-
-    const hasPrevCond = current !== max && !isNaN(prev) && H.sub(prev)(current) < margin;
-
-    const hasNextCond = current !== min && !isNaN(next) && H.sub(current)(next) < margin;
-
-    return (hasPrevCond ? H.add(margin)(prev) : hasNextCond ? H.sub(margin)(next) : current);
-  };
-
-  private readonly correctToRange: Namespace.CorrectToRange = (current) => {
-    const {range} = this.state;
-
-    const min = pipe(range, NEA.head);
-
-    const max = pipe(range, NEA.last);
-
-    return (current < min ? min : current > max ? max : current);
-  };
-
-  private readonly invalidStateError = H.throwError('Invalid state');
-
-  private readonly validateState: Namespace.ValidateState = (state) => pipe(
-    state,
-    this.validateByRange,
-    this.validateByStep,
-    this.validateByMargin
-  );
-
-  private readonly validateByRange: Namespace.ValidateByRange = (state) => {
+  private readonly correctCurrentsToRange: Namespace.CorrectCurrents = (correctType, state = this.state) => (currents) => {
     const {range} = state;
 
     const min = pipe(range, NEA.head);
 
     const max = pipe(range, NEA.last);
 
-    if (max < min) {
-      this.invalidStateError('Max value must not be less than min');
-    }
+    const oldCurrents = A.mapWithIndex((idx) => H.nthOrNone(idx, NaN)(state.currents))(currents);
 
-    if (pipe(range, H.subAdjacent(1)) === 0) {
-      this.invalidStateError('Range value must not be equal to zero');
-    }
+    return (pipe(
+      currents,
+      A.zip(oldCurrents),
+      A.map((coordTuple) => {
+        const changed = H.subAdjacent(1)(coordTuple) !== 0;
 
-    return (state);
+        if (changed || correctType === 'init') {
+          const coord = pipe(coordTuple, NEA.head);
+
+          return (coord <= min ? min : coord >= max ? max : coord);
+        }
+
+        return (pipe(coordTuple, NEA.head));
+      })
+    ) as Namespace.Currents);
   };
 
-  private readonly validateByStep: Namespace.ValidateByStep = (state) => {
-    const {range, step} = state;
+  private readonly correctCurrentsToMargin: Namespace.CorrectCurrents = (correctType, state = this.state) => (currents) => {
+    const {margin, range} = state;
 
-    if (step > pipe(range, H.subAdjacent(1))) {
-      this.invalidStateError('Step value must not be more than range value');
-    }
+    const min = pipe(range, NEA.head);
 
-    if (step < 0) {
-      this.invalidStateError('Step value must not be less than zero');
-    }
+    const max = pipe(range, NEA.last);
 
-    return (state);
+    const oldCurrents = A.mapWithIndex((idx) => H.nthOrNone(idx, NaN)(state.currents))(currents);
+
+    return (pipe(
+      currents,
+      A.zip(oldCurrents),
+      A.mapWithIndex((idx, coordTuple) => {
+        const changed = H.subAdjacent(1)(coordTuple) !== 0;
+
+        const coord = pipe(coordTuple, NEA.head);
+
+        const prev = pipe(currents, H.nthOrNone(H.dec(idx), NaN));
+
+        const next = pipe(currents, H.nthOrNone(H.inc(idx), NaN));
+
+        const hasPrevCond = !isNaN(prev) && H.sub(prev)(coord) < margin && coord !== max;
+
+        const hasNextCond = !isNaN(next) && H.sub(coord)(next) < margin && coord !== min;
+
+        const prevWithMargin = H.add(margin)(prev);
+
+        const nextWithoutMargin = H.sub(margin)(next);
+
+        if (changed || correctType === 'init') {
+          return (hasPrevCond
+            ? prevWithMargin > max ? max : prevWithMargin
+            : hasNextCond && (correctType === 'init' && next >= max || H.add(margin)(coord) >= max)
+              ? nextWithoutMargin < min ? min : nextWithoutMargin
+              : coord);
+        }
+
+        return (coord);
+      })
+    ) as Namespace.Currents);
   };
 
-  private readonly validateByMargin: Namespace.ValidateByMargin = (state) => {
-    const {range, margin} = state;
+  private readonly correctRangeToAscending: Namespace.CorrectRange = (_) => (range) => {
+    const min = pipe(range, NEA.head);
 
-    if (margin > pipe(range, H.subAdjacent(1))) {
-      this.invalidStateError('Margin value must not be more than range value');
+    const max = pipe(range, NEA.last);
+
+    if (A.size(range) === 2 && min > max) {
+      return ([max, min]);
     }
 
-    if (margin < 0) {
-      this.invalidStateError('Margin value must not be less than zero');
+    return (range);
+  };
+
+  private readonly correctRangeToDifferent: Namespace.CorrectRange = (_) => (range) => {
+    const rangeValue = H.subAdjacent(1)(range);
+
+    const min = pipe(range, NEA.head);
+
+    if (rangeValue === 0) {
+      return ([min, H.inc(min)]);
     }
 
-    return (state);
+    return (range);
+  };
+
+  private readonly correctMarginOrStepToRange: Namespace.CorrectMargin = (state = this.state) => (marginOrStep) => {
+    const {range} = state;
+
+    const rangeValue = H.subAdjacent(1)(range);
+
+    if (rangeValue < marginOrStep) {
+      return (rangeValue);
+    }
+
+    if (rangeValue < marginOrStep) {
+      return (rangeValue);
+    }
+
+    return (marginOrStep);
+  };
+
+  private readonly correctMarginOrStepToPositive: Namespace.CorrectMargin = (_) => (marginOrStep: number): number => {
+    if (marginOrStep <= 0) {
+      return (1);
+    }
+
+    return (marginOrStep);
   };
 }
 

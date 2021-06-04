@@ -100,7 +100,11 @@ const getTypeDependingConfigProps: (buildType: BuildType) => webpack.Configurati
     }
 
     case 'test': {
-      return ({});
+      return ({
+        mode: 'development',
+        devtool: 'inline-source-map',
+        entry: './test/index.ts'
+      });
     }
   }
 };
@@ -127,34 +131,34 @@ export const getRules: (type: BuildType) => webpack.RuleSetRule[] = (buildType) 
   {
     test: /\.css$/,
     use: [
-      ...(buildType === 'prod' || buildType ==='demo' ? [{
+      ...(buildType === 'prod' || buildType === 'demo' ? [{
         loader: MiniCssExtractPlugin.loader
-      }]: ['style-loader']),
+      }] : ['style-loader']),
       'css-loader',
       {
-      loader: 'postcss-loader',
-      options: {
-        postcssOptions: {
-          plugins: [
-            [
-              'postcss-preset-env',
-              {
-                stage: 3,
-                features: {
-                  'nesting-rules': true,
-                  'not-pseudo-class': true
+        loader: 'postcss-loader',
+        options: {
+          postcssOptions: {
+            plugins: [
+              [
+                'postcss-preset-env',
+                {
+                  stage: 3,
+                  features: {
+                    'nesting-rules': true,
+                    'not-pseudo-class': true
+                  },
+                  ...(
+                    (buildType === 'prod' || buildType === 'demo') ? {
+                      browsers: 'last 2 versions'
+                    } : {}
+                  )
                 },
-                ...(
-                  (buildType === 'prod' || buildType === 'demo') ? {
-                    browsers: 'last 2 versions'
-                  } : {}
-                )
-              },
+              ],
             ],
-          ],
-        },
-      }
-    }]
+          },
+        }
+      }]
   }
 ]);
 
@@ -164,5 +168,11 @@ export const getConfig: (buildType: BuildType) => webpack.Configuration = (build
   resolve: {
     modules: ['node_modules', 'src'],
     extensions: ['.ts', '.js'],
+    fallback: {
+      stream: require.resolve('stream-browserify')
+    },
+    alias: {
+      stream: 'stream-browserify'
+    }
   }
 });

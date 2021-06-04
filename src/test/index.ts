@@ -1,0 +1,1 @@
+import 'mocha-loader!../plugin/components/model/test/index.test';

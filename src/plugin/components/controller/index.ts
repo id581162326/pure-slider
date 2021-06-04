@@ -25,7 +25,7 @@ class Controller implements Namespace.Interface {
       }
 
       case 'ATTACH_LISTENER': {
-        this.addListener(action.listener);
+        this.model.attachListener(action.listener);
 
         break;
       }
@@ -33,19 +33,7 @@ class Controller implements Namespace.Interface {
   };
 
   private constructor(private readonly view: Namespace.View, private readonly model: Namespace.Model) {
-    this.addListener(this.viewListener);
-  }
-
-  private addListener: Namespace.AddListener = (listener) => {
-    this.model.observer.attach(listener);
-
-    listener.update({type: 'CURRENTS_UPDATED', currents: this.model.getState().currents});
-
-    listener.update({type: 'RANGE_UPDATED', range: this.model.getState().range});
-
-    listener.update({type: 'STEP_UPDATED', step: this.model.getState().step});
-
-    listener.update({type: 'MARGIN_UPDATED', margin: this.model.getState().margin});
+    this.dispatch({type: 'ATTACH_LISTENER', listener: this.viewListener});
   }
 
   private readonly viewListener: Namespace.Listener = {
