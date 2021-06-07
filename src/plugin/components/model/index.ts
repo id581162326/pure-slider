@@ -200,8 +200,12 @@ class Model implements Namespace.Interface {
       A.map((coordTuple) => {
         const changed = H.subAdjacent(1)(coordTuple) !== 0;
 
-        if (changed || correctType === 'init') {
-          return (pipe(coordTuple, NEA.head, H.sub(min), H.div(step), Math.floor, H.mult(step), H.add(min)));
+        if (changed && correctType === 'change') {
+          return (pipe(coordTuple, NEA.head, H.sub(min), H.div(step), Math.round, H.mult(step), H.add(min)));
+        }
+
+        if (correctType === 'init') {
+          return (pipe(coordTuple, NEA.head, H.sub(min), H.div(step), Math.floor, H.mult(step), H.add(min)))
         }
 
         return (pipe(coordTuple, NEA.head));
@@ -213,7 +217,6 @@ class Model implements Namespace.Interface {
     const {range} = state;
 
     const min = pipe(range, NEA.head);
-
     const max = pipe(range, NEA.last);
 
     const oldCurrents = A.mapWithIndex((idx) => H.nthOrNone(idx, NaN)(state.currents))(currents);
@@ -239,7 +242,6 @@ class Model implements Namespace.Interface {
     const {margin, range} = state;
 
     const min = pipe(range, NEA.head);
-
     const max = pipe(range, NEA.last);
 
     const oldCurrents = A.mapWithIndex((idx) => H.nthOrNone(idx, NaN)(state.currents))(currents);
@@ -251,30 +253,26 @@ class Model implements Namespace.Interface {
         const coord = pipe(coordTuple, NEA.head);
 
         const prev = pipe(currents, H.nthOrNone(H.dec(idx), NaN));
-
         const next = pipe(currents, H.nthOrNone(H.inc(idx), NaN));
 
         const prevWithMargin = H.add(margin)(prev);
-
         const nextWithoutMargin = H.sub(margin)(next);
 
         const isInit = correctType === 'init';
+        const isChange = correctType === 'change';
 
-        const hasPrev = !isNaN(prev) && H.sub(prev)(coord) < margin && coord !== max;
+        const changed = H.subAdjacent(1)(coordTuple) !== 0 && isChange;
 
-        const hasNext = (
-          correctType === 'init' && H.add(margin)(coord) >= max || correctType === 'change'
-        ) && (
-          !isNaN(next) && H.sub(coord)(next) < margin && coord !== min
-        );
+        const hasPrevCond = !isNaN(prev) && H.sub(prev)(coord) < margin && coord !== max;
+        const hasNextCond = ((isInit && H.add(margin)(coord) >= max) || isChange) &&
+          (!isNaN(next) && H.sub(coord)(next) < margin && coord !== min);
 
-        const changed = H.subAdjacent(1)(coordTuple) !== 0;
+        if ((changed || isInit) && hasPrevCond) {
+          return (prevWithMargin > max ? max : prevWithMargin);
+        }
 
-        if (changed || isInit) {
-          return (hasPrev
-            ? prevWithMargin > max ? max : prevWithMargin
-            : hasNext ? nextWithoutMargin < min ? min : nextWithoutMargin
-              : coord);
+        if ((changed || isInit) && hasNextCond) {
+          return (nextWithoutMargin < min ? min : nextWithoutMargin);
         }
 
         return (coord);
@@ -284,7 +282,6 @@ class Model implements Namespace.Interface {
 
   private readonly correctRangeToAscending: Namespace.CorrectRange = (range) => {
     const min = pipe(range, NEA.head);
-
     const max = pipe(range, NEA.last);
 
     if (A.size(range) === 2 && min > max) {
@@ -298,11 +295,14 @@ class Model implements Namespace.Interface {
     const rangeValue = pipe(range, H.subAdjacent(1));
 
     const oldMin = pipe(this.state.range, NEA.head);
-
     const min = pipe(range, NEA.head);
 
+    if (rangeValue === 0 && min === 0) {
+      return ([0, 1]);
+    }
+
     if (rangeValue === 0) {
-      return (min === 0 ? [0, 1] : min > oldMin ? [H.dec(min), min] : [min, H.inc(min)]);
+      return (min > oldMin ? [H.dec(min), min] : [min, H.inc(min)]);
     }
 
     return (range);

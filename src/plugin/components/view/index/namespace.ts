@@ -133,8 +133,8 @@ namespace View {
     container: HTMLElement,
     tooltipOptions: TooltipOptions,
     scaleOptions: ScaleOptions,
-    themeBemBlockClassName?: string,
-    onChange: OnChange
+    onChange: OnChange,
+    themeBemBlockClassName?: string
   }
 
   export interface State {

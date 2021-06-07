@@ -1,5 +1,5 @@
 import * as NEA from 'fp-ts/NonEmptyArray';
-import {flow, pipe} from 'fp-ts/function';
+import {pipe} from 'fp-ts/function';
 
 import * as H from '../../../../../helpers';
 
@@ -25,17 +25,19 @@ class Base extends Element<Namespace.Props, Namespace.Node> {
 
     const min = pipe(range, NEA.head);
 
-    const coordKey = orientation === 'horizontal' ? 'x' : 'y';
+    if (orientation === 'horizontal') {
+      const bouncingClientRect = this.node.getBoundingClientRect().x;
 
-    const bouncingClientRect = pipe(this.node.getBoundingClientRect(), H.prop(coordKey));
+      pipe(event, H.prop('x'), H.sub(bouncingClientRect), this.pxToNum, H.add(min), onClick);
+    }
 
-    const containerSize = pipe(container, this.nodeSize);
+    if (orientation === 'vertical') {
+      const bouncingClientRect = this.node.getBoundingClientRect().y;
 
-    const reverseCoord = flow(H.sub(containerSize), Math.abs);
+      const containerSize = pipe(container, this.nodeSize);
 
-    pipe(event, H.prop(coordKey), H.sub(bouncingClientRect), orientation === 'horizontal'
-      ? H.ident
-      : reverseCoord, this.pxToNum, H.add(min), onClick);
+      pipe(event, H.prop('y'), H.sub(bouncingClientRect), H.sub(containerSize), Math.abs, this.pxToNum, H.add(min), onClick);
+    }
   };
 }
 

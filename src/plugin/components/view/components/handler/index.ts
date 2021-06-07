@@ -1,4 +1,5 @@
 import * as NEA from 'fp-ts/NonEmptyArray';
+import * as A from 'fp-ts/Array';
 import {pipe} from 'fp-ts/function';
 
 import * as H from '../../../../../helpers';
@@ -18,22 +19,28 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
 
     const offset = pipe(this.node, this.nodeSize, H.half);
 
-    const style = orientation === 'horizontal'
-      ? `left: calc(${pos}% - ${offset}px);`
-      : `bottom: calc(${pos}% - ${offset}px);`;
+    if (orientation === 'horizontal') {
+      pipe(this.node, H.setInlineStyle(`left: calc(${pos}% - ${offset}px);`));
+    }
 
-    const value = pipe(currents, type === 'start' || type === 'single' ? NEA.head : NEA.last);
+    if (orientation === 'vertical') {
+      pipe(this.node, H.setInlineStyle(`bottom: calc(${pos}% - ${offset}px);`));
+    }
 
-    this.tooltip.setValue(value);
+    if (type === 'start' || type === 'single') {
+      pipe(currents, NEA.head, this.tooltip.setValue);
 
-    pipe(this.node, H.setInlineStyle(style));
+      return;
+    }
+
+    pipe(currents, NEA.last, this.tooltip.setValue);
   };
 
   public readonly destroy: Namespace.Destroy = () => {
     this.node.remove();
 
     this.removeEventListeners();
-  }
+  };
 
   private constructor(props: Namespace.Props) {
     super(props, H.node('div'), 'handler');
@@ -68,53 +75,64 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
     const tooltipNode = this.tooltip.getNode();
 
     pipe(tooltipNode, H.appendTo(this.node));
-  }
+  };
 
   private readonly setTabIndex: Namespace.SetTabIndex = () => {
     this.node.tabIndex = 0;
   };
 
   private readonly setEventListeners: Namespace.SetEventListeners = () => {
-    H.addEventListener('pointerdown', this.startDrag)(this.node);
-    H.addEventListener('mousedown', this.startDrag)(this.node);
-    H.addEventListener('pointerup', this.endDrag)(window);
-    H.addEventListener('mouseup', this.endDrag)(window);
+    A.map((eventType: 'pointerdown' | 'mousedown') => H.addEventListener(
+      eventType, this.startDrag
+    )(this.node))(['pointerdown', 'mousedown']);
+
+    A.map((eventType: 'pointerup' | 'mouseup') => H.addEventListener(
+      eventType, this.endDrag
+    )(window))(['pointerup', 'mouseup']);
+
     H.addEventListener('keydown', this.keyDownListener)(this.node);
   };
 
   private readonly removeEventListeners: Namespace.RemoveEventListeners = () => {
-    H.removeEventListener('pointerup', this.endDrag)(window);
-    H.removeEventListener('mouseup', this.endDrag)(window);
-  }
+    A.map((eventType: 'pointerup' | 'mouseup') => H.removeEventListener(
+      eventType, this.endDrag
+    )(window))(['pointerup', 'mouseup']);
+  };
 
   private readonly getPos: Namespace.GetPos = (currents) => {
     const {type} = this.props;
 
-    const pos = pipe(currents, type === 'start' || type === 'single'
-      ? NEA.head
-      : NEA.last, this.correctToMin, this.percentOfRange);
+    if (type === 'start' || type === 'single') {
+      return (pipe(currents, NEA.head, this.correctToMin, this.percentOfRange));
+    }
 
-    return (pos);
+    return (pipe(currents, NEA.last, this.correctToMin, this.percentOfRange));
   };
 
   private readonly dragListener: Namespace.DragListener = (event) => {
     const {onDrag, orientation, type} = this.props;
 
-    const xOrY = orientation === 'horizontal' ? 'x' : 'y';
-
-    const clientXorY = orientation === 'horizontal' ? 'clientX' : 'clientY';
-
     const offset = pipe(this.node, this.nodeSize, H.half);
 
-    const bouncingClientRect = pipe(this.node.getBoundingClientRect(), H.prop(xOrY));
+    if (orientation === 'horizontal') {
+      const bouncingClientRect = this.node.getBoundingClientRect().x;
 
-    const location = event.type === 'touchmove'
-      ? pipe(event as TouchEvent, H.prop('targetTouches'))[0][clientXorY]
-      : pipe(event as MouseEvent, H.prop(xOrY));
+      const location = event.type === 'touchmove'
+        ? pipe(event as TouchEvent, H.prop('targetTouches'), H.prop(0), H.prop('clientX'))
+        : pipe(event as MouseEvent, H.prop('x'));
 
-    pipe(location, H.sub(bouncingClientRect), orientation === 'horizontal'
-      ? H.ident
-      : H.negate, H.sub(offset), this.pxToNum, onDrag(type));
+      pipe(location, H.sub(bouncingClientRect), H.sub(offset), this.pxToNum, onDrag(type));
+    }
+
+    if (orientation === 'vertical') {
+      const bouncingClientRect = this.node.getBoundingClientRect().y;
+
+      const location = event.type === 'touchmove'
+        ? pipe(event as TouchEvent, H.prop('targetTouches'), H.prop(0), H.prop('clientY'))
+        : pipe(event as MouseEvent, H.prop('y'));
+
+      pipe(location, H.sub(bouncingClientRect), H.negate, H.sub(offset), this.pxToNum, onDrag(type));
+    }
   };
 
   private readonly startDrag: Namespace.StartDrag = (event) => {

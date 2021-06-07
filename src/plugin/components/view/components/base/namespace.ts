@@ -3,8 +3,6 @@ import Element from '../element/namespace';
 namespace Base {
   export type Node = HTMLDivElement;
 
-  export type ClickType = 'start' | 'end' | 'single';
-
   export type Of = (props: Props) => Interface;
 
   export type SetEventListeners = () => void;
@@ -14,8 +12,7 @@ namespace Base {
   export type OnClick = (coordinate: number) => void;
 
   export interface Props extends Element.Props {
-    onClick: OnClick,
-    initialClickType: ClickType
+    onClick: OnClick
   }
 
   export interface Interface extends Element.Interface {

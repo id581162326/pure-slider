@@ -68,7 +68,10 @@ class View implements Namespace.Interface {
       }
 
       case 'TOGGLE_ORIENTATION': {
-        this.state = {...this.state, orientation: this.state.orientation === 'horizontal' ? 'vertical' : 'horizontal'};
+        this.state = {
+          ...this.state,
+          orientation: this.state.orientation === 'horizontal' ? 'vertical' : 'horizontal'
+        };
 
         this.reRender();
 
@@ -87,13 +90,9 @@ class View implements Namespace.Interface {
 
   private constructor(private readonly props: Namespace.Props, private state: Namespace.State) {
     this.container = this.renderContainer();
-
     this.base = this.renderBase();
-
     this.handlers = this.renderHandlers();
-
     this.connects = this.renderConnects();
-
     this.scale = this.renderScale();
 
     if (!state.showScale) {
@@ -142,13 +141,9 @@ class View implements Namespace.Interface {
 
   private readonly render: Namespace.Render = () => {
     this.container = this.renderContainer();
-
     this.base = this.renderBase();
-
     this.handlers = this.renderHandlers();
-
     this.scale = this.renderScale();
-
     this.connects = this.renderConnects();
 
     if (!this.state.showScale) {
@@ -158,7 +153,6 @@ class View implements Namespace.Interface {
 
   private readonly reRender: Namespace.ReRender = () => {
     this.destroy();
-
     this.render();
   }
 
@@ -177,14 +171,13 @@ class View implements Namespace.Interface {
   private readonly renderBase: Namespace.RenderBase = () => {
     const {container} = this.props;
 
-    const {orientation, range, currents} = this.state;
+    const {orientation, range} = this.state;
 
     const baseProps: Namespace.BaseProps = {
       bemBlockClassName: this.getBemBlockClassName(),
       orientation,
       range,
       container,
-      initialClickType: pipe(currents, A.size) === 2 ? 'start' : 'single',
       onClick: this.handleClick
     };
 

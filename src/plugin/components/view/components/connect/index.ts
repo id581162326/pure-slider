@@ -14,14 +14,15 @@ class Connect extends Element<Namespace.Props, Namespace.Node> {
     const {orientation} = this.props;
 
     const pos = this.getPos(currents);
-
     const size = this.getSize(currents);
 
-    const style = orientation === 'horizontal'
-      ? `left: ${pos}%; max-width: ${size}%;`
-      : `bottom: ${pos}%; max-height: ${size}%;`;
+    if (orientation === 'horizontal') {
+      pipe(this.node, H.setInlineStyle(`left: ${pos}%; max-width: ${size}%;`));
+    }
 
-    pipe(this.node, H.setInlineStyle(style));
+    if (orientation === 'vertical') {
+      pipe(this.node, H.setInlineStyle(`bottom: ${pos}%; max-height: ${size}%;`));
+    }
   };
 
   private constructor(props: Namespace.Props) {
@@ -33,25 +34,29 @@ class Connect extends Element<Namespace.Props, Namespace.Node> {
 
     const max = pipe(range, NEA.last);
 
-    const size = type === 'from-start'
-      ? pipe(currents, NEA.head, this.correctToMin, this.percentOfRange)
-      : type === 'to-end'
-        ? pipe(currents, NEA.last, H.sub(max), Math.abs, this.percentOfRange)
-        : pipe(currents, H.subAdjacent(1), this.percentOfRange);
+    if (type === 'from-start') {
+      return (pipe(currents, NEA.head, this.correctToMin, this.percentOfRange));
+    }
 
-    return (size);
+    if (type === 'to-end') {
+      return (pipe(currents, NEA.last, H.sub(max), Math.abs, this.percentOfRange));
+    }
+
+    return (pipe(currents, H.subAdjacent(1), this.percentOfRange));
   };
 
   private readonly getPos: Namespace.GetPos = (currents) => {
     const {type} = this.props;
 
-    const pos = type === 'to-end'
-      ? pipe(currents, NEA.last, this.correctToMin, this.percentOfRange)
-      : type === 'inner'
-        ? pipe(currents, NEA.head, this.correctToMin, this.percentOfRange)
-        : 0;
+    if (type === 'to-end') {
+      return (pipe(currents, NEA.last, this.correctToMin, this.percentOfRange));
+    }
 
-    return (pos);
+    if (type === 'inner') {
+      return (pipe(currents, NEA.head, this.correctToMin, this.percentOfRange));
+    }
+
+    return (0);
   };
 }
 

@@ -23,10 +23,10 @@ class Demo {
     title: `Example No ${pipe(idx, H.inc)}`,
     description: 'Slider examples. Set options below to see changes',
     sliderConfig: {
-      range: [-1000, -100],
-      step: 900,
-      margin: 200,
-      currents: [-50000, -5000],
+      range: [-100, 100],
+      step: 13,
+      margin: 10,
+      currents: [0, 10],
       connectType: 'none',
       tooltipOptions: {
         alwaysShown: true
