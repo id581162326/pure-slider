@@ -101,13 +101,9 @@ class View implements Namespace.Interface {
   }
 
   private container: Namespace.ContainerInterface;
-
   private base: Namespace.BaseInterface;
-
   private connects: Namespace.ConnectInterface[];
-
   private handlers: [Namespace.HandlerInterface, Namespace.HandlerInterface] | [Namespace.HandlerInterface];
-
   private scale: Namespace.ScaleInterface;
 
   private readonly getBemBlockClassName: Namespace.GetBemBlockClassName = () => ({
@@ -129,21 +125,18 @@ class View implements Namespace.Interface {
 
   private readonly destroy: Namespace.Destroy = () => {
     A.map(this.destroyElement)(this.handlers);
-
     A.map(this.destroyElement)(this.connects);
 
     this.destroyElement(this.scale);
-
     this.destroyElement(this.base);
-
     this.destroyElement(this.container);
   }
 
   private readonly render: Namespace.Render = () => {
     this.container = this.renderContainer();
     this.base = this.renderBase();
-    this.handlers = this.renderHandlers();
     this.scale = this.renderScale();
+    this.handlers = this.renderHandlers();
     this.connects = this.renderConnects();
 
     if (!this.state.showScale) {
@@ -310,11 +303,9 @@ class View implements Namespace.Interface {
     const {onChange} = this.props;
 
     const head = pipe(this.state, H.prop('currents'), NEA.head);
-
     const last = pipe(this.state, H.prop('currents'), NEA.last);
 
     const deltaHead = pipe(head, H.sub(coord), Math.abs);
-
     const deltaLast = pipe(last, H.sub(coord), Math.abs);
 
     onChange(A.size(this.state.currents) === 2

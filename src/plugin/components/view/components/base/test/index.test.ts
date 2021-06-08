@@ -1,5 +1,4 @@
 import * as A from 'fp-ts/Array';
-import {pipe} from 'fp-ts/function';
 
 import * as H from '../../../../../../helpers';
 
@@ -7,7 +6,7 @@ import Base from '../index';
 import Namespace from '../namespace';
 
 describe('Base element', () => {
-  const container = pipe(H.node('div'), H.setInlineStyle('width: 100px, height: 100px;'));
+  const container = H.node('div');
 
   describe('Method of', () => {
     A.map((orientation: Namespace.Props['orientation']) => {
