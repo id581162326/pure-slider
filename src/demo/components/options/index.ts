@@ -213,7 +213,7 @@ class Options extends Fragment <HTMLDivElement> implements Namespace.Interface {
     ? 'from-start' : connectType === 2
       ? 'to-end' : connectType === 3
         ? 'inner-range' : connectType === 4
-          ? 'outer-range' : 'none');
+          ? 'outer-range' : 'single');
 }
 
 export default Options;

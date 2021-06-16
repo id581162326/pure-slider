@@ -43,7 +43,7 @@ namespace Example {
 
   export type Options = Options.Interface;
 
-  export type ConnectType = 'outer-range' | 'inner-range' | 'from-start' | 'to-end' | 'none';
+  export type ConnectType = 'outer-range' | 'inner-range' | 'from-start' | 'to-end' | 'single';
 
   export interface Props {
     title: string,

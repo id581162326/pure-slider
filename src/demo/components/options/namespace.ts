@@ -11,7 +11,7 @@ namespace Options {
 
   export type Range = [number, number];
 
-  export type ConnectType = 'outer-range' | 'inner-range' | 'from-start' | 'to-end' | 'none';
+  export type ConnectType = 'outer-range' | 'inner-range' | 'from-start' | 'to-end' | 'single';
 
   export type MapOptions = (optionsNode: HTMLDivElement) => HTMLDivElement;
 

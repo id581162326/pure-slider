@@ -250,11 +250,11 @@ describe('Helpers', () => {
 
         H.addClassList(classList)(node);
 
-        expect(H.containsClass('foo')(node)).toEqual(true);
+        expect(H.containsClass('foo')(node)).toBeTrue();
 
-        expect(H.containsClass('bar')(node)).toEqual(true);
+        expect(H.containsClass('bar')(node)).toBeTrue();
 
-        expect(H.containsClass('fizz')(node)).toEqual(false);
+        expect(H.containsClass('fizz')(node)).toBeFalse();
       });
     });
 

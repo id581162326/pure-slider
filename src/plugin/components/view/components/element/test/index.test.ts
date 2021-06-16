@@ -5,7 +5,7 @@ import * as H from '../../../../../../helpers';
 
 import Element from '../index';
 
-import Namespace from './namespace';
+import Namespace from './namespace.test';
 
 const getSubjects: Namespace.GetSubjects = (key) => {
   const container = H.node('div');

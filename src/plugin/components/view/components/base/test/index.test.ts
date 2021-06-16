@@ -6,7 +6,7 @@ import * as H from '../../../../../../helpers';
 
 import Base from '../index';
 
-import Namespace from './namespace';
+import Namespace from './namespace.test';
 import * as D from './data.test';
 
 const container = pipe(H.node('div'), H.setInlineStyle('width: 100px; height: 100px'));
@@ -40,7 +40,7 @@ describe('Base', () => {
       const {node, base} = getSubjects(orientation);
 
       it(`should init base with ${orientation} orientation`, () => {
-        expect(base instanceof Base).toEqual(true);
+        expect(base).toBeInstanceOf(Base);
         expect(node).toHaveClass('pure-slider__base');
         expect(node).toHaveClass('-slider__base');
         expect(node).toHaveClass(`pure-slider__base_orientation_${orientation}`);

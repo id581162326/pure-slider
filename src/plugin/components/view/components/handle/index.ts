@@ -16,7 +16,6 @@ class Handle extends Element<Namespace.Props, Namespace.Node> {
     const {orientation, type} = this.props;
 
     const pos = this.getPos(currents);
-
     const offset = pipe(this.node, this.nodeSize, H.half);
 
     if (orientation === 'horizontal') {
@@ -59,10 +58,7 @@ class Handle extends Element<Namespace.Props, Namespace.Node> {
     const {range, container, orientation, bemBlockClassName, tooltipAlwaysShown} = this.props;
 
     const tooltipProps: Namespace.TooltipProps = {
-      range,
-      container,
-      orientation,
-      bemBlockClassName,
+      range, container, orientation, bemBlockClassName,
       alwaysShown: tooltipAlwaysShown
     };
 
@@ -149,7 +145,6 @@ class Handle extends Element<Namespace.Props, Namespace.Node> {
 
   private readonly keyDownListener: Namespace.KeyDownListener = (event) => {
     const {code} = event;
-
     const {type, step, orientation, onDrag} = this.props;
 
     const decCond = (orientation === 'horizontal' && code === 'ArrowLeft')

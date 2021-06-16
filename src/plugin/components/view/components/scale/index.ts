@@ -12,8 +12,10 @@ import Namespace from './namespace';
 class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespace.Interface {
   static of: Namespace.Of = (props) => new Scale(props);
 
+  public readonly getUnits: Namespace.GetUnits = () => this.units;
+
   public readonly moveTo: Namespace.MoveTo = (currents) => {
-    const {connectType} = this.props;
+    const {type} = this.props;
 
     const first = pipe(currents, NEA.head);
     const second = pipe(currents, NEA.last);
@@ -30,15 +32,11 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
 
     const setUnitActive = ({getValue, setActive}: Namespace.Unit) => flow(
       getValue,
-      connectType === 'outer-range'
-        ? isOuterRange
-        : connectType === 'inner-range'
-        ? isInnerRange
-        : connectType === 'from-start'
-          ? isLessThanFirst
-          : connectType === 'to-end'
-            ? isMoreThanSecond
-            : currentsHasEqualTo,
+      type === 'outer-range'
+        ? isOuterRange : type === 'inner-range'
+          ? isInnerRange : type === 'from-start'
+            ? isLessThanFirst : type === 'to-end'
+              ? isMoreThanSecond : currentsHasEqualTo,
       setActive
     )();
 
@@ -59,8 +57,8 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
   private readonly renderUnits: Namespace.RenderSteps = () => {
     const {step, range, container, orientation, bemBlockClassName, withValue, showValueEach, onClick} = this.props;
 
-    const unitsCount = pipe(range, H.subAdjacent(1), H.div(step), Math.ceil);
     const unitCountLimit = 20;
+    const unitsCount = pipe(range, H.subAdjacent(1), H.div(step), Math.ceil);
     const unitMult = pipe(unitsCount, H.div(unitCountLimit), Math.ceil);
 
     const min = pipe(range, NEA.head);
@@ -75,11 +73,7 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
     const valueFrom = (idx: number): number => pipe(idx, H.mult(step), H.add(min));
 
     const getUnitProps = (idx: number): Namespace.UnitProps => ({
-      range,
-      container,
-      orientation,
-      bemBlockClassName,
-      onClick,
+      range, container, orientation, bemBlockClassName, onClick,
       withValue: withValue && (idx === 0 || (
         pipe(idx, H.div(showValueEach), H.decimal(1)) === 0 &&
         pipe(idx, H.inc, H.mult(unitMult), valueFrom) <= max

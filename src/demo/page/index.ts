@@ -27,7 +27,7 @@ class Demo {
       step: 13,
       margin: 10,
       currents: [0, 10],
-      connectType: 'none',
+      connectType: 'single',
       tooltipOptions: {
         alwaysShown: false
       },

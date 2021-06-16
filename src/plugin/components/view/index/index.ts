@@ -91,7 +91,7 @@ class View implements Namespace.Interface {
   private constructor(private readonly props: Namespace.Props, private state: Namespace.State) {
     this.container = this.renderContainer();
     this.base = this.renderBase();
-    this.handlers = this.renderHandlers();
+    this.handlers = this.renderHandles();
     this.connects = this.renderConnects();
     this.scale = this.renderScale();
 
@@ -123,20 +123,20 @@ class View implements Namespace.Interface {
     return (element);
   };
 
-  private readonly destroy: Namespace.Destroy = () => {
-    A.map(this.destroyElement)(this.handlers);
-    A.map(this.destroyElement)(this.connects);
+  private readonly getElementNode: Namespace.GetElementNode = (element) => element.getNode();
 
-    this.destroyElement(this.scale);
-    this.destroyElement(this.base);
-    this.destroyElement(this.container);
+  private readonly destroy: Namespace.Destroy = () => {
+    A.map(this.destroyElement)([
+      this.scale, this.base, this.container,
+      ...this.handlers,
+      ...this.connects]);
   };
 
   private readonly render: Namespace.Render = () => {
     this.container = this.renderContainer();
     this.base = this.renderBase();
     this.scale = this.renderScale();
-    this.handlers = this.renderHandlers();
+    this.handlers = this.renderHandles();
     this.connects = this.renderConnects();
 
     if (!this.state.showScale) {
@@ -151,24 +151,23 @@ class View implements Namespace.Interface {
 
   private readonly renderContainer: Namespace.RenderContainer = () => {
     const {container} = this.props;
-
     const {orientation, range} = this.state;
 
-    const containerProps: Namespace.ContainerProps = {bemBlockClassName: this.getBemBlockClassName(), orientation, range, container};
+    const containerProps: Namespace.ContainerProps = {
+      orientation, range, container,
+      bemBlockClassName: this.getBemBlockClassName()
+    };
 
     return (pipe(containerProps, Container.of));
   };
 
   private readonly renderBase: Namespace.RenderBase = () => {
     const {container} = this.props;
-
     const {orientation, range} = this.state;
 
     const baseProps: Namespace.BaseProps = {
+      orientation, range, container,
       bemBlockClassName: this.getBemBlockClassName(),
-      orientation,
-      range,
-      container,
       onClick: this.handleClick
     };
 
@@ -181,7 +180,6 @@ class View implements Namespace.Interface {
 
   private readonly renderConnects: Namespace.RenderConnects = () => {
     const {container} = this.props;
-
     const {connectType, range, orientation, currents} = this.state;
 
     const connectMap = connectType === 'outer-range'
@@ -191,10 +189,8 @@ class View implements Namespace.Interface {
             ? [1] : [];
 
     const getConnectProps = (idx: number): Namespace.ConnectProps => ({
-      container,
+      container, orientation, range,
       bemBlockClassName: this.getBemBlockClassName(),
-      orientation,
-      range,
       type: connectType === 'outer-range' || connectType === 'inner-range'
         ? idx === 0 ? 'from-start' : idx === 2 ? 'to-end' : 'inner'
         : idx === 0 ? 'from-start' : 'to-end'
@@ -204,27 +200,19 @@ class View implements Namespace.Interface {
 
     const connects = A.map(initConnect)(connectMap);
 
-    pipe(connects, A.map((x) => x.getNode()), H.appendChildListTo(this.base.getNode()));
+    pipe(connects, A.map(this.getElementNode), pipe(this.base, this.getElementNode, H.appendChildListTo));
 
-    pipe(connects, A.map(this.moveElementTo(currents)));
-
-    return (connects);
+    return (pipe(connects, A.map(this.moveElementTo(currents))));
   };
 
-  private readonly renderHandlers: Namespace.RenderHandles = () => {
+  private readonly renderHandles: Namespace.RenderHandles = () => {
     const {container, tooltipOptions} = this.props;
-
-    const {showTooltips} = this.state;
-
-    const {range, currents, orientation, step} = this.state;
+    const {range, currents, orientation, step, showTooltips} = this.state;
 
     const getHandleProps = (idx: number): Namespace.HandleProps => ({
-      container,
-      bemBlockClassName: this.getBemBlockClassName(),
-      orientation,
-      range,
+      container, orientation, range, step,
       showTooltip: showTooltips,
-      step,
+      bemBlockClassName: this.getBemBlockClassName(),
       tooltipAlwaysShown: tooltipOptions ? tooltipOptions.alwaysShown : false,
       type: A.size(currents) === 2 ? idx === 0 ? 'start' : 'end' : 'start',
       onDrag: this.handleDrag
@@ -232,26 +220,20 @@ class View implements Namespace.Interface {
 
     const initHandle = (idx: number): Namespace.HandleInterface => pipe(idx, getHandleProps, Handle.of);
 
-    const handles = A.mapWithIndex(initHandle)(currents) as [Namespace.HandleInterface, Namespace.HandleInterface] | [Namespace.HandleInterface];
+    const handles = A.mapWithIndex(initHandle)(currents);
 
-    pipe(handles, A.map((x) => x.getNode()), H.appendChildListTo(this.base.getNode()));
+    pipe(handles, A.map(this.getElementNode), pipe(this.base, this.getElementNode, H.appendChildListTo));
 
-    pipe(handles, A.map(this.moveElementTo(currents)));
-
-    return (handles);
+    return (pipe(handles, A.map(this.moveElementTo(currents))) as [Namespace.HandleInterface, Namespace.HandleInterface] | [Namespace.HandleInterface]);
   };
 
   private readonly renderScale: Namespace.RenderScale = () => {
     const {container, scaleOptions} = this.props;
-
     const {currents, orientation, range, connectType, step} = this.state;
 
     const scaleProps: Namespace.ScaleProps = {
-      container,
-      orientation,
-      range,
-      connectType,
-      step,
+      container, orientation, range, step,
+      type: connectType,
       withValue: scaleOptions.withValue,
       showValueEach: scaleOptions.showValueEach,
       bemBlockClassName: this.getBemBlockClassName(),
@@ -260,35 +242,26 @@ class View implements Namespace.Interface {
 
     const scale = pipe(scaleProps, Scale.of);
 
-    H.appendTo(this.base.getNode())(scale.getNode());
+    pipe(scale, this.getElementNode, pipe(this.base, this.getElementNode, H.appendTo))
 
-    this.moveElementTo(currents)(scale);
-
-    return (scale);
+    return (this.moveElementTo(currents)(scale) as Namespace.ScaleInterface);
   };
 
   private handleDrag: Namespace.HandleDrag = (type) => (delta) => {
     const {onChange} = this.props;
-
     const {currents} = this.state;
 
-    pipe(
-      currents,
-      NEA.mapWithIndex((idx, coord: number) => type === 'start' && idx === 0
-        ? pipe(coord, H.add(delta))
-        : type === 'end' && idx === 1
-          ? pipe(coord, H.add(delta)) : coord) as (x: Namespace.Currents) => Namespace.Currents,
-      onChange);
+    pipe(currents, NEA.mapWithIndex((idx, coord: number) =>
+      type === 'start' && idx === 0 ? pipe(coord, H.add(delta)) :
+        type === 'end' && idx === 1 ? pipe(coord, H.add(delta)) : coord
+    ) as (x: Namespace.Currents) => Namespace.Currents, onChange);
   };
 
   private readonly moveHandlersTo: Namespace.MoveHandlesTo = (currents) => {
-    pipe(this.connects, A.map(this.moveElementTo(currents)));
-
-    pipe(this.handlers, A.map(this.moveElementTo(currents)));
-
-    if (this.scale) {
-      pipe(this.scale, this.moveElementTo(currents));
-    }
+    A.map(this.moveElementTo(currents))([
+      ...this.connects,
+      ...this.handlers,
+      ...(this.scale ? [this.scale] : [])]);
   };
 
   private readonly handleClick: Namespace.HandleClick = (coord) => {

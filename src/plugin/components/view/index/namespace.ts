@@ -42,7 +42,7 @@ namespace View {
 
   export type HandleType = Handle.HandleType;
 
-  export type ConnectType = 'inner-range' | 'outer-range' | 'from-start' | 'to-end' | 'none';
+  export type ConnectType = 'inner-range' | 'outer-range' | 'from-start' | 'to-end' | 'single';
 
   export type Orientation = 'horizontal' | 'vertical';
 
@@ -100,6 +100,8 @@ namespace View {
   export type MoveElementTo = <Element extends MovableElement>(currents: Currents) => (e: Element) => Element;
 
   export type DestroyElement = <Element extends Elements>(element: Element) => Element;
+
+  export type GetElementNode = <Element extends Elements>(element: Element) => HTMLElement;
 
   export type GetBemBlockClassName = () => Element.BemBlockClassName;
 

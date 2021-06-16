@@ -8,7 +8,7 @@ import Container from '../index';
 describe('Container', () => {
   describe('Method of', () => {
     A.map((orientation: Namespace.Props['orientation']) => {
-      const connect = Container.of({
+      const container = Container.of({
         container: H.node('div'),
         orientation,
         range: [0, 100],
@@ -18,9 +18,10 @@ describe('Container', () => {
         }
       });
 
-      const node = connect.getNode();
+      const node = container.getNode();
 
       it(`should init element with ${orientation} orientation`, () => {
+        expect(container).toBeInstanceOf(Container);
         expect(node).toHaveClass('pure-slider');
         expect(node).toHaveClass('-slider');
         expect(node).toHaveClass(`pure-slider_orientation_${orientation}`);

@@ -5,7 +5,7 @@ import * as H from '../../../../../../helpers';
 
 import Handle from '../index';
 
-import Namespace from './namespace';
+import Namespace from './namespace.test';
 import * as D from './data.test';
 import * as O from 'fp-ts/Option';
 
@@ -44,8 +44,7 @@ describe('Handle', () => {
       const {handle, node} = getSubjects({orientation, type: 'start'});
 
       it(`should init element with ${orientation} orientation`, () => {
-        expect(handle instanceof Handle).toEqual(true);
-
+        expect(handle).toBeInstanceOf(Handle);
         expect(node).toHaveClass('pure-slider__handle');
         expect(node).toHaveClass('-slider__handle');
         expect(node).toHaveClass(`pure-slider__handle_orientation_${orientation}`);

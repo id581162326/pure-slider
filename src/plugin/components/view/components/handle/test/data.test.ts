@@ -1,4 +1,4 @@
-import Namespace from './namespace';
+import Namespace from './namespace.test';
 
 export const dragMap: Namespace.DragMap = [
   {delta: 30, expected: 30},

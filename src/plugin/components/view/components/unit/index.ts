@@ -11,7 +11,6 @@ class Unit extends Element<Namespace.Props, Namespace.Node> implements Namespace
 
   public readonly setActive: Namespace.SetActive = (isActive) => {
     const {bemBlockClassName} = this.props;
-
     const {base, theme} = bemBlockClassName;
 
     const classList = [`${base}__unit_active`, `${theme}__unit_active`];
@@ -35,7 +34,6 @@ class Unit extends Element<Namespace.Props, Namespace.Node> implements Namespace
     super(props, H.node('div'), 'unit');
 
     this.setClassList();
-
     this.updatePosition();
 
     if (props.withValue) {
@@ -47,7 +45,6 @@ class Unit extends Element<Namespace.Props, Namespace.Node> implements Namespace
 
   private readonly renderValue: Namespace.RenderValue = () => {
     const {value, bemBlockClassName} = this.props;
-
     const {base, theme} = bemBlockClassName;
 
     const classList = [`${base}__unit-value`, `${theme}__unit-value`];

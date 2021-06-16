@@ -6,7 +6,7 @@ import * as H from '../../../../../../helpers';
 import Connect from '../index';
 
 import * as D from './data.test';
-import Namespace from './namespace';
+import Namespace from './namespace.test';
 
 const getSubjects: Namespace.GetSubjects = ({type, orientation}) => {
   const container = pipe(H.node('div'), H.setInlineStyle('width: 100px, height: 100px'));
@@ -34,7 +34,7 @@ describe('Connect', () => {
       const {node, connect} = getSubjects({type: 'inner', orientation});
 
       it(`should init connect with ${orientation} orientation`, () => {
-        expect(connect instanceof Connect).toEqual(true);
+        expect(connect).toBeInstanceOf(Connect);
         expect(node).toHaveClass('pure-slider__connect');
         expect(node).toHaveClass('-slider__connect');
         expect(node).toHaveClass(`pure-slider__connect_orientation_${orientation}`);
