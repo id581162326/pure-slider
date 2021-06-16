@@ -24,7 +24,7 @@ class View implements Namespace.Interface {
 
         this.state = {...this.state, currents: action.currents};
 
-        A.size(oldCurrents) !== A.size(action.currents) ? this.reRender() : this.moveHandlersTo(action.currents);
+        A.size(oldCurrents) !== A.size(action.currents) ? this.reRender() : this.moveHandlesTo(action.currents);
 
         break;
       }
@@ -91,7 +91,7 @@ class View implements Namespace.Interface {
   private constructor(private readonly props: Namespace.Props, private state: Namespace.State) {
     this.container = this.renderContainer();
     this.base = this.renderBase();
-    this.handlers = this.renderHandles();
+    this.handles = this.renderHandles();
     this.connects = this.renderConnects();
     this.scale = this.renderScale();
 
@@ -103,7 +103,7 @@ class View implements Namespace.Interface {
   private container: Namespace.ContainerInterface;
   private base: Namespace.BaseInterface;
   private connects: Namespace.ConnectInterface[];
-  private handlers: [Namespace.HandleInterface, Namespace.HandleInterface] | [Namespace.HandleInterface];
+  private handles: [Namespace.HandleInterface, Namespace.HandleInterface] | [Namespace.HandleInterface];
   private scale: Namespace.ScaleInterface;
 
   private readonly getBemBlockClassName: Namespace.GetBemBlockClassName = () => ({
@@ -126,7 +126,7 @@ class View implements Namespace.Interface {
   private readonly destroy: Namespace.Destroy = () => {
     A.map(this.destroyElement)([
       this.scale, this.base, this.container,
-      ...this.handlers,
+      ...this.handles,
       ...this.connects]);
   };
 
@@ -134,7 +134,7 @@ class View implements Namespace.Interface {
     this.container = this.renderContainer();
     this.base = this.renderBase();
     this.scale = this.renderScale();
-    this.handlers = this.renderHandles();
+    this.handles = this.renderHandles();
     this.connects = this.renderConnects();
 
     if (!this.state.showScale) {
@@ -255,10 +255,10 @@ class View implements Namespace.Interface {
     ) as (x: Namespace.Currents) => Namespace.Currents, onChange);
   };
 
-  private readonly moveHandlersTo: Namespace.MoveHandlesTo = (currents) => {
+  private readonly moveHandlesTo: Namespace.MoveHandlesTo = (currents) => {
     A.map(this.moveElementTo(currents))([
       ...this.connects,
-      ...this.handlers,
+      ...this.handles,
       ...(this.scale ? [this.scale] : [])]);
   };
 
