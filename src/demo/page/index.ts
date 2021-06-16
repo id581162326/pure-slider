@@ -29,7 +29,7 @@ class Demo {
       currents: [0, 10],
       connectType: 'single',
       tooltipOptions: {
-        alwaysShown: false
+        alwaysShown: true
       },
       scaleOptions: {
         withValue: true,

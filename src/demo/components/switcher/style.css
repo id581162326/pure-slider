@@ -16,12 +16,13 @@
     background: var(--base-color);
 }
 
-.switcher__handler {
+.switcher__handle {
     width: 20px;
     height: 20px;
     background: var(--handler-color);
     border-radius: 4px;
 }
+
 .switcher__unit_active {
     z-index: 3;
     pointer-events: none;
