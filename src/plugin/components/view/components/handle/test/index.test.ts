@@ -43,8 +43,8 @@ const getSubjects: Namespace.GetSubjects = ({orientation, type, showTooltip}) =>
 
 describe('Handle', () => {
   describe('Method of', () => {
-    A.map(({orientation, showTooltip}: ArrayElement<Namespace.InitMap>) => {
-      const {handle, node, tooltip} = getSubjects({orientation, type: 'start', showTooltip});
+    A.map((orientation: Namespace.Orientation) => {
+      const {handle, node} = getSubjects({orientation, type: 'start', showTooltip: false});
 
       it(`should init element with ${orientation} orientation`, () => {
         expect(handle).toBeInstanceOf(Handle);
@@ -53,12 +53,17 @@ describe('Handle', () => {
         expect(node).toHaveClass(`pure-slider__handle_orientation_${orientation}`);
         expect(node).toHaveClass(`-slider__handle_orientation_${orientation}`);
       });
+    })(['horizontal', 'vertical']);
 
-      it(`should have tooltip, if showTooltip prop is true`, () => showTooltip
-        ? expect(tooltip).toBeInstanceOf(Tooltip)
-        : expect(tooltip).not.toBeInstanceOf(Tooltip));
-    })(D.initMap);
+    it('should render tooltip, if showTooltip prop is true', () => {
+      A.map((showTooltip: boolean) => {
+        const {tooltip} = getSubjects({showTooltip, orientation: 'horizontal', type: 'start'});
+
+        showTooltip ? expect(tooltip).toBeInstanceOf(Tooltip) : expect(tooltip).not.toBeInstanceOf(Tooltip);
+      })([true, false]);
+    });
   });
+
 
   describe('Method moveTo', () => {
     it('should move handle and set tooltip\'s value', () => {

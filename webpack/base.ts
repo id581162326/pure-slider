@@ -102,8 +102,7 @@ const getTypeDependingConfigProps: (buildType: BuildType) => webpack.Configurati
     case 'test': {
       return ({
         mode: 'development',
-        devtool: 'inline-source-map',
-        entry: './test/index.ts'
+        devtool: 'inline-source-map'
       });
     }
   }

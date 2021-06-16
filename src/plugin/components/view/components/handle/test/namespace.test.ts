@@ -7,8 +7,6 @@ namespace HandleTest {
 
   export type DragMap = { delta: number, expected: number }[];
 
-  export type InitMap = { orientation: Orientation, showTooltip: boolean }[]
-
   export type MoveMap = {
     type: Handle.HandleType,
     test: { currents: Handle.Currents, expected: number }[]

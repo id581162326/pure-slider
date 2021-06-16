@@ -28,8 +28,8 @@ const getSubjects: Namespace.GetSubjects = ({orientation, alwaysShown}) => {
 
 describe('Tooltip', () => {
   describe('Method of', () => {
-    A.map(({alwaysShown, orientation}: ArrayElement<Namespace.InitMap>) => {
-      const {tooltip, node} = getSubjects({orientation, alwaysShown});
+    A.map((orientation: Namespace.Orientation) => {
+      const {tooltip, node} = getSubjects({orientation, alwaysShown: false});
 
       it(`should init tooltip with ${orientation} orientation`, () => {
         expect(tooltip).toBeInstanceOf(Tooltip);
@@ -38,8 +38,12 @@ describe('Tooltip', () => {
         expect(node).toHaveClass(`pure-slider__tooltip_orientation_${orientation}`);
         expect(node).toHaveClass(`-slider__tooltip_orientation_${orientation}`);
       });
+    })(['horizontal', 'vertical']);
 
-      it('should always show tooltip, if alwaysShown prop is true', () => {
+    it('should always show tooltip, if alwaysShown prop is true', () => {
+      A.map((alwaysShown: boolean) => {
+        const {node} = getSubjects({alwaysShown, orientation: 'horizontal'});
+
         if (alwaysShown) {
           expect(node).toHaveClass('pure-slider__tooltip_shown');
           expect(node).toHaveClass('-slider__tooltip_shown');
@@ -47,8 +51,8 @@ describe('Tooltip', () => {
           expect(node).not.toHaveClass('pure-slider__tooltip_shown');
           expect(node).not.toHaveClass('-slider__tooltip_shown');
         }
-      });
-    })(D.initMap);
+      })([true, false]);
+    });
   });
 
   describe('Method setValue', () => {
@@ -60,6 +64,6 @@ describe('Tooltip', () => {
 
         expect(Number(node.innerText)).toEqual(x);
       })(D.setValueMap);
-    })
-  })
+    });
+  });
 });
