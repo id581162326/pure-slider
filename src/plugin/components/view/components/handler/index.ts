@@ -149,7 +149,9 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
     H.removeEventListener('mousemove', this.dragListener)(window);
   };
 
-  private readonly keyDownListener: Namespace.KeyDownListener = ({code}) => {
+  private readonly keyDownListener: Namespace.KeyDownListener = (event) => {
+    const {code} = event;
+
     const {type, step, orientation, onDrag} = this.props;
 
     const decCond = (orientation === 'horizontal' && code === 'ArrowLeft')
@@ -159,6 +161,11 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
     const incCond = (orientation === 'horizontal' && code === 'ArrowRight')
       || (orientation === 'vertical' && code === 'ArrowUp')
       || code === 'Equal';
+
+
+    if (decCond || incCond) {
+      event.preventDefault();
+    }
 
     decCond ? onDrag(type)(H.negate(step)) : incCond ? onDrag(type)(step) : false;
   };
