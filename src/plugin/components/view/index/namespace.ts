@@ -1,5 +1,5 @@
 import Connect from '../components/connect/namespace';
-import Handler from '../components/handler/namespace';
+import Handle from '../components/handle/namespace';
 import Tooltip from '../components/tooltip/namespace';
 import Base from '../components/base/namespace';
 import Container from '../components/container/namespace';
@@ -12,9 +12,9 @@ namespace View {
 
   export type ConnectProps = Connect.Props;
 
-  export type HandlerInterface = Handler.Interface;
+  export type HandleInterface = Handle.Interface;
 
-  export type HandlerProps = Handler.Props;
+  export type HandleProps = Handle.Props;
 
   export type TooltipInterface = Tooltip.Interface;
 
@@ -32,15 +32,15 @@ namespace View {
 
   export type ContainerProps = Container.Props;
 
-  export type Elements = HandlerInterface | ConnectInterface | BaseInterface | ContainerInterface | ScaleInterface | UnitInterface | TooltipInterface;
+  export type Elements = HandleInterface | ConnectInterface | BaseInterface | ContainerInterface | ScaleInterface | UnitInterface | TooltipInterface;
 
-  export type MovableElement = ConnectInterface | HandlerInterface | ScaleInterface;
+  export type MovableElement = ConnectInterface | HandleInterface | ScaleInterface;
 
   export type Range = [number, number];
 
   export type Currents = [number, number] | [number];
 
-  export type HandleType = Handler.HandleType;
+  export type HandleType = Handle.HandleType;
 
   export type ConnectType = 'inner-range' | 'outer-range' | 'from-start' | 'to-end' | 'none';
 
@@ -115,11 +115,11 @@ namespace View {
 
   export type RenderConnects = () => ConnectInterface[];
 
-  export type RenderHandlers = () => [HandlerInterface] | [HandlerInterface, HandlerInterface];
+  export type RenderHandles = () => [HandleInterface] | [HandleInterface, HandleInterface];
 
   export type RenderScale = () => ScaleInterface;
 
-  export type MoveHandlersTo = (currents: Currents) => void;
+  export type MoveHandlesTo = (currents: Currents) => void;
 
   export type HandleDrag = (handleType: HandleType) => (delta: number) => void;
 

@@ -1,7 +1,7 @@
 namespace Element {
   export type Node = HTMLElement;
 
-  export type NodeKeys = 'base' | 'connect' | 'container' | 'handler' | 'tooltip' | 'scale' | 'unit';
+  export type NodeKeys = 'base' | 'connect' | 'container' | 'handle' | 'tooltip' | 'scale' | 'unit';
 
   export type Orientation = 'horizontal' | 'vertical';
 

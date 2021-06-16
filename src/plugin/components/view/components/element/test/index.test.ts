@@ -53,7 +53,7 @@ describe('Element', () => {
         }
 
         expect(element.getNode().parentNode).toEqual(null);
-      })(['base', 'container', 'unit', 'scale', 'handler', 'connect', 'tooltip']);
+      })(['base', 'container', 'unit', 'scale', 'handle', 'connect', 'tooltip']);
     });
   });
 });

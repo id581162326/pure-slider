@@ -9,8 +9,8 @@ import Tooltip from '../tooltip';
 
 import Namespace from './namespace';
 
-class Handler extends Element<Namespace.Props, Namespace.Node> {
-  static readonly of: Namespace.Of = (props) => new Handler(props);
+class Handle extends Element<Namespace.Props, Namespace.Node> {
+  static readonly of: Namespace.Of = (props) => new Handle(props);
 
   public readonly moveTo: Namespace.MoveTo = (currents) => {
     const {orientation, type} = this.props;
@@ -43,7 +43,7 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
   };
 
   private constructor(props: Namespace.Props) {
-    super(props, H.node('div'), 'handler');
+    super(props, H.node('div'), 'handle');
 
     this.tooltip = this.renderTooltip();
 
@@ -58,8 +58,6 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
   private readonly renderTooltip: Namespace.RenderTooltip = () => {
     const {range, container, orientation, bemBlockClassName, tooltipAlwaysShown} = this.props;
 
-    const ofTooltip = pipe(Tooltip, H.prop('of'));
-
     const tooltipProps: Namespace.TooltipProps = {
       range,
       container,
@@ -68,7 +66,7 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
       alwaysShown: tooltipAlwaysShown
     };
 
-    return (pipe(tooltipProps, ofTooltip));
+    return (pipe(tooltipProps, Tooltip.of));
   };
 
   private appendTooltip: Namespace.AppendTooltip = () => {
@@ -171,5 +169,5 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
   };
 }
 
-export default Handler;
+export default Handle;
 

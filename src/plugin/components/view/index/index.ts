@@ -6,7 +6,7 @@ import {constant, pipe} from 'fp-ts/function';
 import * as H from '../../../../helpers';
 
 import Connect from '../components/connect';
-import Handler from '../components/handler';
+import Handle from '../components/handle';
 import Base from '../components/base';
 import Scale from '../components/scale';
 import Container from '../components/container';
@@ -103,7 +103,7 @@ class View implements Namespace.Interface {
   private container: Namespace.ContainerInterface;
   private base: Namespace.BaseInterface;
   private connects: Namespace.ConnectInterface[];
-  private handlers: [Namespace.HandlerInterface, Namespace.HandlerInterface] | [Namespace.HandlerInterface];
+  private handlers: [Namespace.HandleInterface, Namespace.HandleInterface] | [Namespace.HandleInterface];
   private scale: Namespace.ScaleInterface;
 
   private readonly getBemBlockClassName: Namespace.GetBemBlockClassName = () => ({
@@ -156,9 +156,7 @@ class View implements Namespace.Interface {
 
     const containerProps: Namespace.ContainerProps = {bemBlockClassName: this.getBemBlockClassName(), orientation, range, container};
 
-    const ofContainer = Container.of;
-
-    return (pipe(containerProps, ofContainer));
+    return (pipe(containerProps, Container.of));
   };
 
   private readonly renderBase: Namespace.RenderBase = () => {
@@ -174,9 +172,7 @@ class View implements Namespace.Interface {
       onClick: this.handleClick
     };
 
-    const ofBase = Base.of;
-
-    const base = pipe(baseProps, ofBase);
+    const base = pipe(baseProps, Base.of);
 
     H.appendTo(container)(base.getNode());
 
@@ -204,9 +200,7 @@ class View implements Namespace.Interface {
         : idx === 0 ? 'from-start' : 'to-end'
     });
 
-    const ofConnect = Connect.of;
-
-    const initConnect = (idx: number): Namespace.ConnectInterface => pipe(idx, getConnectProps, ofConnect);
+    const initConnect = (idx: number): Namespace.ConnectInterface => pipe(idx, getConnectProps, Connect.of);
 
     const connects = A.map(initConnect)(connectMap);
 
@@ -217,14 +211,14 @@ class View implements Namespace.Interface {
     return (connects);
   };
 
-  private readonly renderHandlers: Namespace.RenderHandlers = () => {
+  private readonly renderHandlers: Namespace.RenderHandles = () => {
     const {container, tooltipOptions} = this.props;
 
     const {showTooltips} = this.state;
 
     const {range, currents, orientation, step} = this.state;
 
-    const getHandlerProps = (idx: number): Namespace.HandlerProps => ({
+    const getHandleProps = (idx: number): Namespace.HandleProps => ({
       container,
       bemBlockClassName: this.getBemBlockClassName(),
       orientation,
@@ -236,25 +230,21 @@ class View implements Namespace.Interface {
       onDrag: this.handleDrag
     });
 
-    const ofHandler = Handler.of;
+    const initHandle = (idx: number): Namespace.HandleInterface => pipe(idx, getHandleProps, Handle.of);
 
-    const initHandler = (idx: number): Namespace.HandlerInterface => pipe(idx, getHandlerProps, ofHandler);
+    const handles = A.mapWithIndex(initHandle)(currents) as [Namespace.HandleInterface, Namespace.HandleInterface] | [Namespace.HandleInterface];
 
-    const handlers = A.mapWithIndex(initHandler)(currents) as [Namespace.HandlerInterface, Namespace.HandlerInterface] | [Namespace.HandlerInterface];
+    pipe(handles, A.map((x) => x.getNode()), H.appendChildListTo(this.base.getNode()));
 
-    pipe(handlers, A.map((x) => x.getNode()), H.appendChildListTo(this.base.getNode()));
+    pipe(handles, A.map(this.moveElementTo(currents)));
 
-    pipe(handlers, A.map(this.moveElementTo(currents)));
-
-    return (handlers);
+    return (handles);
   };
 
   private readonly renderScale: Namespace.RenderScale = () => {
     const {container, scaleOptions} = this.props;
 
     const {currents, orientation, range, connectType, step} = this.state;
-
-    const ofScale = Scale.of;
 
     const scaleProps: Namespace.ScaleProps = {
       container,
@@ -268,7 +258,7 @@ class View implements Namespace.Interface {
       onClick: this.handleClick
     };
 
-    const scale = pipe(scaleProps, ofScale);
+    const scale = pipe(scaleProps, Scale.of);
 
     H.appendTo(this.base.getNode())(scale.getNode());
 
@@ -291,7 +281,7 @@ class View implements Namespace.Interface {
       onChange);
   };
 
-  private readonly moveHandlersTo: Namespace.MoveHandlersTo = (currents) => {
+  private readonly moveHandlersTo: Namespace.MoveHandlesTo = (currents) => {
     pipe(this.connects, A.map(this.moveElementTo(currents)));
 
     pipe(this.handlers, A.map(this.moveElementTo(currents)));

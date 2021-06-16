@@ -3,7 +3,7 @@ import {pipe} from 'fp-ts/function';
 
 import * as H from '../../../../../../helpers';
 
-import Handler from '../index';
+import Handle from '../index';
 
 import Namespace from './namespace';
 import * as D from './data.test';
@@ -12,7 +12,7 @@ import * as O from 'fp-ts/Option';
 const getSubjects: Namespace.GetSubjects = ({orientation, type}) => {
   const container = pipe(H.node('div'), H.setInlineStyle('width: 100px; height: 100px'));
 
-  const handler = Handler.of({
+  const handle = Handle.of({
     container,
     orientation,
     type,
@@ -27,7 +27,7 @@ const getSubjects: Namespace.GetSubjects = ({orientation, type}) => {
     step: 10
   });
 
-  const node = handler.getNode() as HTMLDivElement;
+  const node = handle.getNode() as HTMLDivElement;
 
   pipe(document, H.querySelector('body'), O.some, O.map((body) => {
     if (O.isSome(body)) {
@@ -35,33 +35,33 @@ const getSubjects: Namespace.GetSubjects = ({orientation, type}) => {
     }
   }));
 
-  return ({handler, node});
+  return ({handle, node});
 };
 
-describe('Handler', () => {
+describe('Handle', () => {
   describe('Method of', () => {
     A.map((orientation: Namespace.Orientation) => {
-      const {handler, node} = getSubjects({orientation, type: 'start'});
+      const {handle, node} = getSubjects({orientation, type: 'start'});
 
       it(`should init element with ${orientation} orientation`, () => {
-        expect(handler instanceof Handler).toEqual(true);
+        expect(handle instanceof Handle).toEqual(true);
 
-        expect(node).toHaveClass('pure-slider__handler');
-        expect(node).toHaveClass('-slider__handler');
-        expect(node).toHaveClass(`pure-slider__handler_orientation_${orientation}`);
-        expect(node).toHaveClass(`-slider__handler_orientation_${orientation}`);
+        expect(node).toHaveClass('pure-slider__handle');
+        expect(node).toHaveClass('-slider__handle');
+        expect(node).toHaveClass(`pure-slider__handle_orientation_${orientation}`);
+        expect(node).toHaveClass(`-slider__handle_orientation_${orientation}`);
       });
     })(['horizontal', 'vertical']);
   });
 
   describe('Method moveTo', () => {
-    it('should move handler', () => {
+    it('should move handle', () => {
       A.map((orientation: Namespace.Orientation) => {
         A.map(({type, test}: ArrayElement<Namespace.MoveMap>) => {
-          const {handler, node} = getSubjects({orientation, type});
+          const {handle, node} = getSubjects({orientation, type});
 
           A.map(({currents, expected}: ArrayElement<ArrayElement<Namespace.MoveMap>['test']>) => {
-            handler.moveTo(currents);
+            handle.moveTo(currents);
 
             if (orientation === 'horizontal') {
               expect(node.style.left).toEqual(expected);

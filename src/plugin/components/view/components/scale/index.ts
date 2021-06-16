@@ -59,8 +59,6 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
   private readonly renderUnits: Namespace.RenderSteps = () => {
     const {step, range, container, orientation, bemBlockClassName, withValue, showValueEach, onClick} = this.props;
 
-    const ofUnit = pipe(Unit, H.prop('of'));
-
     const unitsCount = pipe(range, H.subAdjacent(1), H.div(step), Math.ceil);
     const unitCountLimit = 20;
     const unitMult = pipe(unitsCount, H.div(unitCountLimit), Math.ceil);
@@ -89,7 +87,7 @@ class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespac
       value: pipe(idx, H.mult(unitMult), valueFrom, (x) => x >= max ? max : x)
     });
 
-    const pushUnit = (idx: number) => units.push(pipe(idx, getUnitProps, ofUnit));
+    const pushUnit = (idx: number) => units.push(pipe(idx, getUnitProps, Unit.of));
 
     A.mapWithIndex(pushUnit)(arrayToFill);
 

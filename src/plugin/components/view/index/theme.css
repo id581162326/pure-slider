@@ -1,8 +1,8 @@
 .-slider {
     --base-background-color: #AAB7BF;
     --connect-background-color: #AD1D1D;
-    --handler-background-color: #BFB1A8;
-    --handler-border-color: #261201;
+    --handle-background-color: #BFB1A8;
+    --handle-border-color: #261201;
     --tooltip-background-color: #FFFFFF;
     --tooltip-border-color: #261201;
     --unit-color: #261201;
@@ -32,13 +32,13 @@
 }
 
 
-/* handler */
+/* handle */
 
-.-slider__handler {
+.-slider__handle {
     width: 20px;
     height: 20px;
-    background: var(--handler-background-color);
-    border: 2px solid var(--handler-border-color);
+    background: var(--handle-background-color);
+    border: 2px solid var(--handle-border-color);
     border-radius: 40%;
     cursor: pointer;
 }
@@ -47,7 +47,7 @@
 
 .-slider__tooltip {
     padding: 5px 10px;
-    border: 1px solid var(--handler-border-color);
+    border: 1px solid var(--handle-border-color);
     border-radius: 4px;
     background: var(--tooltip-background-color);
     white-space: nowrap;
@@ -55,11 +55,11 @@
     cursor: auto;
 }
 
-.-slider__handler .-slider__tooltip_orientation_horizontal {
+.-slider__handle .-slider__tooltip_orientation_horizontal {
     bottom: calc(100% + 15px);
 }
 
-.-slider__handler .-slider__tooltip_orientation_vertical {
+.-slider__handle .-slider__tooltip_orientation_vertical {
     right: calc(100% + 15px);
 }
 

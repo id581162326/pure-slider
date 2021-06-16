@@ -97,7 +97,7 @@ class Options extends Fragment <HTMLDivElement> implements Namespace.Interface {
     optionsNode,
     H.querySelectorAll('.js-options__text-field_with_handler'),
     A.mapWithIndex((idx, node) => pipe(node, TextField.of({
-      label: idx === 0 ? '1st handler' : '2nd handler',
+      label: idx === 0 ? '1st handle' : '2nd handle',
       onChange: coord => this.props.onCurrentsChange([
         idx === 0 ? coord : pipe(this.currentsFields, H.nthOrNone(0, {getValue: () => 0}), H.prop('getValue'))(),
         idx === 1 ? coord : pipe(this.currentsFields, H.nthOrNone(1, {getValue: () => 0}), H.prop('getValue'))()
