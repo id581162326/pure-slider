@@ -13,6 +13,7 @@ class Element<Props extends Namespace.Props, Node extends Namespace.Node> implem
 
     this.key === 'container' ? H.removeClassList([
       `${base}`,
+      `${theme}`,
       `${base}_orientation_vertical`,
       `${theme}_orientation_vertical`,
       `${base}_orientation_horizontal`,
@@ -38,7 +39,7 @@ class Element<Props extends Namespace.Props, Node extends Namespace.Node> implem
     ]));
   };
 
-  protected constructor(protected readonly props: Props, protected readonly node: Node, protected readonly key: Namespace.NodeKeys) {
+  constructor(protected readonly props: Props, protected readonly node: Node, protected readonly key: Namespace.NodeKeys) {
     this.setClassList();
   };
 

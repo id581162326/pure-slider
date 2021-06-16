@@ -8,8 +8,6 @@ import Unit from '../components/unit/namespace';
 import Element from '../components/element/namespace';
 
 namespace View {
-  export type ElementInterface = Element.Interface;
-
   export type ConnectInterface = Connect.Interface;
 
   export type ConnectProps = Connect.Props;

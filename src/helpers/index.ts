@@ -24,7 +24,7 @@ type identSignature = <T>(x: T) => T;
 export const ident: identSignature = (x) => x;
 
 type callSignature = <T extends unknown>(args: unknown[]) => (fn: Function) => T;
-export const call: callSignature = (args)  => (fn) => fn(...args);
+export const call: callSignature = (args) => (fn) => fn(...args);
 
 // math helpers
 
@@ -77,7 +77,7 @@ export const subAdjacent: subAdjacentSignature = (i) => (xs) => {
 type nodeSignature = <T extends keyof HTMLElementTagNameMap>(n: T) => HTMLElementTagNameMap[T];
 export const node: nodeSignature = (n) => document.createElement(n);
 
-type appendToSignature = <T extends HTMLElement | DocumentFragment, K extends HTMLElement | DocumentFragment>(p: T) => (c: K) => K;
+type appendToSignature = <T extends HTMLElement | DocumentFragment | Document, K extends HTMLElement | DocumentFragment>(p: T) => (c: K) => K;
 export const appendTo: appendToSignature = (p) => (c) => {
   p.appendChild(c);
 
@@ -91,15 +91,6 @@ export const appendChildListTo: appendChildListToSignature = (p) => (c) => {
   pipe(c, A.map(appendTo(fragment)));
 
   pipe(fragment, appendTo(p));
-}
-
-type importFragmentSignature = (x: HTMLTemplateElement) => DocumentFragment;
-export const importFragment: importFragmentSignature = (x) => {
-  const content = x.content;
-
-  const fragment = document.importNode(content, true);
-
-  return (fragment);
 };
 
 type addClassListSignature = <T extends HTMLElement>(xs: string[]) => (n: T) => T;
@@ -150,7 +141,7 @@ export const removeEventListener: removeEventListenerSignature = (t, fn) => (n) 
   return (n);
 };
 
-type querySelectorSignature = <T extends HTMLElement | Document | DocumentFragment>(s: string) => (n: T) => O.Option<HTMLElement>;
+type querySelectorSignature = (s: string) => (n: HTMLElement | Document | DocumentFragment) => O.Option<HTMLElement>;
 export const querySelector: querySelectorSignature = (s) => (n) => pipe(n.querySelector(s), O.fromNullable) as O.Option<HTMLElement>;
 
 type querySelectorAllSignature = <T extends HTMLElement | Document | DocumentFragment, K extends HTMLElement>(s: string) => (n: T) => K[];

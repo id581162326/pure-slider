@@ -9,6 +9,10 @@ namespace TestData {
 
   export type Action = Model.Action;
 
+  export type ModelInterface = Model.Interface;
+
+  export type GetSubjects = () => {model: ModelInterface, mockView: MockView, listener: Listener};
+
   export type GetState = () => State;
 
   export type Update = (state: Partial<State>) => void

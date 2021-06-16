@@ -9,6 +9,8 @@ namespace Fragment {
 
   export type Render<Node extends HTMLElement> = (map: MapNode<Node>) => void;
 
+  export type ImportFragment = (x: HTMLTemplateElement) => DocumentFragment;
+
   export type RenderFragment = () => O.Option<DocumentFragment>;
 
   export interface Props {

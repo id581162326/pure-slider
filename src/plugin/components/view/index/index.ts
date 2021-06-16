@@ -130,7 +130,7 @@ class View implements Namespace.Interface {
     this.destroyElement(this.scale);
     this.destroyElement(this.base);
     this.destroyElement(this.container);
-  }
+  };
 
   private readonly render: Namespace.Render = () => {
     this.container = this.renderContainer();
@@ -147,7 +147,7 @@ class View implements Namespace.Interface {
   private readonly reRender: Namespace.ReRender = () => {
     this.destroy();
     this.render();
-  }
+  };
 
   private readonly renderContainer: Namespace.RenderContainer = () => {
     const {container} = this.props;
@@ -232,7 +232,7 @@ class View implements Namespace.Interface {
       showTooltip: showTooltips,
       step,
       tooltipAlwaysShown: tooltipOptions ? tooltipOptions.alwaysShown : false,
-      type: A.size(currents) === 2 ? idx === 0 ? 'start' : 'end' : 'single',
+      type: A.size(currents) === 2 ? idx === 0 ? 'start' : 'end' : 'start',
       onDrag: this.handleDrag
     });
 
@@ -280,13 +280,15 @@ class View implements Namespace.Interface {
   private handleDrag: Namespace.HandleDrag = (type) => (delta) => {
     const {onChange} = this.props;
 
-    const head = pipe(this.state, H.prop('currents'), NEA.head);
+    const {currents} = this.state;
 
-    const last = pipe(this.state, H.prop('currents'), NEA.last);
-
-    pipe(type === 'start'
-      ? [pipe(head, H.add(delta)), last] : type === 'single'
-        ? [pipe(head, H.add(delta))] : [head, pipe(last, H.add(delta))], onChange);
+    pipe(
+      currents,
+      NEA.mapWithIndex((idx, coord: number) => type === 'start' && idx === 0
+        ? pipe(coord, H.add(delta))
+        : type === 'end' && idx === 1
+          ? pipe(coord, H.add(delta)) : coord) as (x: Namespace.Currents) => Namespace.Currents,
+      onChange);
   };
 
   private readonly moveHandlersTo: Namespace.MoveHandlersTo = (currents) => {
@@ -312,7 +314,7 @@ class View implements Namespace.Interface {
       ? deltaHead <= deltaLast
         ? [coord, last] : deltaLast < deltaHead
           ? [head, coord] : [head, last] : [coord]);
-  }
+  };
 }
 
 export default View;

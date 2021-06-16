@@ -1,21 +1,8 @@
 import Namespace from './namespace';
 
-const baseProps = {
-  range: [0, 100] as [number, number],
-  bemBlockClassName: {
-    base: 'pure-slider',
-    theme: '-slider'
-  }
-}
-
-export const getMoveMapArray: (container: HTMLElement) => Namespace.MoveMap[] = (container) => [
+export const moveMap: Namespace.MoveMap = [
   {
-    props: {
-      ...baseProps,
-      type: 'inner',
-      container,
-      orientation: 'vertical',
-    },
+    type: 'inner',
     test: [
       {
         value: [50, 60],
@@ -23,33 +10,25 @@ export const getMoveMapArray: (container: HTMLElement) => Namespace.MoveMap[] = 
           size: '10%',
           position: '50%'
         }
-      }
-    ]
-  },
-  {
-    props: {
-      ...baseProps,
-      type: 'inner',
-      container,
-      orientation: 'horizontal'
-    },
-    test: [
+      },
       {
-        value: [50, 60],
+        value: [55, 60],
         expected: {
-          size: '10%',
+          size: '5%',
+          position: '55%'
+        }
+      },
+      {
+        value: [50, 50],
+        expected: {
+          size: '0%',
           position: '50%'
         }
       }
     ]
   },
   {
-    props: {
-      ...baseProps,
-      type: 'from-start',
-      container,
-      orientation: 'vertical'
-    },
+    type: 'from-start',
     test: [
       {
         value: [50, 60],
@@ -58,57 +37,39 @@ export const getMoveMapArray: (container: HTMLElement) => Namespace.MoveMap[] = 
           position: '0%'
         }
       }
-    ]
-  },
-  {
-    props: {
-      ...baseProps,
-      type: 'from-start',
-      container,
-      orientation: 'horizontal'
-    },
-    test: [
-      {
-        value: [50, 60],
+      ,{
+        value: [0, 60],
         expected: {
-          size: '50%',
+          size: '0%',
           position: '0%'
         }
       }
     ]
   },
   {
-    props: {
-      ...baseProps,
-      type: 'to-end',
-      container,
-      orientation: 'vertical'
-    },
+    type: 'to-end',
     test: [
       {
         value: [50, 60],
         expected: {
           size: '40%',
           position: '60%'
+        }
+      },
+      {
+        value: [60, 65],
+        expected: {
+          size: '35%',
+          position: '65%'
+        }
+      },
+      {
+        value: [60, 100],
+        expected: {
+          size: '0%',
+          position: '100%'
         }
       }
     ]
   },
-  {
-    props: {
-      ...baseProps,
-      type: 'to-end',
-      container,
-      orientation: 'horizontal'
-    },
-    test: [
-      {
-        value: [50, 60],
-        expected: {
-          size: '40%',
-          position: '60%'
-        }
-      }
-    ]
-  }
 ];

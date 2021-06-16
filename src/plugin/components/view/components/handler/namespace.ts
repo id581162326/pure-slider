@@ -8,7 +8,7 @@ namespace Handler {
 
   export type TooltipProps = Tooltip.Props;
 
-  export type HandleType = 'start' | 'end' | 'single';
+  export type HandleType = 'start' | 'end';
 
   export type Currents = Element.Currents;
 

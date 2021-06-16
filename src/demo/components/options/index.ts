@@ -1,5 +1,6 @@
 import * as O from 'fp-ts/Option';
 import * as A from 'fp-ts/Array';
+import * as NEA from 'fp-ts/NonEmptyArray';
 import {pipe} from 'fp-ts/function';
 
 import * as H from '../../../helpers';
@@ -18,35 +19,24 @@ Fragment.injectTemplate(template);
 class Options extends Fragment <HTMLDivElement> implements Namespace.Interface {
   static readonly of: Namespace.Of = (props) => (parent) => new Options(props, parent);
 
-  public readonly updateCurrents: Namespace.UpdateCurrents = (currents) => {
-    pipe(this.currentsFields, A.mapWithIndex((idx, textField) => textField.setValue(pipe(currents, H.nthOrNone(idx, 0)))));
-  };
+  public readonly updateData: Namespace.UpdateData = (data) => {
+    this.data = {...this.data, ...data};
 
-  public readonly updateRange: Namespace.UpdateRange = (range: Namespace.Range) => {
-    pipe(this.rangeFields, A.mapWithIndex((idx, textField) => textField.setValue(pipe(range, H.nthOrNone(idx, 0)))));
-
-    pipe(this.currentsFields, A.map((textField) => pipe(range, textField.setRange)));
-
-    pipe(this.stepField, A.map((textField) => textField.setRange([1, pipe(range, H.subAdjacent(1))])));
-
-    pipe(this.marginField, A.map((textField) => textField.setRange([1, pipe(range, H.subAdjacent(1))])));
-  };
-
-  public readonly updateStep: Namespace.UpdateStep = (step) => {
-    pipe(this.currentsFields, A.map((textField) => textField.setStep(step)));
-
-    pipe(this.stepField, A.map((textField) => textField.setValue(step)));
-  };
-
-  public readonly updateMargin: Namespace.UpdateMargin = (margin) => {
-    pipe(this.marginField, A.map((textField) => textField.setValue(margin)));
-  };
+    this.updateCurrents();
+    this.updateMargin();
+    this.updateStep();
+    this.updateRange();
+  }
 
   private constructor(private readonly props: Namespace.Props, parent: Namespace.Parent) {
     super(parent, '#js-options', '.js-options');
 
+    this.data = props.data;
+
     pipe(this.mapOptions, this.render);
   }
+
+  private data: Namespace.Data;
 
   private readonly currentsFields: Namespace.TextField[] = [];
 
@@ -55,6 +45,40 @@ class Options extends Fragment <HTMLDivElement> implements Namespace.Interface {
   private readonly stepField: Namespace.TextField[] = [];
 
   private readonly marginField: Namespace.TextField[] = [];
+
+  private readonly updateCurrents: Namespace.UpdateCurrents = () => {
+    const {currents} = this.data;
+
+    pipe(this.currentsFields, A.mapWithIndex((idx, textField) => textField.setValue(pipe(currents, H.nthOrNone(idx, 0)))));
+  };
+
+  private readonly updateRange: Namespace.UpdateRange = () => {
+    const {range, step} = this.data;
+
+    const currentsMin = NEA.head(range);
+    const currentsMax = pipe(range, H.subAdjacent(1), H.div(step), Math.ceil, H.mult(step), H.add(currentsMin));
+
+    pipe(this.rangeFields, A.mapWithIndex((idx, textField) => textField.setValue(pipe(range, H.nthOrNone(idx, 0)))));
+
+    pipe(this.currentsFields, A.map((textField) => pipe([currentsMin, currentsMax], textField.setRange)));
+
+    pipe(this.stepField, A.map((textField) => textField.setRange([1, pipe(range, H.subAdjacent(1))])));
+    pipe(this.marginField, A.map((textField) => textField.setRange([1, pipe(range, H.subAdjacent(1))])));
+  };
+
+  private readonly updateStep: Namespace.UpdateStep = () => {
+    const {step} = this.data;
+
+    pipe(this.currentsFields, A.map((textField) => textField.setStep(step)));
+
+    pipe(this.stepField, A.map((textField) => textField.setValue(step)));
+  };
+
+  private readonly updateMargin: Namespace.UpdateMargin = () => {
+    const {margin} = this.data;
+
+    pipe(this.marginField, A.map((textField) => textField.setValue(margin)));
+  };
 
   private mapOptions: Namespace.MapOptions = (optionsNode) => pipe(
     optionsNode,

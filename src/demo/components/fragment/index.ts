@@ -30,12 +30,20 @@ class Fragment<Node extends HTMLElement> implements Namespace.Interface {
       : O.none)
   );
 
+  private readonly importFragment: Namespace.ImportFragment = (template) => {
+    const content = template.content;
+
+    const fragment = document.importNode(content, true);
+
+    return (fragment);
+  }
+
   private readonly renderFragment: Namespace.RenderFragment = () => pipe(
     document,
     H.querySelector(this.templateSelector),
     O.some,
     O.map((x) => O.isSome(x)
-      ? pipe(x as O.Some<HTMLTemplateElement>, H.prop('value'), H.importFragment, H.appendTo(this.parent))
+      ? pipe(x as O.Some<HTMLTemplateElement>, H.prop('value'), this.importFragment, H.appendTo(this.parent))
       : O.none)
   ) as O.Option<DocumentFragment>;
 }

@@ -1,10 +1,10 @@
 import Connect from '../namespace';
 
-namespace TestData {
+namespace ConnectTest {
   export type Orientation = Connect.Props['orientation'];
 
-  export interface MoveMap {
-    props: Connect.Props,
+  export type MoveMap = {
+    type: Connect.Props['type'],
     test: {
       value: Connect.Currents,
       expected: {
@@ -12,7 +12,9 @@ namespace TestData {
         position: string
       }
     }[]
-  }
+  }[];
+
+  export type GetSubjects = (props: {type: Connect.Props['type'], orientation: Orientation}) => {connect: Connect.Interface, node: Connect.Node};
 }
 
-export default TestData;
+export default ConnectTest;

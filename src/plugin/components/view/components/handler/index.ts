@@ -27,7 +27,7 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
       pipe(this.node, H.setInlineStyle(`bottom: calc(${pos}% - ${offset}px);`));
     }
 
-    if (type === 'start' || type === 'single') {
+    if (type === 'start') {
       pipe(currents, NEA.head, this.tooltip.setValue);
 
       return;
@@ -102,7 +102,7 @@ class Handler extends Element<Namespace.Props, Namespace.Node> {
   private readonly getPos: Namespace.GetPos = (currents) => {
     const {type} = this.props;
 
-    if (type === 'start' || type === 'single') {
+    if (type === 'start') {
       return (pipe(currents, NEA.head, this.correctToMin, this.percentOfRange));
     }
 

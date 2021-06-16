@@ -16,6 +16,8 @@ class Model implements Namespace.Interface {
       case 'UPDATE_CURRENTS': {
         this.setCurrents(action.currents);
 
+        H.trace(action.currents);
+
         break;
       }
 

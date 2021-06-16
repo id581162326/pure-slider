@@ -1,4 +1,5 @@
 import * as A from 'fp-ts/Array';
+import {pipe} from 'fp-ts/function';
 
 import * as H from '../../../../../../helpers';
 
@@ -6,27 +7,34 @@ import Connect from '../index';
 
 import * as D from './data.test';
 import Namespace from './namespace';
-import {pipe} from 'fp-ts/function';
 
-describe('Connect element', () => {
+const getSubjects: Namespace.GetSubjects = ({type, orientation}) => {
   const container = pipe(H.node('div'), H.setInlineStyle('width: 100px, height: 100px'));
+
+  const connect = Connect.of({
+    container,
+    orientation,
+    type,
+    range: [0, 100],
+    bemBlockClassName: {
+      base: 'pure-slider',
+      theme: '-slider'
+    }
+  });
+
+  const node = connect.getNode() as HTMLDivElement;
+
+  return ({node, connect});
+};
+
+describe('Connect', () => {
 
   describe('Method of', () => {
     A.map((orientation: Namespace.Orientation) => {
-      it(`should init element with ${orientation} orientation`, () => {
-        const connect = Connect.of({
-          type: 'inner',
-          container,
-          orientation,
-          range: [0, 100],
-          bemBlockClassName: {
-            base: 'pure-slider',
-            theme: '-slider'
-          }
-        });
+      const {node, connect} = getSubjects({type: 'inner', orientation});
 
-        const node = connect.getNode();
-
+      it(`should init connect with ${orientation} orientation`, () => {
+        expect(connect instanceof Connect).toEqual(true);
         expect(node).toHaveClass('pure-slider__connect');
         expect(node).toHaveClass('-slider__connect');
         expect(node).toHaveClass(`pure-slider__connect_orientation_${orientation}`);
@@ -37,33 +45,31 @@ describe('Connect element', () => {
 
   describe('Method moveTo', () => {
     it('should move connect ', () => {
-      const moveMapArray = D.getMoveMapArray(container);
+      A.map((orientation: Namespace.Orientation) => {
+        A.map(({type, test}: ArrayElement<Namespace.MoveMap>) => {
+          const {connect, node} = getSubjects({orientation, type});
 
-      A.map(({props, test}: Namespace.MoveMap) => {
-        const connect = Connect.of(props);
+          A.map(({expected, value}: ArrayElement<ArrayElement<Namespace.MoveMap>['test']>) => {
+            connect.moveTo(value);
 
-        const node = connect.getNode();
+            if (orientation === 'horizontal') {
+              const position = node.style.left;
 
-        A.map(({expected, value}: ArrayElement<Namespace.MoveMap['test']>) => {
-          connect.moveTo(value);
+              const size = node.style.maxWidth;
 
-          if (props.orientation === 'horizontal') {
-            const position = node.style.left;
+              expect(expected).toEqual({size, position});
+            }
 
-            const size = node.style.maxWidth;
+            if (orientation === 'vertical') {
+              const position = node.style.bottom;
 
-            expect(expected).toEqual({size, position});
-          }
+              const size = node.style.maxHeight;
 
-          if (props.orientation === 'vertical') {
-            const position = node.style.bottom;
-
-            const size = node.style.maxHeight;
-
-            expect(expected).toEqual({size, position});
-          }
-        })(test)
-      })(moveMapArray);
+              expect(expected).toEqual({size, position});
+            }
+          })(test);
+        })(D.moveMap);
+      })(['horizontal', 'vertical']);
     });
   });
 });

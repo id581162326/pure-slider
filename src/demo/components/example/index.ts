@@ -1,4 +1,5 @@
 import * as O from 'fp-ts/Option';
+import * as A from 'fp-ts/Array';
 import {pipe} from 'fp-ts/function';
 
 import * as H from '../../../helpers';
@@ -39,6 +40,14 @@ class Example extends Fragment <HTMLElement> implements Namespace.Interface {
     O.some,
     O.map((optionsNode) => O.isSome(optionsNode)
       ? pipe(optionsNode, H.prop('value'), Options.of({
+        data: {
+          step: this.props.sliderConfig.step,
+          margin: this.props.sliderConfig.margin,
+          range: this.props.sliderConfig.range,
+          currents: A.mapWithIndex((idx, _) =>
+            H.nthOrNone(idx, 0)(this.props.sliderConfig.currents)
+          )([null, null]) as [number, number]
+        },
         onConnectTypeChange: this.handleConnectTypeChange,
         onCurrentsChange: this.handleCurrentsChange,
         onStepChange: this.handleStepChange,
@@ -163,7 +172,7 @@ class Example extends Fragment <HTMLElement> implements Namespace.Interface {
       switch (action.type) {
         case 'CURRENTS_UPDATED': {
           pipe(this.options, O.some, O.map((x) => O.isSome(x)
-            ? pipe(x, H.prop('value'), H.prop('updateCurrents'), H.call([action.currents]))
+            ? pipe(x, H.prop('value'), H.prop('updateData'), H.call([{currents: action.currents}]))
             : O.none
           ));
 
@@ -172,7 +181,7 @@ class Example extends Fragment <HTMLElement> implements Namespace.Interface {
 
         case 'STEP_UPDATED': {
           pipe(this.options, O.some, O.map((x) => O.isSome(x)
-            ? pipe(x, H.prop('value'), H.prop('updateStep'), H.call([action.step]))
+            ? pipe(x, H.prop('value'), H.prop('updateData'), H.call([{step: action.step}]))
             : O.none
           ));
 
@@ -181,7 +190,7 @@ class Example extends Fragment <HTMLElement> implements Namespace.Interface {
 
         case 'RANGE_UPDATED': {
           pipe(this.options, O.some, O.map((x) => O.isSome(x)
-            ? pipe(x, H.prop('value'), H.prop('updateRange'), H.call([action.range]))
+            ? pipe(x, H.prop('value'), H.prop('updateData'), H.call([{range: action.range}]))
             : O.none
           ));
 
@@ -190,7 +199,7 @@ class Example extends Fragment <HTMLElement> implements Namespace.Interface {
 
         case 'MARGIN_UPDATED': {
           pipe(this.options, O.some, O.map((x) => O.isSome(x)
-            ? pipe(x, H.prop('value'), H.prop('updateMargin'), H.call([action.margin]))
+            ? pipe(x, H.prop('value'), H.prop('updateData'), H.call([{margin: action.margin}]))
             : O.none
           ));
 
