@@ -10,7 +10,7 @@ import Unit from '../unit';
 import Namespace from './namespace';
 
 class Scale extends Element<Namespace.Props, Namespace.Node> implements Namespace.Interface {
-  static of: Namespace.Of = (props) => new Scale(props);
+  static readonly of: Namespace.Of = (props) => new Scale(props);
 
   public readonly getUnits: Namespace.GetUnits = () => this.units;
 

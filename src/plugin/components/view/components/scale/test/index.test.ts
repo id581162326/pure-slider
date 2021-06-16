@@ -15,9 +15,7 @@ const getSubjects: Namespace.GetSubjects = ({orientation, type}) => {
   const container = pipe(H.node('div'), H.setInlineStyle('width: 100px; height: 100px'));
 
   const scale = Scale.of({
-    container,
-    orientation,
-    type,
+    container, orientation, type,
     bemBlockClassName: {
       base: 'pure-slider',
       theme: '-slider'
@@ -74,38 +72,14 @@ describe('Scale', () => {
             const node = unit.getNode();
             const value = unit.getValue();
 
+            const cond = type === 'from-start'
+              ? value <= start : type === 'to-end'
+                ? value >= end : type === 'inner-range'
+                  ? value <= end || value >= start : type === 'outer-range'
+                    ? value >= end || value <= start : value === end || value === start;
+
             if (H.containsClass('pure-slider__unit_active')(node)) {
-              switch (type) {
-                case 'from-start': {
-                  expect(value <= start).toBeTrue();
-
-                  break;
-                }
-
-                case 'to-end': {
-                  expect(value >= end).toBeTrue();
-
-                  break;
-                }
-
-                case 'inner-range': {
-                  expect(value <= end || value >= start).toBeTrue();
-
-                  break;
-                }
-
-                case 'outer-range': {
-                  expect(value >= end || value <= start).toBeTrue();
-
-                  break;
-                }
-
-                case 'single': {
-                  expect(value === end || value === start).toBeTrue();
-
-                  break;
-                }
-              }
+              expect(cond).toBeTrue();
             }
           })(units);
         })(test);

@@ -4,7 +4,7 @@ import Tooltip from '../tooltip/namespace';
 namespace Handler {
   export type Node = HTMLDivElement;
 
-  export type Tooltip = Tooltip.Interface;
+  export type Tooltip = Tooltip.Interface | null;
 
   export type TooltipProps = Tooltip.Props;
 
@@ -22,8 +22,6 @@ namespace Handler {
 
   export type GetPos = (currents: Currents) => number;
 
-  export type AppendTooltip = () => void;
-
   export type DragListener = (event: MouseEvent | TouchEvent) => void;
 
   export type StartDrag = (event: MouseEvent | TouchEvent) => void;
@@ -40,6 +38,8 @@ namespace Handler {
 
   export type KeyDownListener = (event: KeyboardEvent) => void;
 
+  export type GetTooltip = () => Tooltip;
+
   export interface Props extends Element.Props {
     type: HandleType,
     showTooltip: boolean,
@@ -49,7 +49,8 @@ namespace Handler {
   }
 
   export interface Interface extends Element.Interface {
-    moveTo: MoveTo
+    moveTo: MoveTo,
+    getTooltip: GetTooltip
   }
 }
 

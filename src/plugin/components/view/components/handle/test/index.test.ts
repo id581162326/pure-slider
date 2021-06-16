@@ -4,19 +4,20 @@ import {pipe} from 'fp-ts/function';
 import * as H from '../../../../../../helpers';
 
 import Handle from '../index';
+import Tooltip from '../../tooltip';
 
 import Namespace from './namespace.test';
 import * as D from './data.test';
 import * as O from 'fp-ts/Option';
 
-const getSubjects: Namespace.GetSubjects = ({orientation, type}) => {
+const getSubjects: Namespace.GetSubjects = ({orientation, type, showTooltip}) => {
   const container = pipe(H.node('div'), H.setInlineStyle('width: 100px; height: 100px'));
 
   const handle = Handle.of({
     container,
     orientation,
     type,
-    showTooltip: false,
+    showTooltip,
     tooltipAlwaysShown: false,
     bemBlockClassName: {
       base: 'pure-slider',
@@ -27,6 +28,8 @@ const getSubjects: Namespace.GetSubjects = ({orientation, type}) => {
     step: 10
   });
 
+  const tooltip = handle.getTooltip();
+
   const node = handle.getNode() as HTMLDivElement;
 
   pipe(document, H.querySelector('body'), O.some, O.map((body) => {
@@ -35,13 +38,13 @@ const getSubjects: Namespace.GetSubjects = ({orientation, type}) => {
     }
   }));
 
-  return ({handle, node});
+  return ({handle, node, tooltip});
 };
 
 describe('Handle', () => {
   describe('Method of', () => {
-    A.map((orientation: Namespace.Orientation) => {
-      const {handle, node} = getSubjects({orientation, type: 'start'});
+    A.map(({orientation, showTooltip}: ArrayElement<Namespace.InitMap>) => {
+      const {handle, node, tooltip} = getSubjects({orientation, type: 'start', showTooltip});
 
       it(`should init element with ${orientation} orientation`, () => {
         expect(handle).toBeInstanceOf(Handle);
@@ -50,24 +53,32 @@ describe('Handle', () => {
         expect(node).toHaveClass(`pure-slider__handle_orientation_${orientation}`);
         expect(node).toHaveClass(`-slider__handle_orientation_${orientation}`);
       });
-    })(['horizontal', 'vertical']);
+
+      it(`should have tooltip, if showTooltip prop is true`, () => showTooltip
+        ? expect(tooltip).toBeInstanceOf(Tooltip)
+        : expect(tooltip).not.toBeInstanceOf(Tooltip));
+    })(D.initMap);
   });
 
   describe('Method moveTo', () => {
-    it('should move handle', () => {
+    it('should move handle and set tooltip\'s value', () => {
       A.map((orientation: Namespace.Orientation) => {
         A.map(({type, test}: ArrayElement<Namespace.MoveMap>) => {
-          const {handle, node} = getSubjects({orientation, type});
+          const {handle, node, tooltip} = getSubjects({orientation, type, showTooltip: true});
 
           A.map(({currents, expected}: ArrayElement<ArrayElement<Namespace.MoveMap>['test']>) => {
             handle.moveTo(currents);
 
+            if (tooltip) {
+              expect(Number(tooltip.getNode().innerText)).toEqual(expected);
+            }
+
             if (orientation === 'horizontal') {
-              expect(node.style.left).toEqual(expected);
+              expect(node.style.left).toEqual(`calc(${expected}% - 0px)`);
             }
 
             if (orientation === 'vertical') {
-              expect(node.style.bottom).toEqual(expected);
+              expect(node.style.bottom).toEqual(`calc(${expected}% - 0px)`);
             }
           })(test);
         })(D.moveMap);
@@ -80,7 +91,7 @@ describe('Handle', () => {
       const spy = spyOn(console, 'log');
 
       A.map((orientation: Namespace.Orientation) => {
-        const {node} = getSubjects({orientation, type: 'start'});
+        const {node} = getSubjects({orientation, type: 'start', showTooltip: false});
 
         A.map(({delta, expected}: ArrayElement<Namespace.DragMap>) => {
           node.dispatchEvent(new MouseEvent('mousedown', {clientX: 0, clientY: 0, bubbles: true}));
@@ -91,8 +102,8 @@ describe('Handle', () => {
           expect(console.log).toHaveBeenCalledWith(expected);
 
           spy.calls.reset();
-        })(D.dragMap)
-      })(['horizontal', 'vertical'])
+        })(D.dragMap);
+      })(['horizontal', 'vertical']);
     });
   });
 });

@@ -210,7 +210,7 @@ describe('Helpers', () => {
       it('should add list of classes to node and return it', () => {
         const node = H.node('div');
 
-        const classList = ['foo', 'bar', 'bizz', 'fizz'];
+        const classList = ['foo', 'bar', 'buzz', 'fizz'];
 
         const nodeWithClasses = H.addClassList(classList)(node);
 
@@ -224,9 +224,9 @@ describe('Helpers', () => {
       it('should remove list of classes from node and return it', () => {
         const node = H.node('div');
 
-        const classList = ['foo', 'bar', 'bizz', 'fizz'];
+        const classList = ['foo', 'bar', 'buzz', 'fizz'];
 
-        const classListFiltered = ['bizz', 'fizz'];
+        const classListFiltered = ['buzz', 'fizz'];
 
         const classListToRemove = ['foo', 'bar'];
 

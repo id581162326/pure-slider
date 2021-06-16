@@ -19,7 +19,7 @@ class Demo {
 
   private readonly exampleNodes: HTMLLIElement[];
 
-  private renderExamples = () => A.mapWithIndex((idx, node: HTMLLIElement) => Example.of({
+  private readonly renderExamples = () => A.mapWithIndex((idx, node: HTMLLIElement) => Example.of({
     title: `Example No ${pipe(idx, H.inc)}`,
     description: 'Slider examples. Set options below to see changes',
     sliderConfig: {

@@ -7,7 +7,7 @@ import Element from '../element';
 import Namespace from './namespace';
 
 class Unit extends Element<Namespace.Props, Namespace.Node> implements Namespace.Interface {
-  static of: Namespace.Of = (props) => new Unit(props);
+  static readonly of: Namespace.Of = (props) => new Unit(props);
 
   public readonly setActive: Namespace.SetActive = (isActive) => {
     const {bemBlockClassName} = this.props;

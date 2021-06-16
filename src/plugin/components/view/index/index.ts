@@ -117,13 +117,11 @@ class View implements Namespace.Interface {
     return (element);
   };
 
+  private readonly getElementNode: Namespace.GetElementNode = (element) => element.getNode();
+
   private readonly destroyElement: Namespace.DestroyElement = (element) => {
     element.destroy();
-
-    return (element);
   };
-
-  private readonly getElementNode: Namespace.GetElementNode = (element) => element.getNode();
 
   private readonly destroy: Namespace.Destroy = () => {
     A.map(this.destroyElement)([

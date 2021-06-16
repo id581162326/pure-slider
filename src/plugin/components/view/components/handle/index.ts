@@ -1,5 +1,6 @@
 import * as NEA from 'fp-ts/NonEmptyArray';
 import * as A from 'fp-ts/Array';
+import * as O from 'fp-ts/Option';
 import {pipe} from 'fp-ts/function';
 
 import * as H from '../../../../../helpers';
@@ -11,6 +12,8 @@ import Namespace from './namespace';
 
 class Handle extends Element<Namespace.Props, Namespace.Node> {
   static readonly of: Namespace.Of = (props) => new Handle(props);
+
+  public readonly getTooltip: Namespace.GetTooltip = () => this.tooltip;
 
   public readonly moveTo: Namespace.MoveTo = (currents) => {
     const {orientation, type} = this.props;
@@ -26,13 +29,11 @@ class Handle extends Element<Namespace.Props, Namespace.Node> {
       pipe(this.node, H.setInlineStyle(`bottom: calc(${pos}% - ${offset}px);`));
     }
 
-    if (type === 'start') {
-      pipe(currents, NEA.head, this.tooltip.setValue);
-
-      return;
-    }
-
-    pipe(currents, NEA.last, this.tooltip.setValue);
+    pipe(this.tooltip, O.fromNullable, O.some, O.map((x) => {
+      if (O.isSome(x)) {
+        pipe(currents, type === 'start' ? NEA.head : NEA.last, pipe(x, H.prop('value'), H.prop('setValue')));
+      }
+    }));
   };
 
   public readonly destroy: Namespace.Destroy = () => {
@@ -44,9 +45,7 @@ class Handle extends Element<Namespace.Props, Namespace.Node> {
   private constructor(props: Namespace.Props) {
     super(props, H.node('div'), 'handle');
 
-    this.tooltip = this.renderTooltip();
-
-    props.showTooltip ? this.appendTooltip() : this.tooltip.destroy();
+    this.tooltip = props.showTooltip ? this.renderTooltip() : null;
 
     this.setEventListeners();
     this.setTabIndex();
@@ -62,13 +61,12 @@ class Handle extends Element<Namespace.Props, Namespace.Node> {
       alwaysShown: tooltipAlwaysShown
     };
 
-    return (pipe(tooltipProps, Tooltip.of));
-  };
 
-  private appendTooltip: Namespace.AppendTooltip = () => {
-    const tooltipNode = this.tooltip.getNode();
+    return (pipe(tooltipProps, Tooltip.of, (x) => {
+      pipe(x.getNode(), H.appendTo(this.node));
 
-    pipe(tooltipNode, H.appendTo(this.node));
+      return (x);
+    }));
   };
 
   private readonly setTabIndex: Namespace.SetTabIndex = () => {

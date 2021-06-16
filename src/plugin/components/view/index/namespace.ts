@@ -99,7 +99,7 @@ namespace View {
 
   export type MoveElementTo = <Element extends MovableElement>(currents: Currents) => (e: Element) => Element;
 
-  export type DestroyElement = <Element extends Elements>(element: Element) => Element;
+  export type DestroyElement = <Element extends Elements>(element: Element) => void;
 
   export type GetElementNode = <Element extends Elements>(element: Element) => HTMLElement;
 
