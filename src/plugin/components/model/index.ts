@@ -38,11 +38,15 @@ class Model implements Namespace.Interface {
       }
 
       case 'TOGGLE_RANGE': {
-        const {currents, margin} = this.state;
+        const {currents, range, margin} = this.state;
+
+        const max = NEA.last(range);
 
         const first = pipe(currents, NEA.head);
 
-        this.setCurrents(A.size(currents) === 2 ? [first] : [first, H.add(margin)(first)]);
+        this.setCurrents(A.size(currents) === 2
+          ? [first]
+          : H.add(first)(margin) < max ? [first, H.add(margin)(first)] : [H.sub(margin)(max), max]);
 
         break;
       }
@@ -191,6 +195,7 @@ class Model implements Namespace.Interface {
     const {range, step} = state;
 
     const min = pipe(range, NEA.head);
+    const max = pipe(range, NEA.last);
 
     const oldCurrents = A.mapWithIndex((idx) => H.nthOrNone(idx, NaN)(state.currents))(currents);
 
@@ -201,11 +206,13 @@ class Model implements Namespace.Interface {
         const changed = H.subAdjacent(1)(coordTuple) !== 0;
 
         if (changed && correctType === 'change') {
-          return (pipe(coordTuple, NEA.head, H.sub(min), H.div(step), Math.round, H.mult(step), H.add(min)));
+          return (pipe(coordTuple, NEA.head, (x) => x !== max
+            ? pipe(x, H.sub(min), H.div(step), Math.round, H.mult(step), H.add(min))
+            : x));
         }
 
         if (correctType === 'init') {
-          return (pipe(coordTuple, NEA.head, H.sub(min), H.div(step), Math.floor, H.mult(step), H.add(min)))
+          return (pipe(coordTuple, NEA.head, H.sub(min), H.div(step), Math.floor, H.mult(step), H.add(min)));
         }
 
         return (pipe(coordTuple, NEA.head));
