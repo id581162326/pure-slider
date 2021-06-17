@@ -1,40 +1,36 @@
+import * as O from 'fp-ts/Option';
+
 import Connect from '../components/connect/namespace';
 import Handle from '../components/handle/namespace';
-import Tooltip from '../components/tooltip/namespace';
 import Base from '../components/base/namespace';
 import Container from '../components/container/namespace';
 import Scale from '../components/scale/namespace';
-import Unit from '../components/unit/namespace';
 import Element from '../components/element/namespace';
 
 namespace View {
-  export type ConnectInterface = Connect.Interface;
+  export type Connect = Connect.Interface;
 
   export type ConnectProps = Connect.Props;
 
-  export type HandleInterface = Handle.Interface;
+  export type Handle = Handle.Interface;
 
   export type HandleProps = Handle.Props;
 
-  export type TooltipInterface = Tooltip.Interface;
-
-  export type ScaleInterface = Scale.Interface;
+  export type Scale = Scale.Interface;
 
   export type ScaleProps = Scale.Props;
 
-  export type UnitInterface = Unit.Interface;
-
-  export type BaseInterface = Base.Interface;
+  export type Base = Base.Interface;
 
   export type BaseProps = Base.Props;
 
-  export type ContainerInterface = Container.Interface;
+  export type Container = Container.Interface;
 
   export type ContainerProps = Container.Props;
 
-  export type Elements = HandleInterface | ConnectInterface | BaseInterface | ContainerInterface | ScaleInterface | UnitInterface | TooltipInterface;
+  export type Elements = Handle | Connect | Base | Container | Scale;
 
-  export type MovableElement = ConnectInterface | HandleInterface | ScaleInterface;
+  export type MovableElement = Connect | Handle;
 
   export type Range = [number, number];
 
@@ -111,15 +107,15 @@ namespace View {
 
   export type ReRender = () => void;
 
-  export type RenderContainer = () => ContainerInterface;
+  export type RenderContainer = () => Container;
 
-  export type RenderBase = () => BaseInterface;
+  export type RenderBase = () => Base;
 
-  export type RenderConnects = () => ConnectInterface[];
+  export type RenderConnects = () => Connect[];
 
-  export type RenderHandles = () => [HandleInterface] | [HandleInterface, HandleInterface];
+  export type RenderHandles = () => [Handle] | [Handle, Handle];
 
-  export type RenderScale = () => ScaleInterface;
+  export type RenderScale = () => O.Option<Scale>;
 
   export type MoveHandlesTo = (currents: Currents) => void;
 

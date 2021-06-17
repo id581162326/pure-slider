@@ -3,8 +3,9 @@ import {pipe} from 'fp-ts/function';
 
 import * as H from '../../../../../../helpers';
 
-import Handle from '../index';
 import Tooltip from '../../tooltip';
+
+import Handle from '../index';
 
 import Namespace from './namespace.test';
 import * as D from './data.test';
@@ -59,7 +60,9 @@ describe('Handle', () => {
       A.map((showTooltip: boolean) => {
         const {tooltip} = getSubjects({showTooltip, orientation: 'horizontal', type: 'start'});
 
-        showTooltip ? expect(tooltip).toBeInstanceOf(Tooltip) : expect(tooltip).not.toBeInstanceOf(Tooltip);
+        showTooltip ? pipe(tooltip, O.some, O.map((x) => {
+          expect(O.isSome(x) ? x.value : O.none).toBeInstanceOf(Tooltip);
+        })) : expect(tooltip).toEqual(O.none);
       })([true, false]);
     });
   });
@@ -74,8 +77,11 @@ describe('Handle', () => {
           A.map(({currents, expected}: ArrayElement<ArrayElement<Namespace.MoveMap>['test']>) => {
             handle.moveTo(currents);
 
-            if (tooltip) {
-              expect(Number(tooltip.getNode().innerText)).toEqual(expected);
+            if (O.isSome(tooltip)) {
+              expect(pipe(
+                pipe(tooltip, H.prop('value'), H.prop('getNode'))(),
+                H.prop('innerText'), Number
+              )).toEqual(expected);
             }
 
             if (orientation === 'horizontal') {

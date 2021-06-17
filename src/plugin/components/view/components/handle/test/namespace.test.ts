@@ -1,3 +1,5 @@
+import * as O from 'fp-ts/Option';
+
 import Handle from '../namespace';
 
 namespace HandleTest {
@@ -12,7 +14,7 @@ namespace HandleTest {
     test: { currents: Handle.Currents, expected: number }[]
   }[];
 
-  export type GetSubjects = (props: Props) => { handle: Handle.Interface, node: Handle.Node, tooltip: Handle.Tooltip };
+  export type GetSubjects = (props: Props) => { handle: Handle.Interface, node: Handle.Node, tooltip: O.Option<Handle.Tooltip> };
 }
 
 export default HandleTest;

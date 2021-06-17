@@ -94,17 +94,13 @@ class View implements Namespace.Interface {
     this.handles = this.renderHandles();
     this.connects = this.renderConnects();
     this.scale = this.renderScale();
-
-    if (!state.showScale) {
-      this.destroyElement(this.scale);
-    }
   }
 
-  private container: Namespace.ContainerInterface;
-  private base: Namespace.BaseInterface;
-  private connects: Namespace.ConnectInterface[];
-  private handles: [Namespace.HandleInterface, Namespace.HandleInterface] | [Namespace.HandleInterface];
-  private scale: Namespace.ScaleInterface;
+  private container: Namespace.Container;
+  private base: Namespace.Base;
+  private connects: Namespace.Connect[];
+  private handles: [Namespace.Handle, Namespace.Handle] | [Namespace.Handle];
+  private scale: O.Option<Namespace.Scale>;
 
   private readonly getBemBlockClassName: Namespace.GetBemBlockClassName = () => ({
     base: 'pure-slider',
@@ -125,9 +121,11 @@ class View implements Namespace.Interface {
 
   private readonly destroy: Namespace.Destroy = () => {
     A.map(this.destroyElement)([
-      this.scale, this.base, this.container,
+      this.base, this.container,
       ...this.handles,
-      ...this.connects]);
+      ...this.connects,
+      ...(O.isSome(this.scale) ? [pipe(this.scale, H.prop('value'))] : [])
+    ]);
   };
 
   private readonly render: Namespace.Render = () => {
@@ -136,10 +134,6 @@ class View implements Namespace.Interface {
     this.scale = this.renderScale();
     this.handles = this.renderHandles();
     this.connects = this.renderConnects();
-
-    if (!this.state.showScale) {
-      this.destroyElement(this.scale);
-    }
   };
 
   private readonly reRender: Namespace.ReRender = () => {
@@ -194,7 +188,7 @@ class View implements Namespace.Interface {
         : idx === 0 ? 'from-start' : 'to-end'
     });
 
-    const initConnect = (idx: number): Namespace.ConnectInterface => pipe(idx, getConnectProps, Connect.of);
+    const initConnect = (idx: number): Namespace.Connect => pipe(idx, getConnectProps, Connect.of);
 
     const connects = A.map(initConnect)(connectMap);
 
@@ -216,18 +210,22 @@ class View implements Namespace.Interface {
       onDrag: this.handleDrag
     });
 
-    const initHandle = (idx: number): Namespace.HandleInterface => pipe(idx, getHandleProps, Handle.of);
+    const initHandle = (idx: number): Namespace.Handle => pipe(idx, getHandleProps, Handle.of);
 
     const handles = A.mapWithIndex(initHandle)(currents);
 
     pipe(handles, A.map(this.getElementNode), pipe(this.base, this.getElementNode, H.appendChildListTo));
 
-    return (pipe(handles, A.map(this.moveElementTo(currents))) as [Namespace.HandleInterface, Namespace.HandleInterface] | [Namespace.HandleInterface]);
+    return (pipe(handles, A.map(this.moveElementTo(currents))) as [Namespace.Handle, Namespace.Handle] | [Namespace.Handle]);
   };
 
   private readonly renderScale: Namespace.RenderScale = () => {
     const {container, scaleOptions} = this.props;
-    const {currents, orientation, range, connectType, step} = this.state;
+    const {currents, orientation, range, connectType, step, showScale} = this.state;
+
+    if (!showScale) {
+      return (O.none);
+    }
 
     const scaleProps: Namespace.ScaleProps = {
       container, orientation, range, step,
@@ -240,9 +238,9 @@ class View implements Namespace.Interface {
 
     const scale = pipe(scaleProps, Scale.of);
 
-    pipe(scale, this.getElementNode, pipe(this.base, this.getElementNode, H.appendTo))
+    pipe(scale, this.getElementNode, pipe(this.base, this.getElementNode, H.appendTo));
 
-    return (this.moveElementTo(currents)(scale) as Namespace.ScaleInterface);
+    return (pipe(scale, this.moveElementTo(currents), O.some));
   };
 
   private handleDrag: Namespace.HandleDrag = (type) => (delta) => {
@@ -259,7 +257,8 @@ class View implements Namespace.Interface {
     A.map(this.moveElementTo(currents))([
       ...this.connects,
       ...this.handles,
-      ...(this.scale ? [this.scale] : [])]);
+      ...(O.isSome(this.scale) ? [pipe(this.scale, H.prop('value'))] : [])
+    ]);
   };
 
   private readonly handleClick: Namespace.HandleClick = (coord) => {

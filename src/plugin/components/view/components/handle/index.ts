@@ -29,11 +29,11 @@ class Handle extends Element<Namespace.Props, Namespace.Node> {
       pipe(this.node, H.setInlineStyle(`bottom: calc(${pos}% - ${offset}px);`));
     }
 
-    pipe(this.tooltip, O.fromNullable, O.some, O.map((x) => {
-      if (O.isSome(x)) {
-        pipe(currents, type === 'start' ? NEA.head : NEA.last, pipe(x, H.prop('value'), H.prop('setValue')));
-      }
-    }));
+    if (O.isSome(this.tooltip)) {
+      pipe(currents, type === 'start'
+        ? NEA.head
+        : NEA.last, pipe(this.tooltip, H.prop('value'), H.prop('setValue')));
+    }
   };
 
   public readonly destroy: Namespace.Destroy = () => {
@@ -45,27 +45,30 @@ class Handle extends Element<Namespace.Props, Namespace.Node> {
   private constructor(props: Namespace.Props) {
     super(props, H.node('div'), 'handle');
 
-    this.tooltip = props.showTooltip ? this.renderTooltip() : null;
+    this.tooltip = this.renderTooltip();
 
     this.setEventListeners();
     this.setTabIndex();
   }
 
-  private readonly tooltip: Namespace.Tooltip;
+  private readonly tooltip: O.Option<Namespace.Tooltip>;
 
   private readonly renderTooltip: Namespace.RenderTooltip = () => {
-    const {range, container, orientation, bemBlockClassName, tooltipAlwaysShown} = this.props;
+    const {range, container, orientation, bemBlockClassName, tooltipAlwaysShown, showTooltip} = this.props;
 
     const tooltipProps: Namespace.TooltipProps = {
       range, container, orientation, bemBlockClassName,
       alwaysShown: tooltipAlwaysShown
     };
 
+    if (!showTooltip) {
+      return (O.none);
+    }
 
     return (pipe(tooltipProps, Tooltip.of, (x) => {
       pipe(x.getNode(), H.appendTo(this.node));
 
-      return (x);
+      return (O.some(x));
     }));
   };
 

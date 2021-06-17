@@ -1,10 +1,12 @@
+import * as O from 'fp-ts/Option';
+
 import Element from '../element/namespace';
 import Tooltip from '../tooltip/namespace';
 
 namespace Handler {
   export type Node = HTMLDivElement;
 
-  export type Tooltip = Tooltip.Interface | null;
+  export type Tooltip = Tooltip.Interface;
 
   export type TooltipProps = Tooltip.Props;
 
@@ -16,7 +18,7 @@ namespace Handler {
 
   export type MoveTo = (currents: Currents) => void;
 
-  export type RenderTooltip = () => Tooltip;
+  export type RenderTooltip = () => O.Option<Tooltip>;
 
   export type SetEventListeners = () => void;
 
@@ -38,7 +40,7 @@ namespace Handler {
 
   export type KeyDownListener = (event: KeyboardEvent) => void;
 
-  export type GetTooltip = () => Tooltip;
+  export type GetTooltip = () => O.Option<Tooltip>;
 
   export interface Props extends Element.Props {
     type: HandleType,
