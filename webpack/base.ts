@@ -166,12 +166,11 @@ export const getConfig: (buildType: BuildType) => webpack.Configuration = (build
   context: path.resolve(__dirname, '..', 'src'),
   resolve: {
     modules: ['node_modules', 'src'],
-    extensions: ['.ts', '.js'],
-    fallback: {
-      stream: require.resolve('stream-browserify')
-    },
+    extensions: ['.ts', '.test.ts', '.js'],
     alias: {
-      stream: 'stream-browserify'
+      test: path.resolve(__dirname, '..', 'src/test'),
+      helpers: path.resolve(__dirname, '..', 'src/helpers'),
+      components: path.resolve(__dirname, '..', 'src/plugin/components')
     }
   }
 });

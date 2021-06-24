@@ -2,15 +2,27 @@
   "compilerOptions": {
     "module": "ESNext",
     "target": "ES5",
-    "alwaysStrict": true,
+    "allowJs": false,
+    "checkJs": false,
     "strict": true,
-    "noImplicitAny": true,
+    "alwaysStrict": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
     "removeComments": true,
-    "preserveConstEnums": true,
     "sourceMap": true,
     "esModuleInterop": true,
     "moduleResolution": "Node",
+    "declaration": false,
+    "forceConsistentCasingInFileNames": true,
+    "baseUrl": "./src",
+    "paths": {
+      "*": ["*", "*.test"],
+      "test/*": ["test/*.test"],
+      "helpers/*": ["helpers/*", "helpers/*.test"],
+      "components/*": ["plugin/components/*", "plugin/components/*.test"]
+    }
   },
   "include": ["src/**/*", "@types/*"],
   "exclude": ["node_modules"]
 }
+

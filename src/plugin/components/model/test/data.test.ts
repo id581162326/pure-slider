@@ -1,198 +1,238 @@
-import Namespace from './namespace';
+import Test from 'test/interface';
 
-export class MockView implements Namespace.MockView {
-  public readonly getState: Namespace.GetState = () => this.state;
+import {pipe} from 'fp-ts/function';
+import * as H from 'helpers';
 
-  public readonly update: Namespace.Update = (state) => this.state = {...this.state, ...state};
+import Model from 'components/model';
+import Namespace from 'components/model/namespace';
+import * as Actions from 'components/model/actions';
 
-  private state: Namespace.State = {
-    step: 0,
-    currents: [0],
-    range: [0, 0],
-    margin: 0
-  };
-}
-
-export const initState: Namespace.StateMap = {
-  state: {
-    currents: [0, 0],
-    range: [-100, 100],
-    step: 10,
-    margin: 10
-  },
-  expected: {
-    currents: [0, 10],
-    range: [-100, 100],
-    step: 10,
-    margin: 10
-  }
+const defaultState: Namespace.State = {
+  coordinates: [0, 1],
+  range: [0, 10],
+  step: 1,
+  margin: 1
 };
 
-export const updateTestMap: Namespace.UpdateTestMap[] = [
-  {
-    description: 'should update currents',
-    tests: [
-      {
-        action: {type: 'UPDATE_CURRENTS', currents: [-100, -95]},
-        expected: {
-          ...initState.expected,
-          currents: [-100, -90]
-        }
-      },
-      {
-        action: {type: 'UPDATE_CURRENTS', currents: [90, 1000]},
-        expected: {
-          ...initState.expected,
-          currents: [90, 100]
-        }
-      },
-      {
-        action: {type: 'UPDATE_CURRENTS', currents: [-1000, -90]},
-        expected: {
-          ...initState.expected,
-          currents: [-100, -90]
-        }
-      },
-      {
-        action: {type: 'UPDATE_CURRENTS', currents: [-1000, -1000]},
-        expected: {
-          ...initState.expected,
-          currents: [-100, -90]
-        }
-      },
-      {
-        action: {type: 'UPDATE_CURRENTS', currents: [1000, 1000]},
-        expected: {
-          ...initState.expected,
-          currents: [90, 100]
-        }
-      },
-      {
-        action: {type: 'UPDATE_CURRENTS', currents: [0, 0]},
-        expected: {
-          ...initState.expected,
-          currents: [0, 10]
-        }
-      }
-    ]
+export const initTestWithValidState: Test<Namespace.State> = {
+  title: 'Init model',
+  description: 'should init model with valid state',
+  run: (state) => {
+    const model = pipe(Model, H.instantiateWith(state));
+
+    expect(model).toBeInstanceOf(Model);
   },
-  {
-    description: 'should update step',
-    tests: [
-      {
-        action: {type: 'UPDATE_STEP', step: 15},
-        expected: {
-          ...initState.expected,
-          step: 15,
-          currents: [-10, 5]
-        }
-      },
-      {
-        action: {type: 'UPDATE_STEP', step: -1000},
-        expected: {
-          ...initState.expected,
-          step: 1
-        }
-      },
-      {
-        action: {type: 'UPDATE_STEP', step: 1000},
-        expected: {
-          ...initState.expected,
-          step: 200,
-          currents: [-100, -90]
-        }
-      }
-    ]
+  map: [defaultState]
+};
+
+export const initTestWithInvalidRange: Test<[Namespace.State, Namespace.State]> = {
+  title: 'Init model',
+  description: 'should init model with invalid range and correct it',
+  run: ([inputState, outputState]) => {
+    const model = pipe(Model, H.instantiateWith(inputState));
+
+    expect(model.state).toEqual(outputState);
   },
-  {
-    description: 'should update range',
-    tests: [
-      {
-        action: {type: 'UPDATE_RANGE', range: [100, 500]},
-        expected: {
-          ...initState.expected,
-          range: [100, 500],
-          currents: [100, 110]
-        }
-      },
-      {
-        action: {type: 'UPDATE_RANGE', range: [-100, -500]},
-        expected: {
-          ...initState.expected,
-          range: [-500, -100],
-          currents: [-110, -100]
-        }
-      },
-      {
-        action: {type: 'UPDATE_RANGE', range: [-100, -100]},
-        expected: {
-          ...initState.expected,
-          range: [-100, -99],
-          currents: [-100, -99],
-          step: 1,
-          margin: 1
-        }
-      },
-      {
-        action: {type: 'UPDATE_RANGE', range: [100, 100]},
-        expected: {
-          ...initState.expected,
-          range: [99, 100],
-          currents: [99, 100],
-          step: 1,
-          margin: 1
-        }
-      },
-      {
-        action: {type: 'UPDATE_RANGE', range: [0, 0]},
-        expected: {
-          ...initState.expected,
-          range: [0, 1],
-          currents: [0, 1],
-          step: 1,
-          margin: 1
-        }
-      }
-    ]
+  map: [
+    [{
+      coordinates: [0],
+      range: [0, 0],
+      step: 1,
+      margin: 1
+    }, {
+      coordinates: [0],
+      range: [0, 1],
+      step: 1,
+      margin: 1
+    }],
+    [{
+      coordinates: [0],
+      range: [10, 0],
+      step: 1,
+      margin: 1
+    }, {
+      coordinates: [0],
+      range: [0, 10],
+      step: 1,
+      margin: 1
+    }]
+  ]
+};
+
+export const initTestWithInvalidStep: Test<[Namespace.State, Namespace.State]> = {
+  title: 'Init model',
+  description: 'should init model with invalid step and correct it',
+  run: ([inputState, outputState]) => {
+    const model = pipe(Model, H.instantiateWith(inputState));
+
+    expect(model.state).toEqual(outputState);
   },
-  {
-    description: 'should update margin',
-    tests: [
-      {
-        action: {type: 'UPDATE_MARGIN', margin: 25},
-        expected: {
-          ...initState.expected,
-          margin: 25,
-          currents: [0, 25]
-        }
-      },
-      {
-        action: {type: 'UPDATE_MARGIN', margin: -25},
-        expected: {
-          ...initState.expected,
-          margin: 1
-        }
-      },
-      {
-        action: {type: 'UPDATE_MARGIN', margin: 1000},
-        expected: {
-          ...initState.expected,
-          margin: 200,
-          currents: [-100, 100]
-        }
-      }
-    ]
+  map: [
+    [{
+      coordinates: [0],
+      range: [0, 10],
+      step: 11,
+      margin: 1
+    }, {
+      coordinates: [0],
+      range: [0, 10],
+      step: 10,
+      margin: 1
+    }],
+    [{
+      coordinates: [0],
+      range: [0, 10],
+      step: -11,
+      margin: 1
+    }, {
+      coordinates: [0],
+      range: [0, 10],
+      step: 10,
+      margin: 1
+    }],
+    [{
+      coordinates: [0],
+      range: [0, 10],
+      step: -9,
+      margin: 1
+    }, {
+      coordinates: [0],
+      range: [0, 10],
+      step: 9,
+      margin: 1
+    }]
+  ]
+};
+
+export const initTestWithInvalidMargin: Test<[Namespace.State, Namespace.State]> = {
+  title: 'Init model',
+  description: 'should init model with invalid margin and correct it',
+  run: ([inputState, outputState]) => {
+    const model = pipe(Model, H.instantiateWith(inputState));
+
+    expect(model.state).toEqual(outputState);
   },
-  {
-    description: 'should toggle range',
-    tests: [
-      {
-        action: {type: 'TOGGLE_RANGE'},
-        expected: {
-          ...initState.expected,
-          currents: [0]
-        }
-      }
-    ]
-  }
-];
+  map: [
+    [{
+      coordinates: [0],
+      range: [0, 10],
+      step: 1,
+      margin: 11
+    }, {
+      coordinates: [0],
+      range: [0, 10],
+      step: 1,
+      margin: 10
+    }],
+    [{
+      coordinates: [0],
+      range: [0, 10],
+      step: 1,
+      margin: -11
+    }, {
+      coordinates: [0],
+      range: [0, 10],
+      step: 1,
+      margin: 10
+    }],
+    [{
+      coordinates: [0],
+      range: [0, 10],
+      step: 1,
+      margin: -9
+    }, {
+      coordinates: [0],
+      range: [0, 10],
+      step: 1,
+      margin: 9
+    }]
+  ]
+};
+
+export const initTestWithInvalidCoordinates: Test<[Namespace.State, Namespace.State]> = {
+  title: 'Init model',
+  description: 'should init model with invalid coordinates and correct it',
+  run: ([inputState, outputState]) => {
+    const model = pipe(Model, H.instantiateWith(inputState));
+
+    expect(model.state).toEqual(outputState);
+  },
+  map: [
+    [{
+      coordinates: [-1],
+      range: [0, 10],
+      step: 1,
+      margin: 1
+    }, {
+      coordinates: [0],
+      range: [0, 10],
+      step: 1,
+      margin: 1
+    }],
+    [{
+      coordinates: [11],
+      range: [0, 10],
+      step: 1,
+      margin: 1
+    }, {
+      coordinates: [10],
+      range: [0, 10],
+      step: 1,
+      margin: 1
+    }],
+    [{
+      coordinates: [0, 0],
+      range: [0, 10],
+      step: 1,
+      margin: 1
+    }, {
+      coordinates: [0, 1],
+      range: [0, 10],
+      step: 1,
+      margin: 1
+    }],
+    [{
+      coordinates: [-1, -2],
+      range: [0, 10],
+      step: 1,
+      margin: 1
+    }, {
+      coordinates: [0, 1],
+      range: [0, 10],
+      step: 1,
+      margin: 1
+    }],
+    [{
+      coordinates: [12, 11],
+      range: [0, 10],
+      step: 1,
+      margin: 1
+    }, {
+      coordinates: [9, 10],
+      range: [0, 10],
+      step: 1,
+      margin: 1
+    }]
+  ]
+};
+
+export const dispatchTest: Test<[Namespace.Action, Namespace.State]> = {
+  title: 'Dispatch method',
+  description: 'should dispatch action to model',
+  run: ([action, outputState]) => {
+    const model = pipe(Model, H.instantiateWith(defaultState));
+
+    model.dispatch(action);
+
+    expect(model.state).toEqual(outputState);
+  },
+  map: [
+    [Actions.updateCoordinates([5, 5]), {...defaultState, coordinates: [5, 6]}],
+    [Actions.updateCoordinates([12, 11]), {...defaultState, coordinates: [9, 10]}],
+    [Actions.updateCoordinates([-1, -2]), {...defaultState, coordinates: [0, 1]}],
+    [Actions.updateRange([10, 20]), {...defaultState, coordinates: [10, 11], range: [10, 20]}],
+    [Actions.updateRange([-10, 0]), {...defaultState, coordinates: [-1, 0], range: [-10, 0]}],
+    [Actions.updateStep(5), {...defaultState, step: 5}],
+    [Actions.updateMargin(5), {...defaultState, coordinates: [0, 5], margin: 5}]
+  ]
+}

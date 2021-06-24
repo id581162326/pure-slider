@@ -1,148 +1,129 @@
+import {pipe} from 'fp-ts/function';
+import * as F from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 import * as A from 'fp-ts/Array';
-import {constant, pipe} from 'fp-ts/function';
 
+//
 
-// debug helpers
-
-type traceSignature = <T>(x: T) => T;
-export const trace: traceSignature = (x) => {
+export const trace = <Type>(x: Type) => {
   console.log(x);
 
   return (x);
 };
 
-// misc helpers
+//
 
-type toStringSignature = (x: number) => string;
-export const toString: toStringSignature = (x) => x.toString();
+export const toString = (x: unknown) => `${x}`;
 
-type propSignature = <T, K extends keyof T>(k: K) => (o: T) => T[K];
-export const prop: propSignature = (k) => (o) => o[k];
+export const prop = <Obj, Key extends keyof Obj>(key: Key) => (object: Obj) => object[key];
 
-type identSignature = <T>(x: T) => T;
-export const ident: identSignature = (x) => x;
+export const ident = <Type>(x: Type) => x;
 
-type callSignature = <T extends unknown>(args: unknown[]) => (fn: Function) => T;
-export const call: callSignature = (args) => (fn) => fn(...args);
+export const callWith = <Function extends { (...args: unknown[] & Parameters<Function>): ReturnType<Function> }>(
+  ...args: Parameters<Function>
+) => (
+  fn: Function
+) => fn(...args);
 
-// math helpers
+export const instantiateWith = <Class extends { new(...params: unknown[] & ConstructorParameters<Class>): InstanceType<Class> }>(
+  ...params: ConstructorParameters<Class>
+) => (
+  Func: Class
+) => new Func(...params);
 
-type subSignature = (x: number) => (y: number) => number;
-export const sub: subSignature = (x) => (y) => y - x;
+export const switchCases = <Case extends [Tag, F.Lazy<Value>], Tag, Value>(cases: Case[], def: Value) => (tag: Tag) =>
+  pipe(cases, A.findLast(([key]) => key === tag), O.fold<Case, Value>(() => def, ([_, value]) => value()));
 
-type addSignature = (x: number) => (y: number) => number;
-export const add: addSignature = (x) => (y) => x + y;
+//
 
-type decSignature = (x: number) => number;
-export const dec: decSignature = (x) => sub(1)(x);
+export const eq = <Type>(x: Type) => (y: Type) => x === y;
 
-type incSignature = (x: number) => number;
-export const inc: incSignature = (x) => add(1)(x);
+export const not = (x: boolean) => !x;
 
-type divSignature = (x: number) => (y: number) => number;
-export const div: divSignature = (x) => (y) => y / x;
+//
 
-type multSignature = (x: number) => (y: number) => number;
-export const mult: multSignature = (x) => (y) => x * y;
+export const sub = (x: number) => (y: number) => y - x;
 
-type negateSignature = (x: number) => number;
-export const negate: negateSignature = (x) => mult(x)(-1);
+export const add = (x: number) => (y: number) => x + y;
 
-type halfSignature = (x: number) => number;
-export const half: halfSignature = (x) => div(2)(x);
+export const dec = (x: number) => sub(1)(x);
 
-type percentSignature = (x: number) => (y: number) => number;
-export const percent: percentSignature = (x) => (y) => pipe(y, div(x), mult(100));
+export const inc = (x: number) => add(1)(x);
 
-type decimalSignature = (x: number) => (y: number) => number;
-export const decimal: decimalSignature = (x) => (y) => Math.ceil(y % x);
+export const div = (x: number) => (y: number) => y / x;
+
+export const mult = (x: number) => (y: number) => x * y;
+
+export const negate = (x: number) => mult(x)(-1);
+
+export const half = (x: number) => div(2)(x);
+
+export const percentage = (x: number) => (y: number) => pipe(y, div(x), mult(100));
+
+export const remainder = (x: number) => (y: number) => y % x;
 
 // array helpers
 
-type nthOrNoneSignature = <T>(n: number, none: T) => (xs: T[]) => T;
-export const nthOrNone: nthOrNoneSignature = (n, none) => (xs) => pipe(xs, A.lookup(n), O.getOrElse(constant(none)));
+export const nthOrNone = <Type>(n: number, none: Type) => (xs: Type[]) => pipe(xs, A.lookup(n), O.getOrElse(F.constant(none)));
 
-type subAdjacentSignature = (i: number) => (xs: number[]) => number;
-export const subAdjacent: subAdjacentSignature = (i) => (xs) => {
-  const current = nthOrNone(i, NaN)(xs);
+export const subAdjacent = (idx: number) => (xs: number[]) => {
+  const current = nthOrNone(idx, NaN)(xs);
 
-  const prev = nthOrNone(dec(i), NaN)(xs);
+  const prev = nthOrNone(dec(idx), NaN)(xs);
 
   return (sub(prev)(current));
 };
 
-// DOM helpers
+//
 
-type nodeSignature = <T extends keyof HTMLElementTagNameMap>(n: T) => HTMLElementTagNameMap[T];
-export const node: nodeSignature = (n) => document.createElement(n);
+export const node = <NodeName extends keyof HTMLElementTagNameMap>(nodeName: NodeName) => document.createElement<NodeName>(nodeName);
 
-type appendToSignature = <T extends HTMLElement | DocumentFragment | Document, K extends HTMLElement | DocumentFragment>(p: T) => (c: K) => K;
-export const appendTo: appendToSignature = (p) => (c) => {
-  p.appendChild(c);
+export const appendTo = (parent: Node) => <T extends Node>(node: T) => parent.appendChild(node);
 
-  return (c);
+export const addClassList = (classList: string[]) => <Node extends Element>(node: Node) => {
+  node.classList.add(...classList);
+
+  return (node);
 };
 
-type appendChildListToSignature = <T extends HTMLElement | DocumentFragment, K extends HTMLElement | DocumentFragment>(p: T) => (c: K[]) => void;
-export const appendChildListTo: appendChildListToSignature = (p) => (c) => {
-  const fragment = document.createDocumentFragment();
+export const removeClassList = (classList: string[]) => <Node extends Element>(node: Node) => {
+  node.classList.remove(...classList);
 
-  pipe(c, A.map(appendTo(fragment)));
-
-  pipe(fragment, appendTo(p));
+  return (node);
 };
 
-type addClassListSignature = <T extends HTMLElement>(xs: string[]) => (n: T) => T;
-export const addClassList: addClassListSignature = (xs) => (n) => {
-  n.classList.add(...xs);
+export const setInlineStyle = (style: string) => <Node extends HTMLElement>(node: Node) => {
+  node.style.cssText = style;
 
-  return (n);
+  return (node);
 };
 
-type removeClassListSignature = <T extends HTMLElement>(xs: string[]) => (n: T) => T;
-export const removeClassList: removeClassListSignature = (xs) => (n) => {
-  n.classList.remove(...xs);
+export const setInnerText = (text: string) => <Node extends HTMLElement>(node: Node) => {
+  node.innerText = text;
 
-  return (n);
+  return (node);
 };
 
+export const addEventListener = <EventKey extends keyof HTMLElementEventMap>(
+  event: EventKey, callback: (event: HTMLElementEventMap[EventKey]) => any
+) => <Target extends EventTarget>(target: Target) => {
+  target.addEventListener(event, callback as EventListenerOrEventListenerObject);
 
-type containsClass = <T extends HTMLElement>(x: string) => (n: T) => boolean;
-export const containsClass: containsClass = (x) => (n) => n.classList.contains(x);
-
-type setInlineStyleSignature = <T extends HTMLElement>(x: string) => (n: T) => T;
-export const setInlineStyle: setInlineStyleSignature = (x) => (n) => {
-  n.style.cssText = x;
-
-  return (n);
+  return (target);
 };
 
-type setInnerTextSignature = <T extends HTMLElement>(x: string) => (n: T) => T;
-export const setInnerText: setInnerTextSignature = (x) => (n) => {
-  n.innerText = x;
+export const removeEventListener = <EventKey extends keyof HTMLElementEventMap>(
+  event: EventKey, callback: (event: HTMLElementEventMap[EventKey]) => any
+) => <Target extends EventTarget>(target: Target) => {
+  target.removeEventListener(event, callback as EventListenerOrEventListenerObject);
 
-  return (n);
+  return (target);
 };
 
-type addEventListenerSignature = <T extends keyof HTMLElementEventMap,
-  K extends HTMLElement | Window | Document>(t: T, fn: (e: HTMLElementEventMap[T]) => any) => (n: K) => K;
-export const addEventListener: addEventListenerSignature = (t, fn) => (n) => {
-  n.addEventListener(t, fn as EventListener);
+export const querySelector = <Node extends Element>(
+  selector: string
+) => (parent: ParentNode) => pipe(parent.querySelector<Node>(selector), O.fromNullable);
 
-  return (n);
-};
-
-type removeEventListenerSignature = <T extends keyof HTMLElementEventMap,
-  K extends HTMLElement | Window | Document>(t: T, fn: (e: HTMLElementEventMap[T]) => any) => (n: K) => K;
-export const removeEventListener: removeEventListenerSignature = (t, fn) => (n) => {
-  n.removeEventListener(t, fn as EventListener);
-
-  return (n);
-};
-
-type querySelectorSignature = (s: string) => (n: HTMLElement | Document | DocumentFragment) => O.Option<HTMLElement>;
-export const querySelector: querySelectorSignature = (s) => (n) => pipe(n.querySelector(s), O.fromNullable) as O.Option<HTMLElement>;
-
-type querySelectorAllSignature = <T extends HTMLElement | Document | DocumentFragment, K extends HTMLElement>(s: string) => (n: T) => K[];
-export const querySelectorAll: querySelectorAllSignature = (s) => (n) => Array.from(n.querySelectorAll(s));
+export const querySelectorAll = <Node extends Element>(
+  selector: string
+) => (parent: ParentNode) => Array.from(parent.querySelectorAll<Node>(selector));

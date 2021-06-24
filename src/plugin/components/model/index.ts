@@ -1,343 +1,137 @@
+import * as F from 'fp-ts/function';
+import {flow, pipe} from 'fp-ts/function';
+import * as N from 'fp-ts/number';
 import * as A from 'fp-ts/Array';
 import * as NEA from 'fp-ts/NonEmptyArray';
-import {pipe} from 'fp-ts/function';
+import * as H from 'helpers';
 
-import * as H from '../../../helpers';
-
-import Observer from '../observer';
-
-import Namespace from './namespace';
+import Observer from 'components/observer';
+import Namespace from 'components/model/namespace';
 
 class Model implements Namespace.Interface {
-  static of: Namespace.Of = (state) => new Model(state);
+  public readonly dispatch = (action: Namespace.Action) => pipe(action, this.reduce, this.applyState);
 
-  public readonly update: Namespace.Update = (action: Namespace.Action) => {
-    switch (action.type) {
-      case 'UPDATE_CURRENTS': {
-        this.setCurrents(action.currents);
-
-        break;
-      }
-
-      case 'UPDATE_STEP': {
-        this.setStep(action.step);
-
-        break;
-      }
-
-      case 'UPDATE_RANGE': {
-        this.setRange(action.range);
-
-        break;
-      }
-
-      case 'UPDATE_MARGIN': {
-        this.setMargin(action.margin);
-
-        break;
-      }
-
-      case 'TOGGLE_RANGE': {
-        const {currents, range, margin} = this.state;
-
-        const max = NEA.last(range);
-
-        const first = pipe(currents, NEA.head);
-
-        this.setCurrents(A.size(currents) === 2
-          ? [first]
-          : H.add(first)(margin) < max ? [first, H.add(margin)(first)] : [H.sub(margin)(max), max]);
-
-        break;
-      }
-    }
+  public state: Namespace.State = {
+    coordinates: [NaN, NaN],
+    range: [NaN, NaN],
+    step: NaN,
+    margin: NaN
   };
 
-  public attachListener: Namespace.AttachListener = (listener) => {
-    const {currents, step, range, margin} = this.state;
-
-    this.observer.attach(listener);
-
-    listener.update({type: 'CURRENTS_UPDATED', currents});
-    listener.update({type: 'MARGIN_UPDATED', margin});
-    listener.update({type: 'STEP_UPDATED', step});
-    listener.update({type: 'RANGE_UPDATED', range});
-  };
-
-  public getListeners: Namespace.GetListeners = () => this.observer.listeners;
-
-  public getState: Namespace.GetState = () => this.state;
-
-  private constructor(private state: Namespace.State) {
-    const stateWithCorrectedRange = {
-      ...state,
-      range: pipe(state.range, this.correctRangeToAscending, this.correctRangeToDifferent)
-    };
-
-    const stateWithCorrectedRangeMarginAndStep = {
-      ...stateWithCorrectedRange,
-      margin: pipe(state.margin, this.correctMarginOrStepToPositive(), this.correctMarginOrStepToRange(stateWithCorrectedRange)),
-      step: pipe(state.step, this.correctMarginOrStepToPositive(), this.correctMarginOrStepToRange(stateWithCorrectedRange))
-    };
-
-    this.state = {
-      ...stateWithCorrectedRangeMarginAndStep,
-      currents: pipe(
-        state.currents,
-        this.correctCurrentsToStep('init', stateWithCorrectedRangeMarginAndStep),
-        this.correctCurrentsToRange('init', stateWithCorrectedRangeMarginAndStep),
-        this.correctCurrentsToMargin('init', stateWithCorrectedRangeMarginAndStep)
-      )
-    };
+  constructor(state: Namespace.State) {
+    this.applyState(state);
   }
 
-  private readonly setCurrents: Namespace.SetCurrents = (currents) => {
-    this.state = {
-      ...this.state, currents: pipe(
-        currents,
-        this.correctCurrentsToStep('change'),
-        this.correctCurrentsToRange('change'),
-        this.correctCurrentsToMargin('change')
-      )
-    };
+  private readonly observer = new Observer<Namespace.State>();
 
-    pipe(
-      this.observer,
-      H.prop('listeners'),
-      A.map((listener) => listener.update({type: 'CURRENTS_UPDATED', currents: this.state.currents}))
-    );
-  };
+  //
 
-  private readonly setMargin: Namespace.SetMargin = (margin) => {
-    const stateWithCorrectedMargin = {
-      ...this.state,
-      margin: pipe(margin, this.correctMarginOrStepToPositive(), this.correctMarginOrStepToRange())
-    };
+  private readonly setCoordinates = (coordinates: Namespace.State['coordinates']) => ({...this.state, coordinates});
 
-    this.state = {
-      ...stateWithCorrectedMargin,
-      currents: pipe(
-        this.state.currents,
-        this.correctCurrentsToMargin('init', stateWithCorrectedMargin)
-      )
-    };
+  private readonly setRange = (range: Namespace.State['range']) => ({...this.state, range});
 
-    pipe(
-      this.observer,
-      H.prop('listeners'),
-      A.map((listener) => {
-        listener.update({type: 'CURRENTS_UPDATED', currents: this.state.currents});
-        listener.update({type: 'MARGIN_UPDATED', margin: this.state.margin});
-      })
-    );
-  };
+  private readonly setStep = (step: Namespace.State['step']) => ({...this.state, step});
 
-  private readonly setStep: Namespace.SetStep = (step) => {
-    const stateWithCorrectedStep = {
-      ...this.state,
-      step: pipe(step, this.correctMarginOrStepToPositive(), this.correctMarginOrStepToRange())
-    };
+  private readonly setMargin = (margin: Namespace.State['margin']) => ({...this.state, margin});
 
-    this.state = {
-      ...stateWithCorrectedStep,
-      currents: pipe(
-        this.state.currents,
-        this.correctCurrentsToStep('init', stateWithCorrectedStep),
-        this.correctCurrentsToMargin('init', stateWithCorrectedStep)
-      )
-    };
+  private readonly reduce = ({tag, value}: Namespace.Action) => pipe(tag, H.switchCases([
+    ['UPDATE_COORDINATES', pipe(value as Namespace.State['coordinates'], this.setCoordinates, F.constant)],
+    ['UPDATE_RANGE', pipe(value as Namespace.State['range'], this.setRange, F.constant)],
+    ['UPDATE_STEP', pipe(value as Namespace.State['step'], this.setStep, F.constant)],
+    ['UPDATE_MARGIN', pipe(value as Namespace.State['margin'], this.setMargin, F.constant)]
+  ], this.state));
 
-    pipe(
-      this.observer,
-      H.prop('listeners'),
-      A.map((listener) => {
-        listener.update({type: 'CURRENTS_UPDATED', currents: this.state.currents});
-        listener.update({type: 'STEP_UPDATED', step: this.state.step});
-      })
-    );
-  };
+  //
 
-  private readonly setRange: Namespace.SetRange = (range) => {
-    const stateWithCorrectedRange = {
-      ...this.state,
-      range: pipe(range, this.correctRangeToAscending, this.correctRangeToDifferent)
-    };
-
-    const stateWithCorrectedRangeStepAndMargin = {
-      ...stateWithCorrectedRange,
-      step: this.correctMarginOrStepToRange(stateWithCorrectedRange)(this.state.step),
-      margin: this.correctMarginOrStepToRange(stateWithCorrectedRange)(this.state.margin)
-    };
-
-    this.state = {
-      ...stateWithCorrectedRangeStepAndMargin,
-      currents: pipe(
-        this.state.currents,
-        this.correctCurrentsToRange('init', stateWithCorrectedRangeStepAndMargin),
-        this.correctCurrentsToMargin('init', stateWithCorrectedRangeStepAndMargin))
-    };
-
-    pipe(
-      this.observer,
-      H.prop('listeners'),
-      A.map((listener) => {
-        listener.update({type: 'CURRENTS_UPDATED', currents: this.state.currents});
-        listener.update({type: 'RANGE_UPDATED', range: this.state.range});
-        listener.update({type: 'STEP_UPDATED', step: this.state.step});
-        listener.update({type: 'MARGIN_UPDATED', margin: this.state.margin});
-      })
-    );
-  };
-
-  private readonly observer: Namespace.ObserverInterface = new Observer();
-
-  private readonly correctCurrentsToStep: Namespace.CorrectCurrents = (correctType, state = this.state) => (currents) => {
-    const {range, step} = state;
+  private readonly correctCoordinatesByRange = (state: Namespace.State): Namespace.State => {
+    const {coordinates, range} = state;
 
     const min = pipe(range, NEA.head);
     const max = pipe(range, NEA.last);
 
-    const oldCurrents = A.mapWithIndex((idx) => H.nthOrNone(idx, NaN)(state.currents))(currents);
+    const correctCoord = (coord: number) => pipe(true, H.switchCases([
+      [coord < min, F.constant(min)],
+      [coord > max, F.constant(max)]
+    ], coord));
 
-    return (pipe(
-      currents,
-      A.zip(oldCurrents),
-      A.map((coordTuple) => {
-        const changed = H.subAdjacent(1)(coordTuple) !== 0;
-
-        if (changed && correctType === 'change') {
-          return (pipe(coordTuple, NEA.head, (x) => x !== max
-            ? pipe(x, H.sub(min), H.div(step), Math.round, H.mult(step), H.add(min))
-            : x));
-        }
-
-        if (correctType === 'init') {
-          return (pipe(coordTuple, NEA.head, H.sub(min), H.div(step), Math.floor, H.mult(step), H.add(min)));
-        }
-
-        return (pipe(coordTuple, NEA.head));
-      })
-    ) as Namespace.Currents);
+    return ({
+      ...state,
+      coordinates: pipe(coordinates, A.map(correctCoord)) as Namespace.State['coordinates']
+    });
   };
 
-  private readonly correctCurrentsToRange: Namespace.CorrectCurrents = (correctType, state = this.state) => (currents) => {
+  private readonly correctCoordinatesByStep = (state: Namespace.State): Namespace.State => {
+    const {coordinates, step, range} = state;
+
+    const min = NEA.head(range);
+
+    return ({
+      ...state,
+      coordinates: pipe(
+        coordinates, A.map(flow(H.sub(min), H.div(step), Math.round, H.mult(step), H.add(min)))
+      ) as Namespace.State['coordinates']
+    });
+  };
+
+  private readonly correctCoordinatesByMargin = (state: Namespace.State): Namespace.State => {
+    const {coordinates, range, margin} = state;
+
+    const coordinatesIsEqual = pipe(coordinates, NEA.head) === pipe(coordinates, NEA.last);
+
+    const correctCoord = (idx: number, coord: number) => {
+      const min = idx === 0 ? NEA.head(range)
+        : coord === NEA.last(range) ? coord : pipe(coordinates, NEA.head, H.add(margin));
+      const max = idx === 1 ? NEA.last(range)
+        : coord === NEA.head(range) || (coord !== NEA.last(range) && coordinatesIsEqual)
+          ? coord : pipe(coordinates, NEA.last, H.sub(margin));
+
+      return (pipe(true, H.switchCases([[coord < min, F.constant(min)], [coord > max, F.constant(max)]], coord)));
+    };
+
+    return ({
+      ...state, coordinates: pipe(coordinates, A.size, H.switchCases([
+        [2, pipe(coordinates, A.mapWithIndex(correctCoord), F.constant) as F.Lazy<Namespace.State['coordinates']>]
+      ], coordinates))
+    });
+  };
+
+  private readonly correctRange = (state: Namespace.State): Namespace.State => {
     const {range} = state;
 
-    const min = pipe(range, NEA.head);
-    const max = pipe(range, NEA.last);
+    const rangeValue = H.subAdjacent(1)(range);
 
-    const oldCurrents = A.mapWithIndex((idx) => H.nthOrNone(idx, NaN)(state.currents))(currents);
-
-    return (pipe(
-      currents,
-      A.zip(oldCurrents),
-      A.map((coordTuple) => {
-        const changed = H.subAdjacent(1)(coordTuple) !== 0;
-
-        if (changed || correctType === 'init') {
-          const coord = pipe(coordTuple, NEA.head);
-
-          return (coord <= min ? min : coord >= max ? max : coord);
-        }
-
-        return (pipe(coordTuple, NEA.head));
-      })
-    ) as Namespace.Currents);
+    return ({
+      ...state, range: rangeValue === 0
+        ? [0, 1] : pipe(range, A.sort(N.Ord)) as Namespace.State['range']
+    });
   };
 
-  private readonly correctCurrentsToMargin: Namespace.CorrectCurrents = (correctType, state = this.state) => (currents) => {
-    const {margin, range} = state;
+  private readonly correctStepAndMargin = (state: Namespace.State): Namespace.State => {
+    const {step, margin, range} = state;
 
-    const min = pipe(range, NEA.head);
-    const max = pipe(range, NEA.last);
+    const rangeValue = H.subAdjacent(1)(range);
 
-    const oldCurrents = A.mapWithIndex((idx) => H.nthOrNone(idx, NaN)(state.currents))(currents);
+    const correct = (x: number) => Math.abs(x) > rangeValue ? rangeValue : Math.abs(x);
 
-    return (pipe(
-      currents,
-      A.zip(oldCurrents),
-      A.mapWithIndex((idx, coordTuple) => {
-        const coord = pipe(coordTuple, NEA.head);
-
-        const prev = pipe(currents, H.nthOrNone(H.dec(idx), NaN));
-        const next = pipe(currents, H.nthOrNone(H.inc(idx), NaN));
-
-        const prevWithMargin = H.add(margin)(prev);
-        const nextWithoutMargin = H.sub(margin)(next);
-
-        const isInit = correctType === 'init';
-        const isChange = correctType === 'change';
-
-        const changed = H.subAdjacent(1)(coordTuple) !== 0 && isChange;
-
-        const hasPrevCond = !isNaN(prev) && H.sub(prev)(coord) < margin && coord !== max;
-        const hasNextCond = ((isInit && H.add(margin)(coord) >= max) || isChange) &&
-          (!isNaN(next) && H.sub(coord)(next) < margin && coord !== min);
-
-        if ((changed || isInit) && hasPrevCond) {
-          return (prevWithMargin > max ? max : prevWithMargin);
-        }
-
-        if ((changed || isInit) && hasNextCond) {
-          return (nextWithoutMargin < min ? min : nextWithoutMargin);
-        }
-
-        return (coord);
-      })
-    ) as Namespace.Currents);
+    return ({
+      ...state,
+      step: correct(step),
+      margin: correct(margin)
+    });
   };
 
-  private readonly correctRangeToAscending: Namespace.CorrectRange = (range) => {
-    const min = pipe(range, NEA.head);
-    const max = pipe(range, NEA.last);
+  private readonly correctState = (state: Namespace.State) => pipe(
+    state, this.correctRange, this.correctStepAndMargin,
+    this.correctCoordinatesByRange, this.correctCoordinatesByStep, this.correctCoordinatesByMargin
+  );
 
-    if (A.size(range) === 2 && min > max) {
-      return ([max, min]);
-    }
+  //
 
-    return (range);
-  };
+  private readonly mutateState = (state: Namespace.State): Namespace.State => this.state = state;
 
-  private readonly correctRangeToDifferent: Namespace.CorrectRange = (range) => {
-    const rangeValue = pipe(range, H.subAdjacent(1));
-
-    const oldMin = pipe(this.state.range, NEA.head);
-    const min = pipe(range, NEA.head);
-
-    if (rangeValue === 0 && min === 0) {
-      return ([0, 1]);
-    }
-
-    if (rangeValue === 0) {
-      return (min > oldMin ? [H.dec(min), min] : [min, H.inc(min)]);
-    }
-
-    return (range);
-  };
-
-  private readonly correctMarginOrStepToRange: Namespace.CorrectMargin = (state = this.state) => (marginOrStep) => {
-    const {range} = state;
-
-    const rangeValue = pipe(range, H.subAdjacent(1));
-
-    if (rangeValue < marginOrStep) {
-      return (rangeValue);
-    }
-
-    if (rangeValue < marginOrStep) {
-      return (rangeValue);
-    }
-
-    return (marginOrStep);
-  };
-
-  private readonly correctMarginOrStepToPositive: Namespace.CorrectMargin = (_) => (marginOrStep: number): number => {
-    if (marginOrStep <= 0) {
-      return (1);
-    }
-
-    return (marginOrStep);
-  };
+  private readonly applyState = (state: Namespace.State) => pipe(
+    state, this.correctState, this.mutateState, this.observer.notify
+  );
 }
 
 export default Model;
