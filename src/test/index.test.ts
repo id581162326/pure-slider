@@ -1,51 +1,24 @@
+import {pipe} from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
+import * as R from 'fp-ts/Record';
+import * as NEA from 'fp-ts/NonEmptyArray';
 
-import * as Helpers from 'helpers/test/data';
-import * as Model from 'components/model/test/data';
-import * as Observer from 'components/observer/test/data';
+import * as helpersTestData from 'helpers/test-data/index';
+import * as modelTestData from 'model/test-data/index';
+import * as observerTestData from 'observer/test-data/index';
 
 import Test from 'test/interface';
 
-const runTest = (test: Test<any>) => describe(test.title, () => {
-  it(test.description, () => {
-    A.map(test.run)(test.map);
-  });
-});
+const runTest = (test: Test<any>) => describe(test.title, () => it(test.description, () => {
+  A.map(test.run)(test.map);
+}));
 
-describe('Helpers', () => {
-  describe('Debug functions', () => runTest(Helpers.traceTest));
+const getTestsFrom = <Key extends string, Value extends Test<any>>(data: Record<Key, Value>) => pipe(
+  data, R.toArray, A.map(NEA.last)
+) as Test<any>[];
 
-  describe('Misc functions', () => A.map(runTest)([
-    Helpers.toStringTest, Helpers.propTest, Helpers.identTest, Helpers.callWithTest,
-    Helpers.instantiateTest, Helpers.switchCasesTest
-  ]));
-
-  describe('Boolean functions', () => A.map(runTest)([
-    Helpers.notTest, Helpers.eqTest
-  ]));
-
-  describe('Math functions', () => A.map(runTest)([
-    Helpers.subTest, Helpers.addTest, Helpers.decTest, Helpers.incTest,
-    Helpers.divTest, Helpers.multTest, Helpers.halfTest, Helpers.negate,
-    Helpers.percentageTest, Helpers.remainderTest
-  ]));
-
-  describe('Array functions', () => A.map(runTest)([
-    Helpers.nthOrNoneTest, Helpers.subAdjacentTest
-  ]));
-
-  describe('DOM functions', () => A.map(runTest)([
-    Helpers.nodeTest, Helpers.appendToTest, Helpers.addClassListTest, Helpers.removeClassListTest,
-    Helpers.setInlineStyleTest, Helpers.setInnerTextTest, Helpers.addEventListenerTest, Helpers.removeEventListenerTest,
-    Helpers.querySelectorTest, Helpers.querySelectorAllTest
-  ]));
-});
-
-describe('Model', () => A.map(runTest)([
-  Model.initTestWithValidState, Model.initTestWithInvalidRange, Model.initTestWithInvalidStep,
-  Model.initTestWithInvalidMargin, Model.initTestWithInvalidCoordinates, Model.dispatchTest
-]));
-
-describe('Observer', () => A.map(runTest)([
-  Observer.attachTest, Observer.detachTest, Observer.dispatchTest
-]));
+A.map(([title, data]: [string, object]) => describe(title, () => pipe(data, getTestsFrom, A.map(runTest))))([
+  ['Helpers', helpersTestData],
+  ['Model', modelTestData],
+  ['Observer', observerTestData]
+]);

@@ -170,7 +170,9 @@ export const getConfig: (buildType: BuildType) => webpack.Configuration = (build
     alias: {
       test: path.resolve(__dirname, '..', 'src/test'),
       helpers: path.resolve(__dirname, '..', 'src/helpers'),
-      components: path.resolve(__dirname, '..', 'src/plugin/components')
+      model: path.resolve(__dirname, '..', 'src/plugin/model'),
+      observer: path.resolve(__dirname, '..', 'src/plugin/observer'),
+      view: path.resolve(__dirname, '..', 'src/plugin/view')
     }
   }
 });

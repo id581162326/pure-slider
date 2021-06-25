@@ -3,22 +3,15 @@ import {flow, pipe} from 'fp-ts/function';
 import * as N from 'fp-ts/number';
 import * as A from 'fp-ts/Array';
 import * as NEA from 'fp-ts/NonEmptyArray';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
 
-import Observer from 'components/observer';
-import Namespace from 'components/model/namespace';
+import Observer from 'observer/index';
+import Namespace from 'model/namespace';
 
 class Model implements Namespace.Interface {
   public readonly dispatch = (action: Namespace.Action) => pipe(action, this.reduce, this.applyState);
 
-  public state: Namespace.State = {
-    coordinates: [NaN, NaN],
-    range: [NaN, NaN],
-    step: NaN,
-    margin: NaN
-  };
-
-  constructor(state: Namespace.State) {
+  constructor(public state: Namespace.State) {
     this.applyState(state);
   }
 

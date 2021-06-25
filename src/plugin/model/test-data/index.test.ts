@@ -1,11 +1,11 @@
 import Test from 'test/interface';
 
 import {pipe} from 'fp-ts/function';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
 
-import Model from 'components/model';
-import Namespace from 'components/model/namespace';
-import * as Actions from 'components/model/actions';
+import Model from 'model/index';
+import Namespace from 'model/namespace';
+import * as Actions from 'model/actions';
 
 const defaultState: Namespace.State = {
   coordinates: [0, 1],

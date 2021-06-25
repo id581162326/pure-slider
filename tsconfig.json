@@ -19,10 +19,12 @@
       "*": ["*", "*.test"],
       "test/*": ["test/*.test"],
       "helpers/*": ["helpers/*", "helpers/*.test"],
-      "components/*": ["plugin/components/*", "plugin/components/*.test"]
+      "model/*": ["plugin/model/*", "plugin/model/*.test"],
+      "observer/*": ["plugin/observer/*", "plugin/observer/*.test"],
+      "view/*": ["plugin/view/*", "plugin/view/*.test"]
     }
   },
-  "include": ["src/**/*", "@types/*"],
+  "include": ["src/**/*"],
   "exclude": ["node_modules"]
 }
 

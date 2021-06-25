@@ -3,10 +3,10 @@ import Test from 'test/interface';
 import {pipe} from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
 import * as O from 'fp-ts/Option';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
 
-import Observer from 'components/observer';
-import Namespace from 'components/observer/namespace';
+import Observer from 'observer/index';
+import Namespace from 'observer/namespace';
 
 export const attachTest: Test<Namespace.Listener<{}>> = {
   title: 'Attach method',
