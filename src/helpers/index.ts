@@ -74,8 +74,6 @@ export const subAdjacent = (idx: number) => (xs: number[]) => {
   return (sub(prev)(current));
 };
 
-export const narrowTuple = <Args extends unknown[]>(...args: Args): Args => A.map((x) => x as typeof x)([...args]) as Args;
-
 //
 
 export const node = <NodeName extends keyof HTMLElementTagNameMap>(nodeName: NodeName) => document.createElement<NodeName>(nodeName);
