@@ -1,0 +1,15 @@
+.pure-slider__base {
+    position: relative;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.pure-slider__base_orientation_horizontal {
+    width: 100%;
+}
+
+.pure-slider__base_orientation_vertical {
+    height: 100%;
+}

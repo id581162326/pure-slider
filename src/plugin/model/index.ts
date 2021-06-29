@@ -3,10 +3,11 @@ import {flow, pipe} from 'fp-ts/function';
 import * as N from 'fp-ts/number';
 import * as A from 'fp-ts/Array';
 import * as NEA from 'fp-ts/NonEmptyArray';
-import * as H from 'helpers/index';
+import * as H from 'helpers';
 
-import Observer from 'observer/index';
-import Namespace from 'model/namespace';
+import Observer from 'plugin/observer';
+
+import Namespace from 'plugin/model/namespace';
 
 class Model implements Namespace.Interface {
   public readonly dispatch = (action: Namespace.Action) => pipe(action, this.reduce, this.applyState);
@@ -32,7 +33,7 @@ class Model implements Namespace.Interface {
     ['UPDATE_RANGE', pipe(value as Namespace.State['range'], this.setRange, F.constant)],
     ['UPDATE_STEP', pipe(value as Namespace.State['step'], this.setStep, F.constant)],
     ['UPDATE_MARGIN', pipe(value as Namespace.State['margin'], this.setMargin, F.constant)]
-  ], this.state));
+  ], F.constant(this.state)));
 
   //
 
@@ -45,7 +46,7 @@ class Model implements Namespace.Interface {
     const correctCoord = (coord: number) => pipe(true, H.switchCases([
       [coord < min, F.constant(min)],
       [coord > max, F.constant(max)]
-    ], coord));
+    ], F.constant(coord)));
 
     return ({
       ...state,
@@ -78,13 +79,13 @@ class Model implements Namespace.Interface {
         : coord === NEA.head(range) || (coord !== NEA.last(range) && coordinatesIsEqual)
           ? coord : pipe(coordinates, NEA.last, H.sub(margin));
 
-      return (pipe(true, H.switchCases([[coord < min, F.constant(min)], [coord > max, F.constant(max)]], coord)));
+      return (pipe(true, H.switchCases([[coord < min, F.constant(min)], [coord > max, F.constant(max)]], F.constant(coord))));
     };
 
     return ({
-      ...state, coordinates: pipe(coordinates, A.size, H.switchCases([
-        [2, pipe(coordinates, A.mapWithIndex(correctCoord), F.constant) as F.Lazy<Namespace.State['coordinates']>]
-      ], coordinates))
+      ...state, coordinates: A.size(coordinates) === 2 ?
+        pipe(coordinates, A.mapWithIndex(correctCoord)) as Namespace.State['coordinates']
+        : coordinates
     });
   };
 

@@ -1,0 +1,12 @@
+.pure-slider__base {
+    background: var(--base-background-color);
+    border-radius: 4px;
+}
+
+.pure-slider__base_orientation_horizontal {
+    height: 10px;
+}
+
+.pure-slider__base_orientation_vertical {
+    width: 10px;
+}

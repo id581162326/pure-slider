@@ -5,8 +5,8 @@ import * as A from 'fp-ts/Array';
 import * as O from 'fp-ts/Option';
 import * as H from 'helpers/index';
 
-import Observer from 'observer/index';
-import Namespace from 'observer/namespace';
+import Observer from 'plugin/observer/index';
+import Namespace from 'plugin/observer/namespace';
 
 export const attachTest: Test<Namespace.Listener<{}>> = {
   title: 'Attach method',

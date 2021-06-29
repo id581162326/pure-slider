@@ -2,7 +2,7 @@ import {flow, pipe} from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
 import * as H from 'helpers/index';
 
-import Namespace from './namespace';
+import Namespace from 'plugin/observer/namespace';
 
 class Observer<State extends object> implements Namespace.Interface<State> {
   public listeners: Namespace.Listener<State>[] = [];

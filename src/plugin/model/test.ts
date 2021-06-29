@@ -3,9 +3,9 @@ import Test from 'test/interface';
 import {pipe} from 'fp-ts/function';
 import * as H from 'helpers/index';
 
-import Model from 'model/index';
-import Namespace from 'model/namespace';
-import * as Actions from 'model/actions';
+import Model from 'plugin/model/index';
+import Namespace from 'plugin/model/namespace';
+import * as Actions from 'plugin/model/actions';
 
 const defaultState: Namespace.State = {
   coordinates: [0, 1],
@@ -16,11 +16,11 @@ const defaultState: Namespace.State = {
 
 export const initTestWithValidState: Test<Namespace.State> = {
   title: 'Init model',
-  description: 'should init model with valid state',
+  description: 'should init model',
   run: (state) => {
     const model = pipe(Model, H.instantiateWith(state));
 
-    expect(model).toBeInstanceOf(Model);
+    expect(model.state).toEqual(state);
   },
   map: [defaultState]
 };

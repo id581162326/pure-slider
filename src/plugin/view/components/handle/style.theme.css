@@ -1,0 +1,8 @@
+.pure-slider__handle {
+    width: 20px;
+    height: 20px;
+    background: var(--handle-background-color);
+    border: 2px solid var(--handle-border-color);
+    border-radius: 40%;
+    cursor: pointer;
+}

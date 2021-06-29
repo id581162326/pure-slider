@@ -1,5 +1,5 @@
-import {pipe} from 'fp-ts/function';
 import * as F from 'fp-ts/function';
+import {pipe} from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
 import * as A from 'fp-ts/Array';
 
@@ -31,8 +31,8 @@ export const instantiateWith = <Class extends { new(...params: unknown[] & Const
   Func: Class
 ) => new Func(...params);
 
-export const switchCases = <Case extends [Tag, F.Lazy<Value>], Tag, Value>(cases: Case[], def: Value) => (tag: Tag) =>
-  pipe(cases, A.findLast(([key]) => key === tag), O.fold<Case, Value>(() => def, ([_, value]) => value()));
+export const switchCases = <Case extends [Tag, F.Lazy<Value>], Tag, Value>(cases: Case[], def: F.Lazy<Value>) => (tag: Tag) =>
+  pipe(cases, A.findLast(([key]) => key === tag), O.fold<Case, Value>(() => def(), ([_, value]) => value()));
 
 //
 
@@ -62,7 +62,7 @@ export const percentage = (x: number) => (y: number) => pipe(y, div(x), mult(100
 
 export const remainder = (x: number) => (y: number) => y % x;
 
-// array helpers
+//
 
 export const nthOrNone = <Type>(n: number, none: Type) => (xs: Type[]) => pipe(xs, A.lookup(n), O.getOrElse(F.constant(none)));
 
@@ -73,6 +73,8 @@ export const subAdjacent = (idx: number) => (xs: number[]) => {
 
   return (sub(prev)(current));
 };
+
+export const narrowTuple = <Args extends unknown[]>(...args: Args): Args => A.map((x) => x as typeof x)([...args]) as Args;
 
 //
 
@@ -100,6 +102,12 @@ export const setInlineStyle = (style: string) => <Node extends HTMLElement>(node
 
 export const setInnerText = (text: string) => <Node extends HTMLElement>(node: Node) => {
   node.innerText = text;
+
+  return (node);
+};
+
+export const setAttribute = (attrName: string, value: string) => <Node extends HTMLElement>(node: Node) => {
+  node.setAttribute(attrName, value);
 
   return (node);
 };

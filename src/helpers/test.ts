@@ -5,7 +5,7 @@ import * as F from 'fp-ts/function';
 import {flow, pipe} from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
 import * as O from 'fp-ts/Option';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
 
 export const traceTest: Test<any> = {
   title: 'trace',
@@ -94,10 +94,10 @@ export const switchCasesTest: Test<string> = {
   title: 'switchCases',
   description: 'should to match the tag to a cases and get last matching',
   run: (x) => {
-    const firstSwitch = H.switchCases([['foo', F.constant(1)], ['foo', F.constant(2)], ['baz', F.constant(3)]], NaN);
-    const secondSwitch = H.switchCases([['foo', F.constant(1)], ['bar', F.constant(2)], ['foo', F.constant(3)]], NaN);
-    const thirdSwitch = H.switchCases([['fizz', F.constant(1)], ['fizz', F.constant(2)], ['fizz', F.constant(3)]], NaN);
-    const fourthSwitch = H.switchCases([['foo', F.constant(1)], ['fizz', F.constant(2)], ['fizz', F.constant(3)]], NaN);
+    const firstSwitch = H.switchCases([['foo', F.constant(1)], ['foo', F.constant(2)], ['baz', F.constant(3)]], F.constant(NaN));
+    const secondSwitch = H.switchCases([['foo', F.constant(1)], ['bar', F.constant(2)], ['foo', F.constant(3)]], F.constant(NaN));
+    const thirdSwitch = H.switchCases([['fizz', F.constant(1)], ['fizz', F.constant(2)], ['fizz', F.constant(3)]], F.constant(NaN));
+    const fourthSwitch = H.switchCases([['foo', F.constant(1)], ['fizz', F.constant(2)], ['fizz', F.constant(3)]], F.constant(NaN));
 
     expect(firstSwitch(x)).toEqual(2);
     expect(secondSwitch(x)).toEqual(3);

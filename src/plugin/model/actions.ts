@@ -1,4 +1,4 @@
-import Namespace from 'model/namespace';
+import Namespace from 'plugin/model/namespace';
 
 export const updateCoordinates = (value: Namespace.UpdateCoordinates['value']): Namespace.UpdateCoordinates => ({
   tag: 'UPDATE_COORDINATES',

@@ -16,12 +16,11 @@
     "forceConsistentCasingInFileNames": true,
     "baseUrl": "./src",
     "paths": {
-      "*": ["*", "*.test"],
-      "test/*": ["test/*.test"],
-      "helpers/*": ["helpers/*", "helpers/*.test"],
-      "model/*": ["plugin/model/*", "plugin/model/*.test"],
-      "observer/*": ["plugin/observer/*", "plugin/observer/*.test"],
-      "view/*": ["plugin/view/*", "plugin/view/*.test"]
+      "*": ["*"],
+      "test/*": ["test/*"],
+      "helpers/*": ["helpers/*"],
+      "plugin/*": ["plugin/*"],
+      "view-components/*": ["plugin/view/components/*"]
     }
   },
   "include": ["src/**/*"],

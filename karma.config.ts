@@ -5,11 +5,11 @@ const karmaConfig: (config: Config) => void = (config) => {
   config.set({
     singleRun: false,
     autoWatch: true,
-    files: ['src/test/index.test.ts'],
+    files: ['src/test/index.ts'],
     browsers: ['Chrome'],
     frameworks: ['jasmine'],
     reporters: ['mocha'],
-    preprocessors: {'src/test/index.test.ts': ['webpack', 'sourcemap']},
+    preprocessors: {'src/test/index.ts': ['webpack', 'sourcemap']},
     plugins: [
       'karma-jasmine', 'karma-mocha',
       'karma-webpack', 'karma-chrome-launcher',

@@ -166,13 +166,13 @@ export const getConfig: (buildType: BuildType) => webpack.Configuration = (build
   context: path.resolve(__dirname, '..', 'src'),
   resolve: {
     modules: ['node_modules', 'src'],
-    extensions: ['.ts', '.test.ts', '.js'],
+    extensions: ['.ts', '.js'],
     alias: {
-      test: path.resolve(__dirname, '..', 'src/test'),
-      helpers: path.resolve(__dirname, '..', 'src/helpers'),
-      model: path.resolve(__dirname, '..', 'src/plugin/model'),
-      observer: path.resolve(__dirname, '..', 'src/plugin/observer'),
-      view: path.resolve(__dirname, '..', 'src/plugin/view')
+      'test': path.resolve(__dirname, '..', 'src/test'),
+      'helpers': path.resolve(__dirname, '..', 'src/helpers'),
+      'model': path.resolve(__dirname, '..', 'src/plugin/model'),
+      'observer': path.resolve(__dirname, '..', 'src/plugin/observer'),
+      'view-components': path.resolve(__dirname, '..', 'src/plugin/view/components')
     }
   }
 });
