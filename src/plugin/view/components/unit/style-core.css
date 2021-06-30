@@ -1,0 +1,9 @@
+.pure-slider__unit {
+    position: absolute;
+    display: grid;
+    place-items: center;
+}
+
+.pure-slider__unit-value {
+    position: absolute;
+}
