@@ -38,7 +38,7 @@ export const initTest: Test<Namespace.Props> = {
 };
 
 export const moveTest: Test<Namespace.Props['orientation']> = {
-  title: 'Move method',
+  title: 'moveTo method',
   description: 'should move handle',
   run: (orientation) => {
     const handle = pipe(Handle, H.instantiateWith({...defaultProps, orientation}));

@@ -41,8 +41,6 @@
     height: 2px;
 }
 
-/* unit value */
-
 .pure-slider__unit_orientation_horizontal > .pure-slider__unit-value {
     top: calc(100% + 5px);
 }

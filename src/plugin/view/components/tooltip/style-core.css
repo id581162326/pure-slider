@@ -1,0 +1,10 @@
+.pure-slider__tooltip {
+    display: none;
+    position: absolute;
+    user-select: none;
+}
+
+*:active .pure-slider__tooltip,
+.pure-slider__tooltip_shown {
+    display: block;
+}

@@ -1,0 +1,17 @@
+.pure-slider__tooltip {
+    padding: 5px 10px;
+    border: 1px solid var(--handle-border-color);
+    border-radius: 4px;
+    background: var(--tooltip-background-color);
+    white-space: nowrap;
+    font-style: italic;
+    cursor: auto;
+}
+
+.pure-slider__tooltip_orientation_horizontal {
+    bottom: calc(100% + 15px);
+}
+
+.pure-slider__tooltip_orientation_vertical {
+    right: calc(100% + 15px);
+}
