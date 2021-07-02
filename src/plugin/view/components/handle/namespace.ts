@@ -7,9 +7,9 @@ namespace Handle {
   }
 
   export interface Interface {
-    props: Props,
     node: HTMLDivElement,
-    moveTo: (percent: number) => void
+    moveTo: (percent: number) => void,
+    removeSideEffects: () => void
   }
 }
 

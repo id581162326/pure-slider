@@ -8,7 +8,7 @@ import Namespace from 'view-components/base/namespace';
 class Base implements Namespace.Interface {
   public readonly node;
 
-  constructor(public readonly props: Namespace.Props) {
+  constructor(private readonly props: Namespace.Props) {
     this.node = this.render();
   }
 

@@ -54,15 +54,15 @@ export const identTest: Test<unknown> = {
   map: [1, '1', undefined, null]
 };
 
-export const callWithTest: Test<unknown[]> = {
-  title: 'callWith',
+export const callTest: Test<unknown[]> = {
+  title: 'call',
   description: 'should call function',
   run: (x) => {
     const foo = {bar: function (..._: unknown[]) {}};
 
     spyOn(foo, 'bar');
 
-    H.callWith<typeof foo.bar>(...x)(foo.bar);
+    H.call<typeof foo.bar>(...x)(foo.bar);
 
     expect(foo.bar).toHaveBeenCalledWith(...x);
   },
@@ -72,15 +72,15 @@ export const callWithTest: Test<unknown[]> = {
   ]
 };
 
-export const instantiateTest: Test<unknown[]> = {
-  title: 'instantiate',
+export const instanceTest: Test<unknown[]> = {
+  title: 'instance',
   description: 'should instantiate class',
   run: (x) => {
     class Foo {
       constructor(..._: unknown[]) {}
     }
 
-    const foo = H.instantiateWith<typeof Foo>(...x)(Foo);
+    const foo = H.instance<typeof Foo>(...x)(Foo);
 
     expect(foo).toBeInstanceOf(Foo);
   },

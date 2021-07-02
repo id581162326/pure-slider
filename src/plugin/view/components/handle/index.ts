@@ -10,11 +10,15 @@ class Handle implements Namespace.Interface {
   public readonly node: HTMLDivElement;
 
   public readonly moveTo = (pos: number) => pipe(this.props.orientation, H.switchCases([
-    ['horizontal', () => this.setLeft(pos)],
-    ['vertical', () => this.setBottom(pos)]
+    ['horizontal', () => pipe(this.node, H.setStyle('left', `calc(${pos}% - ${pipe(this.node.offsetWidth, H.half)}px)`))],
+    ['vertical', () => pipe(this.node, H.setStyle('bottom', `calc(${pos}% - ${pipe(this.node.offsetHeight, H.half)}px)`))]
   ], F.constVoid));
 
-  constructor(public readonly props: Namespace.Props) {
+  public readonly removeSideEffects = () => {
+    H.addEventListener('mouseup', this.endDrag)(window);
+  };
+
+  constructor(private readonly props: Namespace.Props) {
     this.node = this.render();
 
     this.setEventListeners();
@@ -33,14 +37,6 @@ class Handle implements Namespace.Interface {
     ];
 
     return (pipe(H.node('div'), H.addClassList(classList), H.setAttribute('tabindex', '0')));
-  };
-
-  private readonly setLeft = (pos: number) => {
-    pipe(this.node, H.setInlineStyle(`left: calc(${pos}% - ${pipe(this.node.offsetWidth, H.half)}px);`));
-  };
-
-  private readonly setBottom = (pos: number) => {
-    pipe(this.node, H.setInlineStyle(`bottom: calc(${pos}% - ${pipe(this.node.offsetHeight, H.half)}px);`));
   };
 
   private readonly setEventListeners = () => {

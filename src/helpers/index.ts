@@ -19,17 +19,17 @@ export const prop = <Obj, Key extends keyof Obj>(key: Key) => (object: Obj) => o
 
 export const ident = <Type>(x: Type) => x;
 
-export const callWith = <Function extends { (...args: unknown[] & Parameters<Function>): ReturnType<Function> }>(
+export const call = <Function extends { (...args: unknown[] & Parameters<Function>): ReturnType<Function> }>(
   ...args: Parameters<Function>
 ) => (
   fn: Function
-) => fn(...args);
+): ReturnType<Function> => fn(...args);
 
-export const instantiateWith = <Class extends { new(...params: unknown[] & ConstructorParameters<Class>): InstanceType<Class> }>(
+export const instance = <Class extends { new(...params: unknown[] & ConstructorParameters<Class>): InstanceType<Class> }>(
   ...params: ConstructorParameters<Class>
 ) => (
   Func: Class
-) => new Func(...params);
+): InstanceType<Class> => new Func(...params);
 
 export const switchCases = <Case extends [Tag, F.Lazy<Value>], Tag, Value>(cases: Case[], def: F.Lazy<Value>) => (tag: Tag) =>
   pipe(cases, A.findLast(([key]) => key === tag), O.fold<Case, Value>(() => def(), ([_, value]) => value()));
@@ -97,6 +97,12 @@ export const setInlineStyle = (style: string) => <Node extends HTMLElement>(node
 
   return (node);
 };
+
+export const setStyle = <Key extends keyof CSSStyleDeclaration>(key: Key, value: CSSStyleDeclaration[Key]) => <Node extends HTMLElement>(node: Node) => {
+  node.style[key] = value;
+
+  return (node);
+}
 
 export const setInnerText = (text: string) => <Node extends HTMLElement>(node: Node) => {
   node.innerText = text;

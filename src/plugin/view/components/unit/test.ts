@@ -18,7 +18,7 @@ export const initTest: Test<Namespace.Props> = {
   title: 'Init',
   description: 'should init unit',
   run: (props) => {
-    const unit = pipe(Unit, H.instantiateWith(props));
+    const unit = pipe(Unit, H.instance(props));
     const node = unit.node;
 
     expect(node).toHaveClass('pure-slider__unit');
@@ -52,7 +52,7 @@ export const setActiveTest: Test<Namespace.Props> = {
   title: 'setActive method',
   description: 'should set active mode to unit',
   run: (props) => {
-    const unit = pipe(Unit, H.instantiateWith(props));
+    const unit = pipe(Unit, H.instance(props));
     const node = unit.node;
     const bemBlockClassName = O.fromNullable(props.bemBlockClassName);
 

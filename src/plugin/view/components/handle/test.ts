@@ -18,7 +18,7 @@ export const initTest: Test<Namespace.Props> = {
   title: 'Init',
   description: 'should init handle',
   run: (props) => {
-    const handle = pipe(Handle, H.instantiateWith(props));
+    const handle = pipe(Handle, H.instance(props));
     const node = handle.node;
 
     if (props.bemBlockClassName) {
@@ -41,7 +41,7 @@ export const moveTest: Test<Namespace.Props['orientation']> = {
   title: 'moveTo method',
   description: 'should move handle',
   run: (orientation) => {
-    const handle = pipe(Handle, H.instantiateWith({...defaultProps, orientation}));
+    const handle = pipe(Handle, H.instance({...defaultProps, orientation}));
     const node = handle.node;
 
     const moveMap = [1, 2, 4, 10, 20, 30, 60, 100];
@@ -66,7 +66,7 @@ export const dragTest: Test<[number, number]> = {
 
     spyOn(foo, 'bar');
 
-    const handle = pipe(Handle, H.instantiateWith({...defaultProps, onDrag: foo.bar}));
+    const handle = pipe(Handle, H.instance({...defaultProps, onDrag: foo.bar}));
 
     handle.node.dispatchEvent(new MouseEvent('mousedown', {clientY: 0, clientX: 0}));
 
@@ -85,7 +85,7 @@ export const keyPressTest: Test<Namespace.Props['orientation']> = {
 
     const spy = spyOn(foo, 'bar');
 
-    const handle = pipe(Handle, H.instantiateWith({...defaultProps, orientation, onKeyPress: foo.bar}));
+    const handle = pipe(Handle, H.instance({...defaultProps, orientation, onKeyPress: foo.bar}));
 
     const decCodes = F.tuple('ArrowDown' as 'ArrowDown', 'ArrowLeft' as 'ArrowLeft', 'Minus' as 'Minus');
     const incCodes = F.tuple('ArrowUp' as 'ArrowUp', 'ArrowRight' as 'ArrowRight', 'Equal' as 'Equal');

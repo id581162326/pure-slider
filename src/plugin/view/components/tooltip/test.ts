@@ -10,7 +10,7 @@ export const initTest: Test<Namespace.Props> = {
   title: 'Init',
   description: 'should init tooltip',
   run: (props) => {
-    const tooltip = pipe(Tooltip, H.instantiateWith(props));
+    const tooltip = pipe(Tooltip, H.instance(props));
     const node = tooltip.node;
 
     expect(node).toHaveClass('pure-slider__tooltip');
@@ -43,7 +43,7 @@ export const setValueTest: Test<number> = {
   title: 'setValue method',
   description: 'should set tooltip\'s value',
   run: (value) => {
-    const tooltip = pipe(Tooltip, H.instantiateWith({orientation: 'horizontal', alwaysShown: false}));
+    const tooltip = pipe(Tooltip, H.instance({orientation: 'horizontal', alwaysShown: false}));
 
     tooltip.setValue(value);
 

@@ -15,7 +15,7 @@ export const initTest: Test<Namespace.Props> = {
   title: 'Init',
   description: 'should init base',
   run: (props) => {
-    const base = pipe(Base, H.instantiateWith(props));
+    const base = pipe(Base, H.instance(props));
     const node = base.node;
 
     expect(node).toHaveClass('pure-slider__base');
@@ -45,7 +45,7 @@ export const clickTest: Test<[number, number]> = {
 
     spyOn(mock, 'foo');
 
-    const base = pipe(Base, H.instantiateWith({...defaultProp, onClick: mock.foo}));
+    const base = pipe(Base, H.instance({...defaultProp, onClick: mock.foo}));
     const node = base.node;
 
     node.dispatchEvent(new MouseEvent('click', {clientX, clientY}));

@@ -12,7 +12,7 @@ export const initTest: Test<Namespace.Props> = {
   title: 'Init',
   description: 'should init connect',
   run: (props) => {
-    const connect = pipe(Connect, H.instantiateWith(props));
+    const connect = pipe(Connect, H.instance(props));
     const node = connect.node;
 
     expect(node).toHaveClass('pure-slider__connect');
@@ -38,13 +38,14 @@ export const moveTest: Test<Namespace.Props['orientation']> = {
   title: 'moveTo method',
   description: 'should move and resize connect',
   run: (orientation) => {
-    const connect = pipe(Connect, H.instantiateWith({orientation}));
+    const connect = pipe(Connect, H.instance({orientation}));
     const node = connect.node;
 
     const moveMap: [number, number][] = [[1, 10], [12, 14], [30, 0], [50, 50]];
 
     pipe(moveMap, A.map(([pos, size]) => {
-      connect.moveTo(pos, size);
+      connect.moveTo(pos);
+      connect.sizeTo(size);
 
       pipe(orientation, H.switchCases([
         ['horizontal', () => expect(node.style.cssText).toEqual(`left: ${pos}%; max-width: ${size}%;`)],

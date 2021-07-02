@@ -72,19 +72,19 @@ class Model implements Namespace.Interface {
 
     const coordinatesIsEqual = pipe(coordinates, NEA.head) === pipe(coordinates, NEA.last);
 
-    const correctCoord = (idx: number, coord: number) => {
+    const correct = (idx: number, coord: number) => {
       const min = idx === 0 ? NEA.head(range)
         : coord === NEA.last(range) ? coord : pipe(coordinates, NEA.head, H.add(margin));
       const max = idx === 1 ? NEA.last(range)
         : coord === NEA.head(range) || (coord !== NEA.last(range) && coordinatesIsEqual)
           ? coord : pipe(coordinates, NEA.last, H.sub(margin));
 
-      return (pipe(true, H.switchCases([[coord < min, F.constant(min)], [coord > max, F.constant(max)]], F.constant(coord))));
+      return (pipe(true, H.switchCases([[coord <= min, F.constant(min)], [coord >= max, F.constant(max)]], F.constant(coord))));
     };
 
     return ({
       ...state, coordinates: A.size(coordinates) === 2 ?
-        pipe(coordinates, A.mapWithIndex(correctCoord)) as Namespace.State['coordinates']
+        pipe(coordinates, A.mapWithIndex(correct)) as Namespace.State['coordinates']
         : coordinates
     });
   };

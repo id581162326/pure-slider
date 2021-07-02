@@ -20,10 +20,11 @@
       "test/*": ["test/*"],
       "helpers/*": ["helpers/*"],
       "plugin/*": ["plugin/*"],
-      "view-components/*": ["plugin/view/components/*"]
+      "view-components/*": ["plugin/view/components/*"],
+      "view-managers/*": ["plugin/view/managers/*"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["@types/*", "src/**/*"],
   "exclude": ["node_modules"]
 }
 

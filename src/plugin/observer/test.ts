@@ -12,7 +12,7 @@ export const attachTest: Test<Namespace.Listener<{}>> = {
   title: 'Attach method',
   description: 'should attach listener to observer',
   run: (listener) => {
-    const observer = pipe(Observer, H.instantiateWith());
+    const observer = pipe(Observer, H.instance());
 
     observer.attach(listener);
 
@@ -29,7 +29,7 @@ export const detachTest: Test<Namespace.Listener<{}>> = {
   title: 'Detach method',
   description: 'should detach listener to observer',
   run: (listener) => {
-    const observer = pipe(Observer, H.instantiateWith());
+    const observer = pipe(Observer, H.instance());
 
     observer.attach(listener);
     observer.detach(listener);
@@ -52,7 +52,7 @@ export const dispatchTest: Test<{}> = {
     spyOn(listener1, 'notify');
     spyOn(listener2, 'notify');
 
-    const observer = pipe(Observer, H.instantiateWith());
+    const observer = pipe(Observer, H.instance());
 
     observer.attach(listener1);
     observer.attach(listener2);

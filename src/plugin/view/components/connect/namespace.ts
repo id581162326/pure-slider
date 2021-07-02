@@ -6,7 +6,8 @@ namespace Connect {
 
   export interface Interface {
     node: HTMLDivElement,
-    moveTo: (pos: number, size: number) => void
+    moveTo: (pos: number) => void,
+    sizeTo: (size: number) => void
   }
 }
 

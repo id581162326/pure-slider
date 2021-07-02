@@ -7,18 +7,27 @@ import 'view-components/connect/style.core.css';
 import Namespace from 'view-components/connect/namespace';
 
 class Connect implements Namespace.Interface {
-  public readonly moveTo = (pos: number, size: number) => {
+  public readonly node;
+
+  public readonly moveTo = (pos: number) => {
     const {orientation} = this.props;
 
     pipe(orientation, H.switchCases([
-      ['horizontal', () => this.setLeftAndMaxWidth(pos, size)],
-      ['vertical', () => this.setBottomAndMaxHeight(pos, size)]
+      ['horizontal', () => pipe(this.node, H.setStyle('left', `${pos}%`))],
+      ['vertical', () => pipe(this.node, H.setStyle('bottom', `${pos}%`))]
     ], F.constVoid));
   };
 
-  public readonly node;
+  public readonly sizeTo = (size: number) => {
+    const {orientation} = this.props;
 
-  constructor(public readonly props: Namespace.Props) {
+    pipe(orientation, H.switchCases([
+      ['horizontal', () => pipe(this.node, H.setStyle('maxWidth', `${size}%`))],
+      ['vertical', () => pipe(this.node, H.setStyle('maxHeight', `${size}%`))]
+    ], F.constVoid));
+  };
+
+  constructor(private readonly props: Namespace.Props) {
     this.node = this.render();
   }
 
@@ -36,14 +45,7 @@ class Connect implements Namespace.Interface {
 
     return (pipe(H.node('div'), H.addClassList(classList)));
   };
-
-  private readonly setLeftAndMaxWidth = (pos: number, size: number) => {
-    pipe(this.node, H.setInlineStyle(`left: ${pos}%; max-width: ${size}%`));
-  };
-
-  private readonly setBottomAndMaxHeight = (pos: number, size: number) => {
-    pipe(this.node, H.setInlineStyle(`bottom: ${pos}%; max-height: ${size}%`));
-  };
 }
+
 
 export default Connect;

@@ -6,8 +6,7 @@ namespace Base {
   }
 
   export interface Interface {
-    node: HTMLDivElement,
-    props: Props
+    node: HTMLDivElement
   }
 }
 

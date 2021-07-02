@@ -18,7 +18,7 @@ export const initTestWithValidState: Test<Namespace.State> = {
   title: 'Init model',
   description: 'should init model',
   run: (state) => {
-    const model = pipe(Model, H.instantiateWith(state));
+    const model = pipe(Model, H.instance(state));
 
     expect(model.state).toEqual(state);
   },
@@ -29,7 +29,7 @@ export const initTestWithInvalidRange: Test<[Namespace.State, Namespace.State]> 
   title: 'Init model',
   description: 'should init model with invalid range and correct it',
   run: ([inputState, outputState]) => {
-    const model = pipe(Model, H.instantiateWith(inputState));
+    const model = pipe(Model, H.instance(inputState));
 
     expect(model.state).toEqual(outputState);
   },
@@ -63,7 +63,7 @@ export const initTestWithInvalidStep: Test<[Namespace.State, Namespace.State]> =
   title: 'Init model',
   description: 'should init model with invalid step and correct it',
   run: ([inputState, outputState]) => {
-    const model = pipe(Model, H.instantiateWith(inputState));
+    const model = pipe(Model, H.instance(inputState));
 
     expect(model.state).toEqual(outputState);
   },
@@ -108,7 +108,7 @@ export const initTestWithInvalidMargin: Test<[Namespace.State, Namespace.State]>
   title: 'Init model',
   description: 'should init model with invalid margin and correct it',
   run: ([inputState, outputState]) => {
-    const model = pipe(Model, H.instantiateWith(inputState));
+    const model = pipe(Model, H.instance(inputState));
 
     expect(model.state).toEqual(outputState);
   },
@@ -153,7 +153,7 @@ export const initTestWithInvalidCoordinates: Test<[Namespace.State, Namespace.St
   title: 'Init model',
   description: 'should init model with invalid coordinates and correct it',
   run: ([inputState, outputState]) => {
-    const model = pipe(Model, H.instantiateWith(inputState));
+    const model = pipe(Model, H.instance(inputState));
 
     expect(model.state).toEqual(outputState);
   },
@@ -220,7 +220,7 @@ export const dispatchTest: Test<[Namespace.Action, Namespace.State]> = {
   title: 'Dispatch method',
   description: 'should dispatch action to model',
   run: ([action, outputState]) => {
-    const model = pipe(Model, H.instantiateWith(defaultState));
+    const model = pipe(Model, H.instance(defaultState));
 
     model.dispatch(action);
 
