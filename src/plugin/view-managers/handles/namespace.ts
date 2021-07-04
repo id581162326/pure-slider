@@ -4,8 +4,10 @@ namespace HandlesManager {
   export interface Props extends DataManager.Props {
     step: number,
     coordinates: [number] | [number, number],
-    bemBlockClassName?: string,
-    onChange: (coordinates: Props['coordinates']) => void
+    onChange: (coordinates: Props['coordinates']) => void,
+    tooltipsEnabled?: true,
+    tooltipsAlwaysShown?: true,
+    bemBlockClassName?: string
   }
 
   export interface State {

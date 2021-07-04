@@ -2,11 +2,12 @@ import * as NEA from 'fp-ts/NonEmptyArray';
 import * as H from 'helpers';
 import * as F from 'fp-ts/function';
 import {flow, pipe} from 'fp-ts/function';
-
+import * as O from 'fp-ts/Option';
 import Handle from 'view-elements/handle';
 
 import Namespace from 'view-managers/handles/namespace';
 import DataManager from 'view-managers/data';
+import Tooltip from 'view-elements/tooltip';
 
 class HandlesManager extends DataManager<Namespace.Props> implements Namespace.Interface {
   public readonly appendNodesTo = <Parent extends HTMLElement>(parent: Parent) => {
@@ -16,11 +17,8 @@ class HandlesManager extends DataManager<Namespace.Props> implements Namespace.I
   };
 
   public readonly moveTo = (coordinates: Namespace.Props['coordinates']) => {
-    pipe(
-      this.handles,
-      NEA.zip(coordinates),
-      NEA.map(([handle, coord]) => pipe(coord, this.percentOfRange, handle.moveTo))
-    );
+    this.updateHandlesPos(coordinates);
+    this.updateTooltipsValue(coordinates);
 
     this.mutateState({coordinates});
 
@@ -33,26 +31,49 @@ class HandlesManager extends DataManager<Namespace.Props> implements Namespace.I
     this.state = {coordinates: props.coordinates} as Namespace.State;
 
     this.handles = this.renderHandles();
+
+    this.tooltips = this.renderTooltips();
   }
 
   private state;
 
   private readonly handles;
 
+  private readonly tooltips;
+
   private readonly renderHandles = () => {
     const {orientation, bemBlockClassName, coordinates} = this.props;
 
-    const getProps = (idx: number) => ({
-      orientation,
-      bemBlockClassName,
-      onDrag: this.handleDrag(idx),
-      onIncrease: this.handleChange('inc', idx),
-      onDecrease: this.handleChange('dec', idx)
-    });
+    return (pipe(
+      coordinates,
+      NEA.map(this.percentOfRange),
+      NEA.mapWithIndex((idx, pos) => pipe(Handle, H.instance({
+        orientation,
+        bemBlockClassName,
+        onDrag: this.handleDrag(idx),
+        onIncrease: this.handleChange('inc', idx),
+        onDecrease: this.handleChange('dec', idx)
+      }), H.method('moveTo', pos)))
+    ));
+  };
 
-    return (pipe(coordinates, NEA.mapWithIndex((idx, coord) => pipe(
-      Handle, H.instance(getProps(idx)), H.method('moveTo', coord)
-    ))));
+  private readonly renderTooltips = () => {
+    const {orientation, bemBlockClassName, coordinates, tooltipsEnabled, tooltipsAlwaysShown} = this.props;
+
+    return (tooltipsEnabled ? pipe(
+      coordinates,
+      NEA.map((_) => pipe(Tooltip, H.instance({
+        orientation,
+        bemBlockClassName,
+        alwaysShown: Boolean(tooltipsAlwaysShown)
+      }))),
+      NEA.zip(this.handles),
+      NEA.map(([tooltip, handle]) => {
+        H.appendTo(handle.node)(tooltip.node);
+
+        return (tooltip);
+      }), O.some
+    ) : O.none);
   };
 
   private readonly handleDrag = (handleIdx: number) => ({x, y}: { x: number, y: number }) => {
@@ -86,6 +107,20 @@ class HandlesManager extends DataManager<Namespace.Props> implements Namespace.I
       (xs) => onChange(xs as Namespace.Props['coordinates'])
     );
   };
+
+  private readonly updateHandlesPos = (coordinates: Namespace.Props['coordinates']) => pipe(
+    this.handles,
+    NEA.zip(coordinates),
+    NEA.map(([handle, coord]) => pipe(coord, this.percentOfRange, handle.moveTo))
+  );
+
+  private readonly updateTooltipsValue = (coordinates: Namespace.Props['coordinates']) => pipe(
+    this.tooltips,
+    O.map(flow(
+      NEA.zip(coordinates),
+      NEA.map(([tooltip, coord]) => pipe(coord, tooltip.setValue))
+    ))
+  );
 
   private readonly mutateState = (state: Partial<Namespace.State>): Namespace.State => this.state = {...this.state, ...state};
 }

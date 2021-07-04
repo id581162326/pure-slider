@@ -17,11 +17,7 @@ class ConnectsManager extends ComponentManager<Namespace.Props> implements Names
   };
 
   public readonly moveTo = (coordinates: Namespace.Props['coordinates']) => {
-    const dimensionsMap = this.getDimensionsMap(coordinates);
-
-    pipe(this.connects, A.zip(dimensionsMap), A.map(([connect, [pos, size]]) => pipe(
-      connect, H.method('moveTo', pos), H.method('sizeTo', size)
-    )));
+    this.updateConnectsSizeAndPos(coordinates);
 
     return (this);
   };
@@ -80,6 +76,15 @@ class ConnectsManager extends ComponentManager<Namespace.Props> implements Names
       ['inner', () => pipe(coordinates, H.subAdjacent(1), this.percentOfRange)]
     ], F.constant(NaN))))
   );
+
+
+  private readonly updateConnectsSizeAndPos = (coordinates: Namespace.Props['coordinates']) => {
+    const dimensionsMap = this.getDimensionsMap(coordinates);
+
+    pipe(this.connects, A.zip(dimensionsMap), A.map(([connect, [pos, size]]) => pipe(
+      connect, H.method('moveTo', pos), H.method('sizeTo', size)
+    )));
+  };
 }
 
 export default ConnectsManager;
