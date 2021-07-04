@@ -1,10 +1,14 @@
 import * as F from 'fp-ts/function';
 import {pipe} from 'fp-ts/function';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
 
-import Namespace from 'view-components/unit/namespace';
+import 'view-elements/unit/style-core.css';
+import 'view-elements/unit/style-theme.css';
+import Namespace from 'view-elements/unit/namespace';
 
 class Unit implements Namespace.Interface {
+  public readonly node;
+
   public readonly setActive = (active: boolean) => {
     const activeClassList = [
       'pure-slider__unit_active',
@@ -17,9 +21,9 @@ class Unit implements Namespace.Interface {
       [true, () => H.addClassList(activeClassList)(this.node)],
       [false, () => H.removeClassList(activeClassList)(this.node)]
     ], F.constVoid));
-  };
 
-  public readonly node;
+    return (this);
+  };
 
   constructor(private readonly props: Namespace.Props) {
     this.node = this.render();

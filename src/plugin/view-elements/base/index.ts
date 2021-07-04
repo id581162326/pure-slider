@@ -1,9 +1,9 @@
 import {pipe} from 'fp-ts/function';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
 
-import 'view-components/base/style.core.css';
-import 'view-components/base/style.theme.css';
-import Namespace from 'view-components/base/namespace';
+import 'view-elements/base/style.core.css';
+import 'view-elements/base/style.theme.css';
+import Namespace from 'view-elements/base/namespace';
 
 class Base implements Namespace.Interface {
   public readonly node;

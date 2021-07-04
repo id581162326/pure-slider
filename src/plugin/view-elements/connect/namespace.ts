@@ -1,16 +1,14 @@
-namespace Unit {
+namespace Connect {
   export interface Props {
-    value: number,
     orientation: 'horizontal' | 'vertical',
-    showValue: boolean,
-    onClick: (value: number) => void,
     bemBlockClassName?: string
   }
 
   export interface Interface {
     node: HTMLDivElement,
-    setActive: (active: boolean) => void
+    moveTo: (pos: number) => this,
+    sizeTo: (size: number) => this
   }
 }
 
-export default Unit;
+export default Connect;

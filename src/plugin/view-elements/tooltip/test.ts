@@ -1,10 +1,10 @@
 import Test from 'test/interface';
 
 import {pipe} from 'fp-ts/function';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
 
-import Tooltip from 'view-components/tooltip';
-import Namespace from 'view-components/tooltip/namespace';
+import Tooltip from 'view-elements/tooltip/index';
+import Namespace from 'view-elements/tooltip/namespace';
 
 export const initTest: Test<Namespace.Props> = {
   title: 'Init',

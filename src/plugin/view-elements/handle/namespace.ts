@@ -2,14 +2,15 @@ namespace Handle {
   export interface Props {
     orientation: 'horizontal' | 'vertical',
     onDrag: (dragDelta: {x: number, y: number}) => void,
-    onKeyPress: (actionType: 'inc' | 'dec') => void,
+    onIncrease: () => void,
+    onDecrease: () => void,
     bemBlockClassName?: string
   }
 
   export interface Interface {
     node: HTMLDivElement,
-    moveTo: (percent: number) => void,
-    removeSideEffects: () => void
+    moveTo: (percent: number) => this,
+    removeSideEffects: () => this
   }
 }
 

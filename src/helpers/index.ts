@@ -31,6 +31,10 @@ export const instance = <Class extends { new(...params: unknown[] & ConstructorP
   Func: Class
 ): InstanceType<Class> => new Func(...params);
 
+export const method = <Obj, Key extends keyof Obj, Method extends Obj[Key] & { (...args: unknown[] & Parameters<Method>): ReturnType<Method> }>(
+  key: Obj[Key] extends Method ? Key : never, ...args: Obj[Key] extends Method ? Parameters<Obj[Key]> : never
+) => (object: Obj) => call(...args)(object[key as Key] as Method);
+
 export const switchCases = <Case extends [Tag, F.Lazy<Value>], Tag, Value>(cases: Case[], def: F.Lazy<Value>) => (tag: Tag) =>
   pipe(cases, A.findLast(([key]) => key === tag), O.fold<Case, Value>(() => def(), ([_, value]) => value()));
 

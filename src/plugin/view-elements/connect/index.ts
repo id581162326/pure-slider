@@ -2,9 +2,9 @@ import * as F from 'fp-ts/function';
 import {pipe} from 'fp-ts/function';
 import * as H from 'helpers/index';
 
-import 'view-components/connect/style.theme.css';
-import 'view-components/connect/style.core.css';
-import Namespace from 'view-components/connect/namespace';
+import 'view-elements/connect/style.theme.css';
+import 'view-elements/connect/style.core.css';
+import Namespace from 'view-elements/connect/namespace';
 
 class Connect implements Namespace.Interface {
   public readonly node;
@@ -16,6 +16,8 @@ class Connect implements Namespace.Interface {
       ['horizontal', () => pipe(this.node, H.setStyle('left', `${pos}%`))],
       ['vertical', () => pipe(this.node, H.setStyle('bottom', `${pos}%`))]
     ], F.constVoid));
+
+    return (this);
   };
 
   public readonly sizeTo = (size: number) => {
@@ -25,6 +27,8 @@ class Connect implements Namespace.Interface {
       ['horizontal', () => pipe(this.node, H.setStyle('maxWidth', `${size}%`))],
       ['vertical', () => pipe(this.node, H.setStyle('maxHeight', `${size}%`))]
     ], F.constVoid));
+
+    return (this);
   };
 
   constructor(private readonly props: Namespace.Props) {

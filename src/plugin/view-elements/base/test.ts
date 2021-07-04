@@ -3,8 +3,8 @@ import Test from 'test/interface';
 import {pipe} from 'fp-ts/function';
 import * as H from 'helpers/index';
 
-import Base from 'view-components/base/index';
-import Namespace from 'view-components/base/namespace';
+import Base from 'view-elements/base/index';
+import Namespace from 'view-elements/base/namespace';
 
 const defaultProp: Namespace.Props = {
   orientation: 'horizontal',

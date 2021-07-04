@@ -1,21 +1,27 @@
 import * as F from 'fp-ts/function';
 import {pipe} from 'fp-ts/function';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
 
-import 'view-components/handle/style.core.css';
-import 'view-components/handle/style.theme.css';
-import Namespace from 'view-components/handle/namespace';
+import 'view-elements/handle/style.core.css';
+import 'view-elements/handle/style.theme.css';
+import Namespace from 'view-elements/handle/namespace';
 
 class Handle implements Namespace.Interface {
-  public readonly node: HTMLDivElement;
+  public readonly node;
 
-  public readonly moveTo = (pos: number) => pipe(this.props.orientation, H.switchCases([
-    ['horizontal', () => pipe(this.node, H.setStyle('left', `calc(${pos}% - ${pipe(this.node.offsetWidth, H.half)}px)`))],
-    ['vertical', () => pipe(this.node, H.setStyle('bottom', `calc(${pos}% - ${pipe(this.node.offsetHeight, H.half)}px)`))]
-  ], F.constVoid));
+  public readonly moveTo = (pos: number) => {
+    pipe(this.props.orientation, H.switchCases([
+      ['horizontal', () => pipe(this.node, H.setStyle('left', `calc(${pos}% - ${pipe(this.node.offsetWidth, H.half)}px)`))],
+      ['vertical', () => pipe(this.node, H.setStyle('bottom', `calc(${pos}% - ${pipe(this.node.offsetHeight, H.half)}px)`))]
+    ], F.constVoid))
+
+    return (this);
+  };
 
   public readonly removeSideEffects = () => {
     H.addEventListener('mouseup', this.endDrag)(window);
+
+    return (this);
   };
 
   constructor(private readonly props: Namespace.Props) {
@@ -69,7 +75,7 @@ class Handle implements Namespace.Interface {
   };
 
   private readonly keyDownListener = (event: KeyboardEvent) => {
-    const {orientation, onKeyPress} = this.props;
+    const {orientation, onIncrease, onDecrease} = this.props;
 
     const decCond = (orientation === 'horizontal' && event.code === 'ArrowLeft')
       || (orientation === 'vertical' && event.code === 'ArrowDown')
@@ -84,8 +90,8 @@ class Handle implements Namespace.Interface {
     }
 
     pipe(true, H.switchCases([
-      [decCond, () => onKeyPress('dec')],
-      [incCond, () => onKeyPress('inc')]
+      [decCond, () => onDecrease()],
+      [incCond, () => onIncrease()]
     ], F.constVoid));
   };
 }

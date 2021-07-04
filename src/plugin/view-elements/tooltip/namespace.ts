@@ -1,14 +1,14 @@
-namespace Connect {
+namespace Tooltip {
   export interface Props {
     orientation: 'horizontal' | 'vertical',
+    alwaysShown: boolean,
     bemBlockClassName?: string
   }
 
   export interface Interface {
-    node: HTMLDivElement,
-    moveTo: (pos: number) => void,
-    sizeTo: (size: number) => void
+    node: HTMLSpanElement,
+    setValue: (value: number) => this
   }
 }
 
-export default Connect;
+export default Tooltip;

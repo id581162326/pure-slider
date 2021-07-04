@@ -3,10 +3,10 @@ import Test from 'test/interface';
 import * as F from 'fp-ts/function';
 import {pipe} from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
 
-import Connect from 'view-components/connect';
-import Namespace from 'view-components/connect/namespace';
+import Connect from 'view-elements/connect';
+import Namespace from 'view-elements/connect/namespace';
 
 export const initTest: Test<Namespace.Props> = {
   title: 'Init',

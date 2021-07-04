@@ -3,15 +3,16 @@ import Test from 'test/interface';
 import * as F from 'fp-ts/function';
 import {pipe} from 'fp-ts/function';
 import * as A from 'fp-ts/Array';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
 
-import Handle from 'view-components/handle';
-import Namespace from 'view-components/handle/namespace';
+import Handle from 'view-elements/handle';
+import Namespace from 'view-elements/handle/namespace';
 
 const defaultProps: Namespace.Props = {
   orientation: 'horizontal',
   onDrag: (_) => {},
-  onKeyPress: (_) => {}
+  onIncrease: () => {},
+  onDecrease: () => {}
 };
 
 export const initTest: Test<Namespace.Props> = {
@@ -81,28 +82,33 @@ export const keyPressTest: Test<Namespace.Props['orientation']> = {
   title: 'onKeyPress callback',
   description: 'should be called with a action type',
   run: (orientation) => {
-    const foo = {bar: (_: 'inc' | 'dec') => {}};
+    const foo = {
+      bar: () => {},
+      baz: () => {}
+    };
 
-    const spy = spyOn(foo, 'bar');
+    const spyOnBar = spyOn(foo, 'bar');
+    const spyOnBaz = spyOn(foo, 'baz');
 
-    const handle = pipe(Handle, H.instance({...defaultProps, orientation, onKeyPress: foo.bar}));
+    const handle = pipe(Handle, H.instance({...defaultProps, orientation, onIncrease: foo.bar, onDecrease: foo.baz}));
 
     const decCodes = F.tuple('ArrowDown' as 'ArrowDown', 'ArrowLeft' as 'ArrowLeft', 'Minus' as 'Minus');
     const incCodes = F.tuple('ArrowUp' as 'ArrowUp', 'ArrowRight' as 'ArrowRight', 'Equal' as 'Equal');
 
     pipe(decCodes, A.zip(incCodes), A.map(([decCode, incCode]) => {
-      spy.calls.reset();
+      spyOnBar.calls.reset();
+      spyOnBaz.calls.reset();
 
       handle.node.dispatchEvent(new KeyboardEvent('keydown', {code: decCode}));
       handle.node.dispatchEvent(new KeyboardEvent('keydown', {code: incCode}));
 
       pipe(true, H.switchCases([
-        [decCode === 'Minus', () => expect(foo.bar).toHaveBeenCalledWith('dec')],
-        [incCode === 'Equal', () => expect(foo.bar).toHaveBeenCalledWith('dec')],
-        [orientation === 'horizontal' && decCode === 'ArrowLeft', () => expect(foo.bar).toHaveBeenCalledWith('dec')],
-        [orientation === 'horizontal' && incCode === 'ArrowRight', () => expect(foo.bar).toHaveBeenCalledWith('inc')],
-        [orientation === 'vertical' && decCode === 'ArrowDown', () => expect(foo.bar).toHaveBeenCalledWith('dec')],
-        [orientation === 'vertical' && incCode === 'ArrowUp', () => expect(foo.bar).toHaveBeenCalledWith('inc')]
+        [decCode === 'Minus', () => expect(foo.baz).toHaveBeenCalled()],
+        [incCode === 'Equal', () => expect(foo.bar).toHaveBeenCalled()],
+        [orientation === 'horizontal' && decCode === 'ArrowLeft', () => expect(foo.baz).toHaveBeenCalled()],
+        [orientation === 'horizontal' && incCode === 'ArrowRight', () => expect(foo.bar).toHaveBeenCalled()],
+        [orientation === 'vertical' && decCode === 'ArrowDown', () => expect(foo.baz).toHaveBeenCalled()],
+        [orientation === 'vertical' && incCode === 'ArrowUp', () => expect(foo.bar).toHaveBeenCalled()]
       ], F.constVoid));
     }));
   },

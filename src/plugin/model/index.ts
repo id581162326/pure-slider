@@ -10,7 +10,11 @@ import Observer from 'plugin/observer';
 import Namespace from 'plugin/model/namespace';
 
 class Model implements Namespace.Interface {
-  public readonly dispatch = (action: Namespace.Action) => pipe(action, this.reduce, this.applyState);
+  public readonly dispatch = (action: Namespace.Action) => {
+    pipe(action, this.reduce, this.applyState);
+
+    return (this);
+  };
 
   constructor(public state: Namespace.State) {
     this.applyState(state);
@@ -20,19 +24,15 @@ class Model implements Namespace.Interface {
 
   //
 
-  private readonly setCoordinates = (coordinates: Namespace.State['coordinates']) => ({...this.state, coordinates});
-
-  private readonly setRange = (range: Namespace.State['range']) => ({...this.state, range});
-
-  private readonly setStep = (step: Namespace.State['step']) => ({...this.state, step});
-
-  private readonly setMargin = (margin: Namespace.State['margin']) => ({...this.state, margin});
+  private readonly setStateProp = <Key extends keyof Namespace.State>(
+    key: Key
+  ) => (value: Namespace.State[Key]) => ({...this.state, [key]: value});
 
   private readonly reduce = ({tag, value}: Namespace.Action) => pipe(tag, H.switchCases([
-    ['UPDATE_COORDINATES', pipe(value as Namespace.State['coordinates'], this.setCoordinates, F.constant)],
-    ['UPDATE_RANGE', pipe(value as Namespace.State['range'], this.setRange, F.constant)],
-    ['UPDATE_STEP', pipe(value as Namespace.State['step'], this.setStep, F.constant)],
-    ['UPDATE_MARGIN', pipe(value as Namespace.State['margin'], this.setMargin, F.constant)]
+    ['UPDATE_COORDINATES', pipe(value as Namespace.State['coordinates'], this.setStateProp('coordinates'), F.constant)],
+    ['UPDATE_RANGE', pipe(value as Namespace.State['range'], this.setStateProp('range'), F.constant)],
+    ['UPDATE_STEP', pipe(value as Namespace.State['step'], this.setStateProp('step'), F.constant)],
+    ['UPDATE_MARGIN', pipe(value as Namespace.State['margin'], this.setStateProp('margin'), F.constant)]
   ], F.constant(this.state)));
 
   //

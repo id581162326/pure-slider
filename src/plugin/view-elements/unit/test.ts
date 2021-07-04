@@ -1,9 +1,9 @@
 import * as O from 'fp-ts/Option';
 import {pipe} from 'fp-ts/function';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
 
-import Unit from 'view-components/unit/index';
-import Namespace from 'view-components/unit/namespace';
+import Unit from 'view-elements/unit/index';
+import Namespace from 'view-elements/unit/namespace';
 
 import Test from 'test/interface';
 

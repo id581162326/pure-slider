@@ -18,7 +18,7 @@ namespace Model {
 
   export interface Interface {
     state: State,
-    dispatch: (action: Action) => void
+    dispatch: (action: Action) => this
   }
 }
 

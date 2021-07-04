@@ -1,11 +1,18 @@
-import Namespace from 'view-components/tooltip/namespace';
 import {pipe} from 'fp-ts/function';
-import * as H from 'helpers';
+import * as H from 'helpers/index';
+
+import 'view-elements/tooltip/style-core.css';
+import 'view-elements/tooltip/style-theme.css';
+import Namespace from 'view-elements/tooltip/namespace';
 
 class Tooltip implements Namespace.Interface {
-  public readonly setValue = (value: number) => pipe(value, H.toString, H.setInnerText)(this.node);
-
   public readonly node;
+
+  public readonly setValue = (value: number) => {
+    pipe(value, H.toString, H.setInnerText)(this.node);
+
+    return (this);
+  };
 
   constructor(private readonly props: Namespace.Props) {
     this.node = this.render();
