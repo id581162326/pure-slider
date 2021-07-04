@@ -29,25 +29,10 @@ class ConnectsManager extends ComponentManager<Namespace.Props> implements Names
   constructor(props: Namespace.Props) {
     super(props);
 
-    this.typeMap = this.getTypeMap();
-
     this.connects = this.renderConnects();
   }
 
   private readonly connects;
-
-  private readonly typeMap;
-
-  private readonly getTypeMap = () => {
-    const {connectType} = this.props;
-
-    return (pipe(connectType, H.switchCases([
-      ['from-start', F.constant(['from-start'])],
-      ['to-end', F.constant(['to-end'])],
-      ['inner-range', F.constant(['inner'])],
-      ['outer-range', F.constant(['from-start', 'to-end'])]
-    ], F.constant([] as Namespace.ConnectType))) as Namespace.ConnectType);
-  };
 
   private readonly renderConnects = () => {
     const {bemBlockClassName, orientation, coordinates} = this.props;
@@ -67,8 +52,19 @@ class ConnectsManager extends ComponentManager<Namespace.Props> implements Names
     this.getPositionMap(coordinates), this.getSizeMap(coordinates)
   ];
 
+  private readonly getTypeMap = () => {
+    const {connectType} = this.props;
+
+    return (pipe(connectType, H.switchCases([
+      ['from-start', F.constant(['from-start'])],
+      ['to-end', F.constant(['to-end'])],
+      ['inner-range', F.constant(['inner'])],
+      ['outer-range', F.constant(['from-start', 'to-end'])]
+    ], F.constant([] as Namespace.ConnectType))) as Namespace.ConnectType);
+  };
+
   private readonly getPositionMap = (coordinates: Namespace.Props['coordinates']) => pipe(
-    this.typeMap,
+    this.getTypeMap(),
     A.map((type) => pipe(type, H.switchCases([
       ['from-start', () => pipe(coordinates, NEA.head, this.percentOfRange)],
       ['to-end', () => pipe(coordinates, NEA.last, this.percentOfRange)],
@@ -77,7 +73,7 @@ class ConnectsManager extends ComponentManager<Namespace.Props> implements Names
   );
 
   private readonly getSizeMap = (coordinates: Namespace.Props['coordinates']) => pipe(
-    this.typeMap,
+    this.getTypeMap(),
     A.map((type) => pipe(type, H.switchCases([
       ['from-start', () => pipe(coordinates, NEA.head, pipe(this.props.range, NEA.head, H.sub), this.percentOfRange)],
       ['to-end', () => pipe(this.props.range, NEA.last, pipe(coordinates, NEA.last, H.sub), this.percentOfRange)],
