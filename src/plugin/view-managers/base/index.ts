@@ -6,10 +6,11 @@ import * as N from 'fp-ts/number';
 
 import Base from 'view-elements/base';
 
-import Namespace from 'view-managers/base/namespace';
-import DataManager from 'view-managers/data';
+import ComponentManager from 'view-managers/component';
 
-class BaseManager extends DataManager<Namespace.Props> implements Namespace.Interface {
+import Namespace from './namespace';
+
+class BaseManager extends ComponentManager<Namespace.Props> implements Namespace.Interface {
   public readonly appendNodeTo = <Parent extends HTMLElement>(parent: Parent) => {
     pipe(this.base.node, H.appendTo(parent));
 

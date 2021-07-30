@@ -139,23 +139,18 @@ export const getRules: (type: BuildType) => webpack.RuleSetRule[] = (buildType) 
         options: {
           postcssOptions: {
             plugins: [
-              [
-                'postcss-preset-env',
-                {
-                  stage: 3,
-                  features: {
-                    'nesting-rules': true,
-                    'not-pseudo-class': true
-                  },
-                  ...(
-                    (buildType === 'prod' || buildType === 'demo') ? {
-                      browsers: 'last 2 versions'
-                    } : {}
-                  )
+              ['postcss-preset-env', {
+                stage: 3,
+                features: {
+                  'nesting-rules': true,
+                  'not-pseudo-class': true
                 },
-              ],
-            ],
-          },
+                ...((buildType === 'prod' || buildType === 'demo') ? {
+                  browsers: 'last 2 versions'
+                } : {})
+              }]
+            ]
+          }
         }
       }]
   }

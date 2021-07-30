@@ -1,7 +1,7 @@
-import DataManager from 'view-managers/data/namespace';
+import ComponentManager from 'view-managers/component/namespace';
 
 namespace BaseManager {
-  export interface Props extends DataManager.Props {
+  export interface Props extends ComponentManager.Props {
     coordinates: [number] | [number, number],
     bemBlockClassName?: string,
     onClick: (coordinates: Props['coordinates']) => void

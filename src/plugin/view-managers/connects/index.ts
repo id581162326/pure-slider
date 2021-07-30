@@ -6,8 +6,9 @@ import * as NEA from 'fp-ts/NonEmptyArray';
 
 import Connect from 'view-elements/connect';
 
-import Namespace from 'view-managers/connects/namespace';
-import ComponentManager from 'view-managers/data';
+import ComponentManager from 'view-managers/component';
+
+import Namespace from './namespace';
 
 class ConnectsManager extends ComponentManager<Namespace.Props> implements Namespace.Interface {
   public readonly appendNodesTo = <Parent extends HTMLElement>(parent: Parent) => {

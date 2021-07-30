@@ -5,11 +5,11 @@ import * as R from 'fp-ts/Record';
 import * as helpersTest from 'helpers/test';
 import * as modelTest from 'plugin/model/test';
 import * as observerTest from 'plugin/observer/test';
-import * as viewHandleTest from 'view-components/handle/test';
-import * as viewBaseTest from 'view-components/base/test';
-import * as viewConnectTest from 'view-components/connect/test';
-import * as viewTooltipTest from 'view-components/tooltip/test';
-import * as viewUnitTest from 'view-components/unit/test';
+import * as viewHandleTest from 'view-elements/handle/test';
+import * as viewBaseTest from 'view-elements/base/test';
+import * as viewConnectTest from 'view-elements/connect/test';
+import * as viewTooltipTest from 'view-elements/tooltip/test';
+import * as viewUnitTest from 'view-elements/unit/test';
 
 import Test from 'test/interface';
 

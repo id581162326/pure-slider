@@ -1,9 +1,9 @@
-import DataManager from 'view-managers/data/namespace';
+import ComponentManager from 'view-managers/component/namespace';
 
 namespace ConnectsManager {
   export type ConnectType = Array<'from-start' | 'to-end' | 'inner'>;
 
-  export interface Props extends DataManager.Props {
+  export interface Props extends ComponentManager.Props {
     connectType: 'from-start' | 'to-end' | 'inner-range' | 'outer-range' | 'none',
     coordinates: [number] | [number, number],
     bemBlockClassName?: string

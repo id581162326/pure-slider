@@ -1,4 +1,4 @@
-namespace DataManager {
+namespace ComponentManager {
   export interface Props {
     orientation: 'horizontal' | 'vertical',
     range: [number, number],
@@ -6,4 +6,4 @@ namespace DataManager {
   }
 }
 
-export default DataManager;
+export default ComponentManager;

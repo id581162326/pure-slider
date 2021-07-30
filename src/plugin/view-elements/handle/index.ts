@@ -19,7 +19,7 @@ class Handle implements Namespace.Interface {
   };
 
   public readonly removeSideEffects = () => {
-    H.addEventListener('mouseup', this.endDrag)(window);
+    H.removeEventListener('mouseup', this.endDrag)(window);
 
     return (this);
   };

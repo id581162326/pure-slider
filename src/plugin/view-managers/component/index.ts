@@ -3,9 +3,9 @@ import * as F from 'fp-ts/function';
 import {pipe} from 'fp-ts/function';
 import * as NEA from 'fp-ts/NonEmptyArray';
 
-import Namespace from 'view-managers/data/namespace';
+import Namespace from './namespace';
 
-class DataManager<Props extends Namespace.Props> {
+class ComponentManager<Props extends Namespace.Props> {
   constructor(protected readonly props: Props) {}
 
   protected readonly pxToNum = (px: number) => {
@@ -38,4 +38,4 @@ class DataManager<Props extends Namespace.Props> {
   };
 }
 
-export default DataManager;
+export default ComponentManager;

@@ -1,7 +1,7 @@
-import DataManager from 'view-managers/data/namespace';
+import ComponentManager from 'view-managers/component/namespace';
 
 namespace HandlesManager {
-  export interface Props extends DataManager.Props {
+  export interface Props extends ComponentManager.Props {
     step: number,
     coordinates: [number] | [number, number],
     onChange: (coordinates: Props['coordinates']) => void,

@@ -3,13 +3,15 @@ import * as H from 'helpers';
 import * as F from 'fp-ts/function';
 import {flow, pipe} from 'fp-ts/function';
 import * as O from 'fp-ts/Option';
-import Handle from 'view-elements/handle';
 
-import Namespace from 'view-managers/handles/namespace';
-import DataManager from 'view-managers/data';
+import Handle from 'view-elements/handle';
 import Tooltip from 'view-elements/tooltip';
 
-class HandlesManager extends DataManager<Namespace.Props> implements Namespace.Interface {
+import ComponentManager from 'view-managers/component';
+
+import Namespace from './namespace';
+
+class HandlesManager extends ComponentManager<Namespace.Props> implements Namespace.Interface {
   public readonly appendNodesTo = <Parent extends HTMLElement>(parent: Parent) => {
     pipe(this.handles, NEA.map(flow(H.prop('node'), H.appendTo(parent))));
 
