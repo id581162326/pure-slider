@@ -167,7 +167,7 @@ export const getConfig: (buildType: BuildType) => webpack.Configuration = (build
       'helpers': path.resolve(__dirname, '..', 'src/helpers'),
       'model': path.resolve(__dirname, '..', 'src/plugin/model'),
       'observer': path.resolve(__dirname, '..', 'src/plugin/observer'),
-      'view-components': path.resolve(__dirname, '..', 'src/plugin/view-components'),
+      'view-elements': path.resolve(__dirname, '..', 'src/plugin/view-elements'),
       'view-managers': path.resolve(__dirname, '..', 'src/plugin/view-managers'),
       'view': path.resolve(__dirname, '..', 'src/plugin/view')
     }
