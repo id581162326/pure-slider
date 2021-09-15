@@ -11,8 +11,7 @@ const karmaConfig: (config: Config) => void = (config) => {
     reporters: ['mocha'],
     preprocessors: {'src/test/index.ts': ['webpack', 'sourcemap']},
     plugins: [
-      'karma-jasmine', 'karma-mocha',
-      'karma-webpack', 'karma-chrome-launcher',
+      'karma-jasmine', 'karma-webpack', 'karma-chrome-launcher',
       'karma-mocha-reporter', 'karma-sourcemap-loader',
       'karma-typescript'
     ],

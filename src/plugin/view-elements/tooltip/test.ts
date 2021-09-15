@@ -1,7 +1,7 @@
 import Test from 'test/interface';
 
 import {pipe} from 'fp-ts/function';
-import * as H from 'helpers/index';
+import * as A from 'fp-ts/Array';
 
 import Tooltip from 'view-elements/tooltip/index';
 import Namespace from 'view-elements/tooltip/namespace';
@@ -10,25 +10,17 @@ export const initTest: Test<Namespace.Props> = {
   title: 'Init',
   description: 'should init tooltip',
   run: (props) => {
-    const tooltip = pipe(Tooltip, H.instance(props));
-    const node = tooltip.node;
+    const tooltip = new Tooltip(props);
 
-    expect(node).toHaveClass('pure-slider__tooltip');
-    expect(node).toHaveClass(`pure-slider__tooltip_orientation_${props.orientation}`);
-
-    if (props.bemBlockClassName) {
-      expect(node).toHaveClass(`${props.bemBlockClassName}__tooltip`);
-      expect(node).toHaveClass(`${props.bemBlockClassName}__tooltip_orientation_${props.orientation}`);
-    } else {
-      expect(node).not.toHaveClass(`${props.bemBlockClassName}__tooltip`);
-      expect(node).not.toHaveClass(`${props.bemBlockClassName}__tooltip_orientation_${props.orientation}`);
-    }
-
-    if (props.alwaysShown) {
-      expect(node).toHaveClass('pure-slider__tooltip_shown');
-    } else {
-      expect(node).not.toHaveClass('pure-slider__tooltip_shown');
-    }
+    pipe([
+      'pure-slider__tooltip',
+      `pure-slider__tooltip_orientation_${props.orientation}`,
+      ...(props.bemBlockClassName ? [
+        `${props.bemBlockClassName}__tooltip`,
+        `${props.bemBlockClassName}__tooltip_orientation_${props.orientation}`
+      ] : []),
+      ...(props.alwaysShown ? ['pure-slider__tooltip_shown'] : [])
+    ], A.map((x) => expect(tooltip.node).toHaveClass(x)));
   },
   map: [
     {orientation: 'horizontal', alwaysShown: false},
@@ -43,7 +35,7 @@ export const setValueTest: Test<number> = {
   title: 'setValue method',
   description: 'should set tooltip\'s value',
   run: (value) => {
-    const tooltip = pipe(Tooltip, H.instance({orientation: 'horizontal', alwaysShown: false}));
+    const tooltip = new Tooltip({orientation: 'horizontal', alwaysShown: false});
 
     tooltip.setValue(value);
 

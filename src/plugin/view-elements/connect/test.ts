@@ -12,46 +12,43 @@ export const initTest: Test<Namespace.Props> = {
   title: 'Init',
   description: 'should init connect',
   run: (props) => {
-    const connect = pipe(Connect, H.instance(props));
-    const node = connect.node;
+    const connect = new Connect(props);
 
-    expect(node).toHaveClass('pure-slider__connect');
-    expect(node).toHaveClass(`pure-slider__connect_orientation_${props.orientation}`);
-
-    if (props.bemBlockClassName) {
-      expect(node).toHaveClass(`${props.bemBlockClassName}__connect`);
-      expect(node).toHaveClass(`${props.bemBlockClassName}__connect_orientation_${props.orientation}`);
-    } else {
-      expect(node).not.toHaveClass(`${props.bemBlockClassName}__connect`);
-      expect(node).not.toHaveClass(`${props.bemBlockClassName}__connect_orientation_${props.orientation}`);
-    }
+    pipe([
+      'pure-slider__connect',
+      `pure-slider__connect_orientation_${props.orientation}`,
+      ...(props.bemBlockClassName ? [
+        `${props.bemBlockClassName}__connect`,
+        `${props.bemBlockClassName}__connect_orientation_${props.orientation}`
+      ] : [])
+    ], A.map((x) => expect(connect.node).toHaveClass(x)));
   },
   map: [
     {orientation: 'horizontal'},
     {orientation: 'vertical'},
     {orientation: 'horizontal', bemBlockClassName: 'slider'},
-    {bemBlockClassName: 'slider', orientation: 'vertical'}
+    {orientation: 'vertical', bemBlockClassName: 'slider'}
   ]
 };
 
-export const moveTest: Test<Namespace.Props['orientation']> = {
+export const moveTest: Test<[Namespace.Props['orientation'], [pos: number, size: number][]]> = {
   title: 'moveTo method',
   description: 'should move and resize connect',
-  run: (orientation) => {
-    const connect = pipe(Connect, H.instance({orientation}));
-    const node = connect.node;
-
-    const moveMap: [number, number][] = [[1, 10], [12, 14], [30, 0], [50, 50]];
+  run: ([orientation, moveMap]) => {
+    const connect = new Connect({orientation});
 
     pipe(moveMap, A.map(([pos, size]) => {
       connect.moveTo(pos);
       connect.sizeTo(size);
 
       pipe(orientation, H.switchCases([
-        ['horizontal', () => expect(node.style.cssText).toEqual(`left: ${pos}%; max-width: ${size}%;`)],
-        ['vertical', () => expect(node.style.cssText).toEqual(`bottom: ${pos}%; max-height: ${size}%;`)],
-      ], F.constVoid))
-    }))
+        ['horizontal', () => expect(connect.node.style.cssText).toEqual(`left: ${pos}%; max-width: ${size}%;`)],
+        ['vertical', () => expect(connect.node.style.cssText).toEqual(`bottom: ${pos}%; max-height: ${size}%;`)],
+      ], F.constVoid));
+    }));
   },
-  map: ['horizontal', 'vertical']
-}
+  map: [
+    ['horizontal', [[1, 10], [12, 14]]],
+    ['vertical', [[30, 0], [50, 50]]]
+  ]
+};

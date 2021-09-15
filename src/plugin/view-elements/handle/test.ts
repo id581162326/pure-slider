@@ -19,16 +19,16 @@ export const initTest: Test<Namespace.Props> = {
   title: 'Init',
   description: 'should init handle',
   run: (props) => {
-    const handle = pipe(Handle, H.instance(props));
-    const node = handle.node;
+    const handle = new Handle(props);
 
-    if (props.bemBlockClassName) {
-      expect(node).toHaveClass(`${props.bemBlockClassName}__handle`);
-      expect(node).toHaveClass(`${props.bemBlockClassName}__handle_orientation_${props.orientation}`);
-    } else {
-      expect(node).not.toHaveClass(`${props.bemBlockClassName}__handle`);
-      expect(node).not.toHaveClass(`${props.bemBlockClassName}__handle_orientation_${props.orientation}`);
-    }
+    pipe([
+      'pure-slider__handle',
+      `pure-slider__handle_orientation_${props.orientation}`,
+      ...(props.bemBlockClassName ? [
+        `${props.bemBlockClassName}__handle`,
+        `${props.bemBlockClassName}__handle_orientation_${props.orientation}`
+      ] : [])
+    ], A.map((x) => expect(handle.node).toHaveClass(x)));
   },
   map: [
     defaultProps,
@@ -38,79 +38,87 @@ export const initTest: Test<Namespace.Props> = {
   ]
 };
 
-export const moveTest: Test<Namespace.Props['orientation']> = {
+export const moveTest: Test<[orientation: Namespace.Props['orientation'], moveMap: number[]]> = {
   title: 'moveTo method',
   description: 'should move handle',
-  run: (orientation) => {
-    const handle = pipe(Handle, H.instance({...defaultProps, orientation}));
-    const node = handle.node;
-
-    const moveMap = [1, 2, 4, 10, 20, 30, 60, 100];
+  run: ([orientation, moveMap]) => {
+    const handle = new Handle({...defaultProps, orientation});
 
     pipe(moveMap, A.map((x) => {
       handle.moveTo(x);
 
       pipe(orientation, H.switchCases([
-        ['horizontal', () => expect(node.style.cssText).toEqual(`left: calc(${x}% - ${H.half(node.offsetWidth)}px);`)],
-        ['vertical', () => expect(node.style.cssText).toEqual(`bottom: calc(${x}% - ${H.half(node.offsetWidth)}px);`)]
+        ['horizontal', () => expect(handle.node.style.cssText).toEqual(`left: calc(${x}% - ${H.half(handle.node.offsetWidth)}px);`)],
+        ['vertical', () => expect(handle.node.style.cssText).toEqual(`bottom: calc(${x}% - ${H.half(handle.node.offsetWidth)}px);`)]
       ], F.constVoid));
     }));
   },
-  map: ['horizontal', 'vertical']
+  map: [
+    ['horizontal', [1, 2, 4, 10, 20]],
+    ['vertical', [30, 50, 60, 100]]
+  ]
 };
 
-export const dragTest: Test<[number, number]> = {
+export const dragTest: Test<[clientX: number, clientY: number]> = {
   title: 'onDrag callback',
   description: 'should be called with a drag delta coordinates',
   run: ([clientX, clientY]) => {
-    const foo = {bar: (_: { x: number, y: number }) => {}};
+    const handle = pipe(Handle, H.instance(defaultProps));
 
-    spyOn(foo, 'bar');
-
-    const handle = pipe(Handle, H.instance({...defaultProps, onDrag: foo.bar}));
+    if (!jasmine.isSpy(defaultProps.onDrag)) {
+      spyOn(defaultProps, 'onDrag');
+    }
 
     handle.node.dispatchEvent(new MouseEvent('mousedown', {clientY: 0, clientX: 0}));
-
     window.dispatchEvent(new MouseEvent('mousemove', {clientX, clientY}));
 
-    expect(foo.bar).toHaveBeenCalledWith({x: clientX, y: clientY});
+    expect(defaultProps.onDrag).toHaveBeenCalledWith({x: clientX, y: clientY});
   },
   map: [[100, 100], [100, 150], [-100, 100], [100, -150]]
 };
 
-export const keyPressTest: Test<Namespace.Props['orientation']> = {
-  title: 'onKeyPress callback',
-  description: 'should be called with a action type',
-  run: (orientation) => {
-    const foo = {
-      bar: () => {},
-      baz: () => {}
-    };
+export const decreaseTest: Test<'ArrowDown' | 'ArrowLeft' | 'Minus'> = {
+  title: 'onDecrease callback',
+  description: 'should be called when decrease keys pressed',
+  run: (code) => {
+    const handle = new Handle(defaultProps);
 
-    const spyOnBar = spyOn(foo, 'bar');
-    const spyOnBaz = spyOn(foo, 'baz');
+    if (!(jasmine.isSpy(defaultProps.onDecrease))) {
+      spyOn(defaultProps, 'onDecrease');
+    } else {
+      defaultProps.onDecrease.calls.reset();
+    }
 
-    const handle = pipe(Handle, H.instance({...defaultProps, orientation, onIncrease: foo.bar, onDecrease: foo.baz}));
+    handle.node.dispatchEvent(new KeyboardEvent('keydown', {code}));
 
-    const decCodes = F.tuple('ArrowDown' as 'ArrowDown', 'ArrowLeft' as 'ArrowLeft', 'Minus' as 'Minus');
-    const incCodes = F.tuple('ArrowUp' as 'ArrowUp', 'ArrowRight' as 'ArrowRight', 'Equal' as 'Equal');
-
-    pipe(decCodes, A.zip(incCodes), A.map(([decCode, incCode]) => {
-      spyOnBar.calls.reset();
-      spyOnBaz.calls.reset();
-
-      handle.node.dispatchEvent(new KeyboardEvent('keydown', {code: decCode}));
-      handle.node.dispatchEvent(new KeyboardEvent('keydown', {code: incCode}));
-
-      pipe(true, H.switchCases([
-        [decCode === 'Minus', () => expect(foo.baz).toHaveBeenCalled()],
-        [incCode === 'Equal', () => expect(foo.bar).toHaveBeenCalled()],
-        [orientation === 'horizontal' && decCode === 'ArrowLeft', () => expect(foo.baz).toHaveBeenCalled()],
-        [orientation === 'horizontal' && incCode === 'ArrowRight', () => expect(foo.bar).toHaveBeenCalled()],
-        [orientation === 'vertical' && decCode === 'ArrowDown', () => expect(foo.baz).toHaveBeenCalled()],
-        [orientation === 'vertical' && incCode === 'ArrowUp', () => expect(foo.bar).toHaveBeenCalled()]
-      ], F.constVoid));
-    }));
+    pipe(code, H.switchCases([
+      ['Minus', () => expect(defaultProps.onDecrease).toHaveBeenCalled()],
+      ['ArrowDown', () => expect(defaultProps.onDecrease).toHaveBeenCalled()],
+      ['ArrowLeft', () => expect(defaultProps.onDecrease).toHaveBeenCalled()]
+    ], F.constVoid));
   },
-  map: ['horizontal', 'vertical']
+  map: ['Minus', 'ArrowDown', 'ArrowLeft']
+};
+
+export const increaseTest: Test<'Equal' | 'ArrowUp' | 'ArrowRight'> = {
+  title: 'onIncrease callback',
+  description: 'should be called when increase keys pressed',
+  run: (code) => {
+    const handle = new Handle(defaultProps);
+
+    if (!(jasmine.isSpy(defaultProps.onIncrease))) {
+      spyOn(defaultProps, 'onIncrease');
+    } else {
+      defaultProps.onIncrease.calls.reset();
+    }
+
+    handle.node.dispatchEvent(new KeyboardEvent('keydown', {code}));
+
+    pipe(code, H.switchCases([
+      ['Equal', () => expect(defaultProps.onIncrease).toHaveBeenCalled()],
+      ['ArrowUp', () => expect(defaultProps.onIncrease).toHaveBeenCalled()],
+      ['ArrowRight', () => expect(defaultProps.onIncrease).toHaveBeenCalled()]
+    ], F.constVoid));
+  },
+  map: ['Equal', 'ArrowUp', 'ArrowRight']
 };

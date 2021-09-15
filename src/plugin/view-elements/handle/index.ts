@@ -75,15 +75,11 @@ class Handle implements Namespace.Interface {
   };
 
   private readonly keyDownListener = (event: KeyboardEvent) => {
-    const {orientation, onIncrease, onDecrease} = this.props;
+    const {onIncrease, onDecrease} = this.props;
 
-    const decCond = (orientation === 'horizontal' && event.code === 'ArrowLeft')
-      || (orientation === 'vertical' && event.code === 'ArrowDown')
-      || event.code === 'Minus';
+    const decCond = event.code === 'ArrowLeft' || event.code === 'ArrowDown' || event.code === 'Minus';
 
-    const incCond = (orientation === 'horizontal' && event.code === 'ArrowRight')
-      || (orientation === 'vertical' && event.code === 'ArrowUp')
-      || event.code === 'Equal';
+    const incCond = event.code === 'ArrowRight' || event.code === 'ArrowUp' || event.code === 'Equal';
 
     if (decCond || incCond) {
       event.preventDefault();

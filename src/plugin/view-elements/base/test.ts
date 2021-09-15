@@ -1,12 +1,12 @@
 import Test from 'test/interface';
 
 import {pipe} from 'fp-ts/function';
-import * as H from 'helpers/index';
+import * as A from 'fp-ts/Array';
 
 import Base from 'view-elements/base/index';
 import Namespace from 'view-elements/base/namespace';
 
-const defaultProp: Namespace.Props = {
+const defaultProps: Namespace.Props = {
   orientation: 'horizontal',
   onClick: (_) => {}
 };
@@ -15,25 +15,22 @@ export const initTest: Test<Namespace.Props> = {
   title: 'Init',
   description: 'should init base',
   run: (props) => {
-    const base = pipe(Base, H.instance(props));
-    const node = base.node;
+    const base = new Base(props);
 
-    expect(node).toHaveClass('pure-slider__base');
-    expect(node).toHaveClass(`pure-slider__base_orientation_${props.orientation}`);
-
-    if (props.bemBlockClassName) {
-      expect(node).toHaveClass(`${props.bemBlockClassName}__base`);
-      expect(node).toHaveClass(`${props.bemBlockClassName}__base_orientation_${props.orientation}`);
-    } else {
-      expect(node).not.toHaveClass(`${props.bemBlockClassName}__base`);
-      expect(node).not.toHaveClass(`${props.bemBlockClassName}__base_orientation_${props.orientation}`);
-    }
+    pipe([
+      'pure-slider__base',
+      `pure-slider__base_orientation_${props.orientation}`,
+      ...(props.bemBlockClassName ? [
+        `${props.bemBlockClassName}__base`,
+        `${props.bemBlockClassName}__base_orientation_${props.orientation}`
+      ] : [])
+    ], A.map((x) => expect(base.node).toHaveClass(x)));
   },
   map: [
-    defaultProp,
-    {...defaultProp, orientation: 'vertical'},
-    {...defaultProp, bemBlockClassName: 'slider'},
-    {...defaultProp, bemBlockClassName: 'slider', orientation: 'vertical'}
+    defaultProps,
+    {...defaultProps, orientation: 'vertical'},
+    {...defaultProps, bemBlockClassName: 'slider'},
+    {...defaultProps, bemBlockClassName: 'slider', orientation: 'vertical'}
   ]
 };
 
@@ -41,16 +38,15 @@ export const clickTest: Test<[number, number]> = {
   title: 'onClick callback',
   description: 'should be called with a click coordinates',
   run: ([clientX, clientY]) => {
-    const mock = {foo: (_: { x: number, y: number }) => {}};
+    const base = new Base(defaultProps);
 
-    spyOn(mock, 'foo');
+    if (!jasmine.isSpy(defaultProps.onClick)) {
+      spyOn(defaultProps, 'onClick');
+    }
 
-    const base = pipe(Base, H.instance({...defaultProp, onClick: mock.foo}));
-    const node = base.node;
+    base.node.dispatchEvent(new MouseEvent('click', {clientX, clientY}));
 
-    node.dispatchEvent(new MouseEvent('click', {clientX, clientY}));
-
-    expect(mock.foo).toHaveBeenCalledWith({x: clientX, y: clientY});
+    expect(defaultProps.onClick).toHaveBeenCalledWith({x: clientX, y: clientY});
   },
   map: [[100, 100], [100, 150], [-100, 100], [100, -150]]
 };

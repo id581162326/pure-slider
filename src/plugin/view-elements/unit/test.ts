@@ -1,6 +1,5 @@
-import * as O from 'fp-ts/Option';
 import {pipe} from 'fp-ts/function';
-import * as H from 'helpers/index';
+import * as A from 'fp-ts/Array';
 
 import Unit from 'view-elements/unit/index';
 import Namespace from 'view-elements/unit/namespace';
@@ -18,22 +17,19 @@ export const initTest: Test<Namespace.Props> = {
   title: 'Init',
   description: 'should init unit',
   run: (props) => {
-    const unit = pipe(Unit, H.instance(props));
-    const node = unit.node;
+    const unit = new Unit(props);
 
-    expect(node).toHaveClass('pure-slider__unit');
-    expect(node).toHaveClass(`pure-slider__unit_orientation_${props.orientation}`);
-
-    if (props.bemBlockClassName) {
-      expect(node).toHaveClass(`${props.bemBlockClassName}__unit`);
-      expect(node).toHaveClass(`${props.bemBlockClassName}__unit_orientation_${props.orientation}`);
-    } else {
-      expect(node).not.toHaveClass(`${props.bemBlockClassName}__unit`);
-      expect(node).not.toHaveClass(`${props.bemBlockClassName}__unit_orientation_${props.orientation}`);
-    }
+    pipe([
+      'pure-slider__unit',
+      `pure-slider__unit_orientation_${props.orientation}`,
+      ...(props.bemBlockClassName ? [
+        `${props.bemBlockClassName}__unit`,
+        `${props.bemBlockClassName}__unit_orientation_${props.orientation}`
+      ] : [])
+    ], A.map((x) => expect(unit.node).toHaveClass(x)));
 
     if (props.showValue) {
-      expect(node.innerHTML).toEqual(`<span class="pure-slider__unit-value${props.bemBlockClassName
+      expect(unit.node.innerHTML).toEqual(`<span class="pure-slider__unit-value${props.bemBlockClassName
         ? ` ${props.bemBlockClassName}__unit-value`
         : ''}">${props.value}</span>`);
     }
@@ -52,19 +48,18 @@ export const setActiveTest: Test<Namespace.Props> = {
   title: 'setActive method',
   description: 'should set active mode to unit',
   run: (props) => {
-    const unit = pipe(Unit, H.instance(props));
-    const node = unit.node;
-    const bemBlockClassName = O.fromNullable(props.bemBlockClassName);
+    const unit = new Unit(props);
 
-    unit.setActive(true);
+    pipe([
+      'pure-slider__unit_active',
+      ...(props.bemBlockClassName ? [`${props.bemBlockClassName}__unit_active`] : [])
+    ], A.map((x) => {
+      unit.setActive(true);
+      expect(unit.node).toHaveClass(x);
 
-    expect(node).toHaveClass('pure-slider__unit_active');
-    pipe(bemBlockClassName, O.map((x) => expect(node).toHaveClass(`${x}__unit_active`)));
-
-    unit.setActive(false);
-
-    expect(node).not.toHaveClass('pure-slider__unit_active');
-    pipe(bemBlockClassName, O.map((x) => expect(node).not.toHaveClass(`${x}__unit_active`)));
+      unit.setActive(false);
+      expect(unit.node).not.toHaveClass(x);
+    }));
   },
   map: [
     defaultProps,
